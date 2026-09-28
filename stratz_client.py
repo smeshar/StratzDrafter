@@ -784,6 +784,8 @@ class StratzClient:
             "enemiesWinRate": round(enemies_wr, 1),
             "counterAdvantage": round(avg_counter_adv, 2),
             "synergyAdvantage": round(synergy_adv, 2),
+            "alliesSynergy": round(avg_ally_syn, 2),
+            "enemiesSynergy": round(avg_enemy_syn, 2),
             "metaAdvantage": round(meta_adv, 2),
             "bestCounters": best_counters[:3],
             "biggestThreats": biggest_threats[:3],

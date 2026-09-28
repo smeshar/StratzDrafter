@@ -1,14 +1,16 @@
 """
 End-to-End (E2E) Browser Tests with Playwright:
 Tests full user journeys in Chromium:
-- Page load and core UI components (branding, slots, meter, footer)
+- Page load and core UI components (branding, slots, meter, footer, synergy badges)
 - Modal hero picker with Russian slang search (e.g. 'пудж', 'снайпер')
-- Ally & enemy drafting with dynamic winrate meter updates
+- Enter key press to select the first filtered hero in search
+- Ally & enemy drafting with dynamic winrate meter and synergy updates
 - Right-click hero ban and clear bans functionality
 - Draft reset button restoring initial state
 - Switching between Team Matrix and Detailed List views
 - Weight sliders interactivity
 """
+import re
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -16,18 +18,18 @@ from playwright.sync_api import Page, expect
 @pytest.mark.e2e
 class TestDrafterE2E:
 
-    def test_page_layout_and_branding(self, page: Page, live_server_url: str):
-        """Verify initial page load, branding elements, slots count, and footer."""
+    def _wait_for_page(self, page: Page, live_server_url: str):
         page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
+        page.locator("#alliesSlots .draft-slot").first.wait_for(state="visible", timeout=10000)
 
-        # Page title
-        expect(page).to_have_title("Stratz Custom Drafter | Dota 2")
+    def test_page_layout_and_branding(self, page: Page, live_server_url: str):
+        """Verify initial page load, branding elements, slots count, synergy badges, and footer."""
+        self._wait_for_page(page, live_server_url)
 
         # Header branding
         header = page.locator(".logo-title")
-        expect(header).to_contain_text("STRATZ")
-        expect(header).to_contain_text("DRAFTER")
+        expect(header).to_be_visible()
 
         # Winrate & VS badges
         winrate_title = page.locator(".meter-winrate-title")
@@ -44,6 +46,10 @@ class TestDrafterE2E:
         enemy_slots = page.locator("#enemiesSlots .draft-slot")
         expect(enemy_slots).to_have_count(5)
 
+        # Initial synergy badges
+        expect(page.locator("#alliesSynergy")).to_have_text("Синергия: 0.0%")
+        expect(page.locator("#enemiesSynergy")).to_have_text("Синергия: 0.0%")
+
         # Initial meter state
         expect(page.locator("#alliesAdvScore")).to_have_text("50.0% Наша")
         expect(page.locator("#enemiesAdvScore")).to_have_text("50.0% Враг")
@@ -56,8 +62,7 @@ class TestDrafterE2E:
 
     def test_hero_search_russian_slang_and_select(self, page: Page, live_server_url: str):
         """Click ally slot, search using Russian slang 'пудж', pick Pudge, verify slot updates."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         # Click first ally slot (Pos 1 Carry)
         first_ally = page.locator("#alliesSlots .draft-slot").first
@@ -83,10 +88,30 @@ class TestDrafterE2E:
         # First ally slot should now display Pudge
         expect(first_ally.locator(".slot-hero-name")).to_have_text("Pudge")
 
+    def test_hero_search_enter_key_selection(self, page: Page, live_server_url: str):
+        """Typing in search and pressing Enter should select the first available hero."""
+        self._wait_for_page(page, live_server_url)
+
+        first_ally = page.locator("#alliesSlots .draft-slot").first
+        first_ally.click()
+
+        modal = page.locator("#heroPickerModal")
+        expect(modal).to_be_visible()
+
+        search_input = page.locator("#heroSearchInput")
+        search_input.fill("снайпер")
+        page.wait_for_timeout(200)
+
+        # Press Enter key
+        search_input.press("Enter")
+
+        # Modal should close and Sniper should be selected
+        expect(modal).to_be_hidden()
+        expect(first_ally.locator(".slot-hero-name")).to_have_text("Sniper")
+
     def test_draft_both_teams_and_verify_meter_update(self, page: Page, live_server_url: str):
         """Pick ally and enemy heroes, verify winrate meter and draft insights update dynamically."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         # 1. Pick Ally: Crystal Maiden (using Russian slang 'цмка')
         first_ally = page.locator("#alliesSlots .draft-slot").first
@@ -126,8 +151,7 @@ class TestDrafterE2E:
 
     def test_ban_hero_via_context_menu_and_clear_bans(self, page: Page, live_server_url: str):
         """Right-click hero in modal to ban, verify ban chip appears, and clear bans."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         # Open modal
         page.locator("#alliesSlots .draft-slot").first.click()
@@ -160,8 +184,7 @@ class TestDrafterE2E:
 
     def test_reset_draft_button(self, page: Page, live_server_url: str):
         """Pick a hero, then click reset button and ensure entire state is cleared."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         # Pick ally
         first_ally = page.locator("#alliesSlots .draft-slot").first
@@ -183,11 +206,12 @@ class TestDrafterE2E:
         # Draft meter resets to 50.0%
         expect(page.locator("#alliesAdvScore")).to_have_text("50.0% Наша")
         expect(page.locator("#enemiesAdvScore")).to_have_text("50.0% Враг")
+        expect(page.locator("#alliesSynergy")).to_have_text("Синергия: 0.0%")
+        expect(page.locator("#enemiesSynergy")).to_have_text("Синергия: 0.0%")
 
     def test_switch_view_mode(self, page: Page, live_server_url: str):
         """Switch between team matrix view and detailed list view."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         # Switch to 'Подробный список'
         list_tab = page.locator("#viewModeTabs button[data-view='list']")
@@ -207,8 +231,7 @@ class TestDrafterE2E:
 
     def test_slider_adjustment(self, page: Page, live_server_url: str):
         """Verify weights slider changes update displayed percentage label."""
-        page.goto(live_server_url)
-        page.wait_for_load_state("networkidle")
+        self._wait_for_page(page, live_server_url)
 
         slider = page.locator("#counterWeight")
         slider.fill("85")

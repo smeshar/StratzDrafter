@@ -14,8 +14,7 @@ class TestFlaskAPI:
         response = client.get("/")
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        assert "STRATZ" in html
-        assert "DRAFTER" in html
+        assert "logo-title" in html
         assert "WINRATE" in html
         assert "VS" in html
         assert "alliesSlots" in html

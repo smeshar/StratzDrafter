@@ -60,8 +60,9 @@ const elements = {
   enemiesWinBar: document.getElementById('enemiesWinBar'),
   alliesAdvScore: document.getElementById('alliesAdvScore'),
   enemiesAdvScore: document.getElementById('enemiesAdvScore'),
+  alliesSynergy: document.getElementById('alliesSynergy'),
+  enemiesSynergy: document.getElementById('enemiesSynergy'),
   draftInsight: document.getElementById('draftInsight'),
-  activeSlotName: document.getElementById('activeSlotName'),
   bansList: document.getElementById('bansList'),
   clearBansBtn: document.getElementById('clearBansBtn'),
   teamMatrixContainer: document.getElementById('teamMatrixContainer'),
@@ -140,6 +141,14 @@ function setupEventListeners() {
     elements.enemiesWinBar.style.width = '50%';
     elements.alliesAdvScore.textContent = '50.0% Наша';
     elements.enemiesAdvScore.textContent = '50.0% Враг';
+    if (elements.alliesSynergy) {
+      elements.alliesSynergy.textContent = 'Синергия: 0.0%';
+      elements.alliesSynergy.className = 'team-synergy-badge neutral';
+    }
+    if (elements.enemiesSynergy) {
+      elements.enemiesSynergy.textContent = 'Синергия: 0.0%';
+      elements.enemiesSynergy.className = 'team-synergy-badge neutral';
+    }
     elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
     debouncedUpdate();
     showToast('Драфт сброшен');
@@ -203,6 +212,20 @@ function setupEventListeners() {
     state.searchQuery = e.target.value.trim().toLowerCase();
     elements.clearSearchBtn.style.display = state.searchQuery ? 'block' : 'none';
     filterAndRenderHeroesGrid();
+  });
+
+  // Pressing Enter picks the first available hero
+  elements.heroSearchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const firstAvailableHeroCell = elements.heroesGrid.querySelector('.hero-cell:not(.disabled-hero)');
+      if (firstAvailableHeroCell) {
+        const heroId = parseInt(firstAvailableHeroCell.dataset.id, 10);
+        if (heroId) {
+          onHeroCellClick(heroId);
+        }
+      }
+    }
   });
 
   elements.clearSearchBtn.addEventListener('click', () => {
@@ -329,9 +352,6 @@ function renderSlots() {
       selectSlot(team, index);
     });
   });
-
-  // Update active slot indicator
-  updateActiveSlotIndicator();
 }
 
 // Edit friend nickname on slot
@@ -365,22 +385,6 @@ function selectSlot(team, index) {
         loadDetailedRecs();
       }
     }
-  }
-}
-
-// Update Active Slot Banner
-function updateActiveSlotIndicator() {
-  if (!elements.activeSlotName) return;
-  if (!state.activeSlot) {
-    elements.activeSlotName.textContent = 'Не выбран';
-    return;
-  }
-  const { team, index } = state.activeSlot;
-  if (team === 'allies') {
-    const slot = state.allies[index];
-    elements.activeSlotName.textContent = `${slot.roleLabel} (${slot.friend})`;
-  } else {
-    elements.activeSlotName.textContent = `Команда врага (Слот ${index + 1})`;
   }
 }
 
@@ -820,16 +824,34 @@ function updateDraftMeter(analysis) {
   const alliesFilled = state.allies.filter(s => s.id !== null);
   const enemiesFilled = state.enemies.filter(s => s.id !== null);
 
+  const updateSynergyBadges = (alliesSynVal, enemiesSynVal) => {
+    if (elements.alliesSynergy) {
+      const val = Number(alliesSynVal ?? 0);
+      const sign = val > 0 ? '+' : '';
+      elements.alliesSynergy.textContent = `Синергия: ${sign}${val.toFixed(1)}%`;
+      elements.alliesSynergy.className = 'team-synergy-badge ' + (val > 0.05 ? 'positive' : val < -0.05 ? 'negative' : 'neutral');
+    }
+    if (elements.enemiesSynergy) {
+      const val = Number(enemiesSynVal ?? 0);
+      const sign = val > 0 ? '+' : '';
+      elements.enemiesSynergy.textContent = `Синергия: ${sign}${val.toFixed(1)}%`;
+      elements.enemiesSynergy.className = 'team-synergy-badge ' + (val > 0.05 ? 'positive' : val < -0.05 ? 'negative' : 'neutral');
+    }
+  };
+
   if (enemiesFilled.length === 0 && alliesFilled.length === 0) {
     elements.alliesWinBar.style.width = '50%';
     elements.enemiesWinBar.style.width = '50%';
     elements.alliesAdvScore.textContent = '50.0% Наша';
     elements.enemiesAdvScore.textContent = '50.0% Враг';
     elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
+    updateSynergyBadges(0, 0);
     return;
   }
 
   if (!analysis) return;
+
+  updateSynergyBadges(analysis.alliesSynergy, analysis.enemiesSynergy);
 
   const alliesPercent = Math.min(85.0, Math.max(15.0, Number(analysis.alliesWinRate ?? 50.0)));
   const enemiesPercent = 100.0 - alliesPercent;
