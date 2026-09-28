@@ -150,6 +150,27 @@ function setupEventListeners() {
   // Copy Draft to Clipboard for Discord
   elements.copyDraftBtn.addEventListener('click', copyDraftToDiscord);
 
+  // Recommendations Hero Search
+  if (elements.recsHeroSearchInput) {
+    elements.recsHeroSearchInput.addEventListener('input', (e) => {
+      state.recsSearchQuery = e.target.value.trim().toLowerCase();
+      if (elements.clearRecsSearchBtn) {
+        elements.clearRecsSearchBtn.style.display = state.recsSearchQuery ? 'block' : 'none';
+      }
+      renderCurrentRecommendations();
+    });
+  }
+
+  if (elements.clearRecsSearchBtn) {
+    elements.clearRecsSearchBtn.addEventListener('click', () => {
+      elements.recsHeroSearchInput.value = '';
+      state.recsSearchQuery = '';
+      elements.clearRecsSearchBtn.style.display = 'none';
+      elements.recsHeroSearchInput.focus();
+      renderCurrentRecommendations();
+    });
+  }
+
   // View Mode Tabs
   elements.viewModeTabs.addEventListener('click', (e) => {
     const btn = e.target.closest('.tab-btn');
@@ -258,7 +279,7 @@ function renderSlots() {
           <div class="slot-info">
             <span class="slot-role-tag">${slot.roleLabel}</span>
             ${hero ? `<span class="slot-hero-name">${hero.displayName}</span>` : `<span class="slot-empty-text">Выбрать героя</span>`}
-            <span class="slot-friend-name" title="Кликните чтобы изменить ник друга" onclick="editFriendName(event, ${i})">👤 ${slot.friend}</span>
+            <span class="slot-friend-name" title="Кликните чтобы изменить ник друга" onclick="editFriendName(event, ${i})">${slot.friend}</span>
           </div>
         </div>
         ${hero ? `<button class="slot-remove-btn" onclick="clearSlot(event, 'allies', ${i})" title="Удалить">✕</button>` : ''}
@@ -564,7 +585,7 @@ async function triggerUpdate() {
     const data = await res.json();
     if (data.success && data.matrix) {
       state.matrixData = data.matrix;
-      renderTeamMatrix(data.matrix);
+      renderCurrentRecommendations();
       updateDraftMeter(data.matrix, enemiesIds);
     }
   } catch (err) {
@@ -577,26 +598,52 @@ async function triggerUpdate() {
   }
 }
 
+// Render recommendations according to current active view mode
+function renderCurrentRecommendations() {
+  if (state.viewMode === 'matrix') {
+    renderTeamMatrix(state.matrixData);
+  } else {
+    renderDetailedRecs(state.recsListData);
+  }
+}
+
 // Render Team Matrix View (5 Columns)
 function renderTeamMatrix(matrix) {
   const roles = [
-    { key: 'pos1', title: 'ПОЗ 1 • КЕРРИ', icon: '⚔️' },
-    { key: 'pos2', title: 'ПОЗ 2 • МИД', icon: '⚡' },
-    { key: 'pos3', title: 'ПОЗ 3 • ОФФЛЕЙН', icon: '🛡️' },
-    { key: 'pos4', title: 'ПОЗ 4 • СЕМИ-САП', icon: '🎯' },
-    { key: 'pos5', title: 'ПОЗ 5 • ФУЛЛ-САП', icon: '✨' },
+    { key: 'pos1', title: 'ПОЗ 1 • КЕРРИ', tag: '1' },
+    { key: 'pos2', title: 'ПОЗ 2 • МИД', tag: '2' },
+    { key: 'pos3', title: 'ПОЗ 3 • ОФФЛЕЙН', tag: '3' },
+    { key: 'pos4', title: 'ПОЗ 4 • СЕМИ-САП', tag: '4' },
+    { key: 'pos5', title: 'ПОЗ 5 • ФУЛЛ-САП', tag: '5' },
   ];
 
   elements.teamMatrixContainer.innerHTML = roles.map(r => {
-    const recs = matrix[r.key] || [];
+    let recs = matrix[r.key] || [];
+
+    // Filter by recommendations search query if entered
+    if (state.recsSearchQuery) {
+      const q = state.recsSearchQuery;
+      recs = recs.filter(h => {
+        const fullHero = state.heroesMap[h.id] || {};
+        const inDisplay = h.displayName.toLowerCase().includes(q);
+        const inShort = (h.shortName || '').toLowerCase().includes(q);
+        const inAliases = (fullHero.russianAliases || []).some(a => a.toLowerCase().includes(q));
+        return inDisplay || inShort || inAliases;
+      });
+    } else {
+      recs = recs.slice(0, 6);
+    }
+
+    const countLabel = state.recsSearchQuery ? `Найдено: ${recs.length}` : `Топ ${recs.length}`;
+
     return `
       <div class="matrix-column">
         <div class="matrix-col-header">
-          <span class="matrix-col-title">${r.icon} ${r.title}</span>
-          <span class="matrix-col-count">Топ ${recs.length}</span>
+          <span class="matrix-col-title">[${r.tag}] ${r.title}</span>
+          <span class="matrix-col-count">${countLabel}</span>
         </div>
         <div class="matrix-cards-list">
-          ${recs.map(h => renderMatrixHeroCard(h, r.key)).join('')}
+          ${recs.length > 0 ? recs.map(h => renderMatrixHeroCard(h, r.key)).join('') : '<div style="padding: 24px 8px; text-align: center; color: var(--text-muted); font-size: 12px; font-style: italic;">Не найдено по запросу</div>'}
         </div>
       </div>
     `;
@@ -638,7 +685,7 @@ function renderMatrixHeroCard(h, posKey) {
       </div>
 
       <button class="matrix-pick-btn" onclick="pickHeroForPosition(${h.id}, '${posKey}')">
-        ✓ Выбрать в драфт
+        Выбрать в драфт
       </button>
     </div>
   `;
@@ -677,12 +724,26 @@ async function loadDetailedRecs() {
 
 // Render Detailed Recommendations List
 function renderDetailedRecs(recs) {
-  if (!recs || recs.length === 0) {
+  let list = recs || [];
+
+  // Filter by recommendations search query if entered
+  if (state.recsSearchQuery) {
+    const q = state.recsSearchQuery;
+    list = list.filter(h => {
+      const fullHero = state.heroesMap[h.id] || {};
+      const inDisplay = h.displayName.toLowerCase().includes(q);
+      const inShort = (h.shortName || '').toLowerCase().includes(q);
+      const inAliases = (fullHero.russianAliases || []).some(a => a.toLowerCase().includes(q));
+      return inDisplay || inShort || inAliases;
+    });
+  }
+
+  if (list.length === 0) {
     elements.recsListContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">Нет подходящих героев по заданным фильтрам</div>`;
     return;
   }
 
-  elements.recsListContainer.innerHTML = recs.map(h => {
+  elements.recsListContainer.innerHTML = list.map(h => {
     const scoreClass = h.totalScore > 1 ? 'badge-positive' : (h.totalScore < -1 ? 'badge-negative' : 'badge-neutral');
     const scoreSign = h.totalScore > 0 ? '+' : '';
 
@@ -696,9 +757,9 @@ function renderDetailedRecs(recs) {
             ${h.isOffMeta ? `<span class="off-meta-tag" title="Офф-мета: ${h.roleShare}% игр в этой роли, но отличный контрпик">ОФФ-МЕТА (${h.roleShare}%)</span>` : ''}
           </div>
           <div class="card-scores-row">
-            <span class="score-item">🛡️ Контр: <strong>${h.counterScore > 0 ? '+' : ''}${h.counterScore}%</strong></span>
-            <span class="score-item">🤝 Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
-            <span class="score-item">📊 Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей)</span>
+            <span class="score-item">Контр: <strong>${h.counterScore > 0 ? '+' : ''}${h.counterScore}%</strong></span>
+            <span class="score-item">Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
+            <span class="score-item">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей)</span>
           </div>
         </div>
 
@@ -708,7 +769,7 @@ function renderDetailedRecs(recs) {
             <div class="card-chips-row">
               ${h.counterBreakdown.map(c => `
                 <span class="matchup-chip ${c.advantage >= 0 ? 'chip-counter-good' : 'chip-counter-bad'}">
-                  ${c.advantage >= 0 ? '⚡' : '⚠️'} vs ${c.enemyName}: ${c.advantage >= 0 ? '+' : ''}${c.advantage}% (${c.winRate}% WR)
+                  vs ${c.enemyName}: ${c.advantage >= 0 ? '+' : ''}${c.advantage}% (${c.winRate}% WR)
                 </span>
               `).join('')}
             </div>
@@ -719,7 +780,7 @@ function renderDetailedRecs(recs) {
             <div class="card-chips-row">
               ${h.synergyBreakdown.map(s => `
                 <span class="matchup-chip chip-synergy">
-                  🤝 c ${s.allyName}: ${s.synergy >= 0 ? '+' : ''}${s.synergy}%
+                  с ${s.allyName}: ${s.synergy >= 0 ? '+' : ''}${s.synergy}%
                 </span>
               `).join('')}
             </div>
@@ -729,7 +790,7 @@ function renderDetailedRecs(recs) {
         <div class="card-action-column">
           <div class="card-total-badge ${scoreClass}">${scoreSign}${h.totalScore}%</div>
           <button class="btn-pick-hero" onclick="onHeroCellClick(${h.id})">
-            + Выбрать
+            Выбрать
           </button>
         </div>
       </div>
@@ -757,8 +818,6 @@ function updateDraftMeter(matrix, enemiesIds) {
 
   alliesFilled.forEach(a => {
     enemiesIds.forEach(eId => {
-      // Lookup eId vs a.id
-      // In Stratz: matchups[eId]['vs'][a.id]
       matchupComparisons++;
     });
   });
@@ -769,7 +828,6 @@ function updateDraftMeter(matrix, enemiesIds) {
     // Collect average scores of our picked heroes
     let scoreSum = 0;
     alliesFilled.forEach(a => {
-      // Look in recs
       const rec = (matrix.pos1 || []).find(r => r.id === a.id) ||
                   (matrix.pos2 || []).find(r => r.id === a.id) ||
                   (matrix.pos3 || []).find(r => r.id === a.id);
@@ -786,11 +844,11 @@ function updateDraftMeter(matrix, enemiesIds) {
   elements.enemiesAdvScore.textContent = `${enemiesPercent.toFixed(0)}% Враг`;
 
   if (alliesPercent > 55) {
-    elements.draftInsight.textContent = `🔥 Отличный драфт! Преимущество по контрпикам +${(alliesPercent - 50).toFixed(1)}%.`;
+    elements.draftInsight.textContent = `Отличный драфт! Преимущество по контрпикам +${(alliesPercent - 50).toFixed(1)}%.`;
   } else if (alliesPercent < 45) {
-    elements.draftInsight.textContent = `⚠️ Осторожно: вражеский драфт имеет преимущество. Возьмите сильные контрпики!`;
+    elements.draftInsight.textContent = `Предупреждение: вражеский драфт имеет преимущество. Возьмите сильные контрпики!`;
   } else {
-    elements.draftInsight.textContent = `⚖️ Баланс драфта равный (~50%). Следующие пики определят преимущество.`;
+    elements.draftInsight.textContent = `Баланс драфта равный (~50%). Следующие пики определят преимущество.`;
   }
 }
 
@@ -799,14 +857,14 @@ function copyDraftToDiscord() {
   const enemiesFilled = state.enemies.filter(s => s.id !== null).map(s => state.heroesMap[s.id]?.displayName);
   const alliesFilled = state.allies.filter(s => s.id !== null).map(s => `${state.heroesMap[s.id]?.displayName} (${s.roleLabel})`);
 
-  let text = `🎯 **DOTA 2 DRAFT RECOMMENDATIONS (Stratz)**\n`;
+  let text = `**DOTA 2 DRAFT RECOMMENDATIONS (Stratz)**\n`;
   if (enemiesFilled.length > 0) {
-    text += `🛡️ **Враги:** ${enemiesFilled.join(', ')}\n`;
+    text += `**Враги:** ${enemiesFilled.join(', ')}\n`;
   }
   if (alliesFilled.length > 0) {
-    text += `🤝 **Наши пики:** ${alliesFilled.join(', ')}\n`;
+    text += `**Наши пики:** ${alliesFilled.join(', ')}\n`;
   }
-  text += `⚙️ **Настройки:** Контрпики 70% | Синергия 20% | Мета 10%\n\n`;
+  text += `**Настройки:** Контрпики 70% | Синергия 20% | Мета 10%\n\n`;
 
   const roles = [
     { key: 'pos1', name: 'ПОЗ 1 (КЕРРИ)' },
@@ -824,11 +882,11 @@ function copyDraftToDiscord() {
       return `${h.displayName} (${sign}${h.totalScore}%)${offStr}`;
     }).join(' • ');
 
-    text += `🔹 **${r.name}:** ${topPicksStr || 'Нет данных'}\n`;
+    text += `[${r.name}] ${topPicksStr || 'Нет данных'}\n`;
   });
 
   navigator.clipboard.writeText(text).then(() => {
-    showToast('📋 Готовый драфт скопирован для Discord!');
+    showToast('Готовый драфт скопирован для Discord');
   }).catch(() => {
     showToast('Не удалось скопировать в буфер', true);
   });
