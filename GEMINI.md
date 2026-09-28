@@ -20,7 +20,11 @@ StratzDrafter/
 ├── stratz_client.py        # Клиент Stratz GraphQL, кэширование и мат. алгоритмы драфта
 ├── aliases.py              # Русские имена героев, сленг/альтернативные названия, поиск
 ├── run.bat                 # Скрипт быстрого запуска приложения в Windows
-├── requirements.txt        # Python-зависимости (flask, requests, python-dotenv)
+├── setup.bat               # Интерактивный установщик для друзей (запрос токена, pip, ярлык)
+├── installer.iss           # Скрипт Inno Setup для сборки Windows Setup.exe с окном токена
+├── build_exe.bat           # Сборка автономного исполняемого файла через PyInstaller
+├── run_tests.bat           # Запуск тестового комплекса (Unit, API, Playwright E2E)
+├── requirements.txt        # Python-зависимости (flask, requests, python-dotenv, pytest, playwright)
 ├── .env                    # Токен STRATZ_API (Bearer токен)
 ├── data/
 │   ├── heroes_cache.json   # 127 героев Dota 2 (имена, иконки, атрибуты, роли)
