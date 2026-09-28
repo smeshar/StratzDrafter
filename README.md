@@ -1,10 +1,10 @@
-# ⚔️ Stratz Custom Dota 2 Drafter
+# Stratz Custom Dota 2 Drafter
 
 Кастомный драфтер для Dota 2 на базе **STRATZ GraphQL API** с упором на **контрпики (70%)**, гибкую мету (поддержка офф-мета пиков вроде керри Фуриона) и подсказки для **всей команды (всех 5 позиций)**.
 
 ---
 
-## 🚀 Быстрый запуск
+## Быстрый запуск
 
 ### Вариант 1 (В 1 клик на Windows):
 Просто запустите файл *run.bat*  
@@ -19,7 +19,7 @@ python app.py
 
 ---
 
-## 🎯 Почему этот драфтер лучше стандартного ROSH от Stratz?
+## Почему этот драфтер лучше стандартного ROSH от Stratz?
 
 1. **Приоритет контрпиков (по умолчанию 70%)**:
    - На низких и средних рангах (Herald, Guardian, Crusader, Archon) игра выигрывается правильным контрпиком конкретных вражеских героев, а не идеальной синергией про-сцены.
@@ -48,7 +48,7 @@ python app.py
 
 ---
 
-## 🛠️ Структура проекта
+## Структура проекта
 
 - [app.py](file:///d:/VSCodeProjects/StratzDrafter/app.py) — Flask веб-сервер и API endpoints (`/api/team_matrix`, `/api/recommend`, `/api/heroes`).
 - [stratz_client.py](file:///d:/VSCodeProjects/StratzDrafter/stratz_client.py) — Клиент GraphQL Stratz API, расчет матчапов, винрейтов и локальное кэширование.
