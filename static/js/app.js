@@ -35,6 +35,7 @@ const state = {
   matrixData: {},
   recsListData: [],
   searchQuery: '',
+  recsSearchQuery: '',
   selectedAttr: 'all',
   fetchTimeout: null,
 };
@@ -67,6 +68,8 @@ const elements = {
   recsListContainer: document.getElementById('recsListContainer'),
   roleFilterBar: document.getElementById('roleFilterBar'),
   viewModeTabs: document.getElementById('viewModeTabs'),
+  recsHeroSearchInput: document.getElementById('recsHeroSearchInput'),
+  clearRecsSearchBtn: document.getElementById('clearRecsSearchBtn'),
   heroPickerModal: document.getElementById('heroPickerModal'),
   modalBackdrop: document.getElementById('modalBackdrop'),
   closeModalBtn: document.getElementById('closeModalBtn'),
