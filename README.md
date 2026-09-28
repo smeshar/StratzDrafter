@@ -57,8 +57,19 @@ python app.py
 - [static/css/style.css](file:///d:/VSCodeProjects/StratzDrafter/static/css/style.css) — Тёмный дизайн с эффектом матового стекла (Glassmorphism).
 - [static/js/app.js](file:///d:/VSCodeProjects/StratzDrafter/static/js/app.js) — Логика выбора слотов, переключения ролей, отправки в бан и копирования в буфер.
 - [run.bat](file:///d:/VSCodeProjects/StratzDrafter/run.bat) — Скрипт быстрого запуска для Windows.
+- [run_tests.bat](file:///d:/VSCodeProjects/StratzDrafter/run_tests.bat) — Скрипт запуска автоматических тестов (Unit, API, E2E).
 - [.env](file:///d:/VSCodeProjects/StratzDrafter/.env) — Токен `STRATZ_API`.
 - `data/` — Локальный кэш (создается автоматически):
   - `heroes_cache.json` — Список героев Dota 2.
   - `stats_cache.json` — Статистика по 5 позициям.
   - `matchups_cache.json` — Полная матрица контрпиков и синергий.
+- `tests/` — Набор из 59 автоматических тестов (pytest + Playwright).
+
+---
+
+## Запуск Тестов
+
+Для проверки работоспособности сайта и алгоритмов:
+* Запустите файл [run_tests.bat](file:///d:/VSCodeProjects/StratzDrafter/run_tests.bat)
+* Либо через консоль: `pytest`
+

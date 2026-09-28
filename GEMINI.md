@@ -98,3 +98,26 @@ StratzDrafter/
 * **Команда запуска:** `python app.py` (или через `run.bat`).
 * **Адрес:** `http://127.0.0.1:5000`
 * **Окружение:** `.env` файл с переменной `STRATZ_API`. Если токен отсутствует, приложение работает на оффлайн-кэше из папки `data/`.
+
+---
+
+## 6. Автоматическое Тестирование (QA & Test Suite)
+
+В проекте развернут комплексный набор тестов (59 тестов), охватывающий бэкенд, математику драфта, API и E2E браузерные сценарии:
+
+```
+tests/
+├── conftest.py           # Сессионные фикстуры: Flask test client, offline StratzClient, live HTTP server для Playwright
+├── test_aliases.py       # 30 тестов: словарь сленга, русские никнеймы ('фура', 'папич', 'ам', 'пудж'), регистронезависимость
+├── test_stratz_client.py # 8 тестов: загрузка кэша, фильтрация ролей, расчет контрпиков, скор формулы, матрица 5 позиций
+├── test_api.py           # 14 тестов: эндпоинты Flask (/api/heroes, /api/recommend, /api/team_matrix, /api/draft_analysis, /api/status)
+└── test_e2e_browser.py   # 7 E2E тестов в Chromium (Playwright): клики по слотам, модалка, поиск, драфт-метр, баны, сброс
+```
+
+### Запуск тестов:
+* **В 1 клик на Windows:** запустить [run_tests.bat](file:///d:/VSCodeProjects/StratzDrafter/run_tests.bat) (интерактивное меню выбора тестов).
+* **Все тесты:** `pytest`
+* **Только быстрые Unit & API тесты (< 1 сек):** `pytest -m "unit or api"`
+* **Только E2E браузерные тесты:** `pytest tests/test_e2e_browser.py`
+* **E2E тесты с показом окна браузера:** `pytest tests/test_e2e_browser.py --headed`
+

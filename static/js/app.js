@@ -370,6 +370,7 @@ function selectSlot(team, index) {
 
 // Update Active Slot Banner
 function updateActiveSlotIndicator() {
+  if (!elements.activeSlotName) return;
   if (!state.activeSlot) {
     elements.activeSlotName.textContent = 'Не выбран';
     return;
