@@ -1,5 +1,6 @@
 @echo off
 chcp 65001 >nul
+cd /d "%~dp0"
 title Установка Stratz Custom Drafter
 
 echo ========================================================
@@ -9,20 +10,27 @@ echo.
 
 :: 1. Проверка наличия Python
 python --version >nul 2>&1
-if errorlevel 1 (
-    echo [ОШИБКА] Python не найден на вашем компьютере!
-    echo.
-    echo Чтобы приложение работало, нужен Python (3.10 или новее).
-    echo Сейчас откроется страница загрузки Python.
-    echo.
-    echo ВАЖНО: При установке обязательно поставьте галочку:
-    echo "[X] Add Python to PATH" (внизу первого окна установщика)
-    echo.
-    start https://www.python.org/downloads/
-    pause
-    exit /b 1
-)
+if not errorlevel 1 goto python_ok
 
+py --version >nul 2>&1
+if not errorlevel 1 goto python_ok
+
+goto python_missing
+
+:python_missing
+echo [ОШИБКА] Python не найден на вашем компьютере!
+echo.
+echo Для работы приложения необходим Python 3.10 или новее.
+echo Сейчас откроется страница загрузки Python.
+echo.
+echo ВАЖНО: При установке обязательно отметьте галочку:
+echo "[X] Add Python to PATH" внизу окна установщика!
+echo.
+start https://www.python.org/downloads/
+pause
+exit /b 1
+
+:python_ok
 for /f "tokens=2 delims= " %%v in ('python --version 2^>^&1') do set PY_VER=%%v
 echo [OK] Найден Python версии %PY_VER%
 echo.
@@ -33,24 +41,29 @@ echo                НАСТРОЙКА STRATZ API
 echo --------------------------------------------------------
 echo Приложению требуется токен Stratz API для загрузки
 echo свежей статистики матчей и контрпиков.
-echo (Получить бесплатный токен можно на: https://stratz.com/api)
+echo Токен можно получить бесплатно на: https://stratz.com/api
 echo.
 echo Если у вас пока нет токена, просто нажмите Enter -
-echo приложение будет работать на локальной оффлайн-базе!
+echo приложение будет работать на встроенной оффлайн-базе!
 echo --------------------------------------------------------
-set /p TOKEN="Введите ваш STRATZ API токен (или Enter): "
+set /p TOKEN="Введите ваш STRATZ API токен (или нажмите Enter): "
 
-if not "%TOKEN%"=="" (
-    echo STRATZ_API=%TOKEN%> "%~dp0.env"
-    echo [OK] Токен успешно сохранен в .env!
-) else (
-    if not exist "%~dp0.env" (
-        echo STRATZ_API=> "%~dp0.env"
-        echo [OK] Создан файл .env для работы в оффлайн-режиме.
-    ) else (
-        echo [OK] Оставлен существующий файл .env.
-    )
-)
+if "%TOKEN%"=="" goto setup_no_token
+
+echo STRATZ_API=%TOKEN%> "%~dp0.env"
+echo [OK] Токен успешно сохранен в .env!
+goto after_token
+
+:setup_no_token
+if exist "%~dp0.env" goto token_exists
+echo STRATZ_API=> "%~dp0.env"
+echo [OK] Создан файл .env для работы в оффлайн-режиме.
+goto after_token
+
+:token_exists
+echo [OK] Оставлен существующий файл .env.
+
+:after_token
 echo.
 
 :: 3. Установка библиотек
@@ -58,13 +71,16 @@ echo [1/2] Установка необходимых библиотек...
 echo --------------------------------------------------------
 python -m pip install --upgrade pip >nul 2>&1
 python -m pip install -r "%~dp0requirements.txt"
-if errorlevel 1 (
-    echo.
-    echo [ПРЕДУПРЕЖДЕНИЕ] Некоторые библиотеки не смогли установиться.
-    echo Проверьте подключение к интернету.
-) else (
-    echo [OK] Все библиотеки успешно установлены!
-)
+if errorlevel 1 goto pip_warn
+echo [OK] Все библиотеки успешно установлены!
+goto make_shortcut
+
+:pip_warn
+echo.
+echo [ПРЕДУПРЕЖДЕНИЕ] Некоторые библиотеки не смогли установиться.
+echo Проверьте подключение к интернету.
+
+:make_shortcut
 echo.
 
 :: 4. Создание ярлыка на Рабочем столе
@@ -78,7 +94,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws = New-Object -ComObj
 if exist "%SHORTCUT_PATH%" (
     echo [OK] Ярлык "StratzDrafter" успешно создан на вашем Рабочем столе!
 ) else (
-    echo [ИНФО] Не удалось автоматически создать ярлык. Запуск доступен через run.bat.
+    echo [ИНФО] Запуск доступен напрямую через файл run.bat.
 )
 echo.
 
