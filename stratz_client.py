@@ -70,13 +70,21 @@ class StratzClient:
         # Load from disk cache first
         self._load_disk_cache()
 
-    def _execute_query(self, query: str, variables: dict = None) -> dict:
-        """Executes a GraphQL query against Stratz API."""
+    def _execute_query(self, query: str, variables: dict = None, custom_token: str = None) -> dict:
+        """Executes a GraphQL query against Stratz API, optionally using a personalized token."""
         try:
+            token = (custom_token or "").strip() or self.api_token
+            if not token:
+                return {}
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "STRATZ_API",
+                "Content-Type": "application/json"
+            }
             payload = {"query": query}
             if variables:
                 payload["variables"] = variables
-            res = requests.post(STRATZ_GRAPHQL_URL, json=payload, headers=self.headers, timeout=20)
+            res = requests.post(STRATZ_GRAPHQL_URL, json=payload, headers=headers, timeout=20)
             if res.status_code == 200:
                 data = res.json()
                 if "errors" in data:
@@ -88,6 +96,22 @@ class StratzClient:
         except Exception as e:
             print(f"Exception querying Stratz API: {e}")
             return {}
+
+    def validate_token(self, token: str) -> bool:
+        """Validates a STRATZ API token with a lightweight query."""
+        if not token or len(token.strip()) < 10:
+            return False
+        test_query = """
+        query TestToken {
+            constants {
+                gameVersions {
+                    id
+                }
+            }
+        }
+        """
+        data = self._execute_query(test_query, custom_token=token)
+        return bool(data and "data" in data and "constants" in data["data"])
 
     def _load_disk_cache(self):
         """Loads heroes and cached stats from local JSON files if they exist."""
@@ -266,7 +290,7 @@ class StratzClient:
 
         self._save_disk_cache()
 
-    def fetch_matchups_batch(self, hero_ids: list, bracket_key: str = "LOW_RANK"):
+    def fetch_matchups_batch(self, hero_ids: list, bracket_key: str = "LOW_RANK", custom_token: str = None):
         """Fetches matchup matrix for a list of heroes in a single GraphQL query."""
         if not hero_ids:
             return
@@ -295,7 +319,7 @@ class StratzClient:
           }}
         }}
         """
-        res = self._execute_query(query)
+        res = self._execute_query(query, custom_token=custom_token)
         matchup_list = res.get("data", {}).get("heroStats", {}).get("matchUp", [])
 
         for item in matchup_list:
@@ -323,14 +347,14 @@ class StratzClient:
 
         self._save_disk_cache()
 
-    def ensure_matchups(self, hero_ids: list, bracket_key: str = "LOW_RANK"):
+    def ensure_matchups(self, hero_ids: list, bracket_key: str = "LOW_RANK", custom_token: str = None):
         """Ensures that the given hero IDs have their matchup data cached."""
         missing = [h_id for h_id in hero_ids if h_id not in self.matchups]
         if missing:
             print(f"Fetching matchups for missing heroes: {missing}")
-            self.fetch_matchups_batch(missing, bracket_key=bracket_key)
+            self.fetch_matchups_batch(missing, bracket_key=bracket_key, custom_token=custom_token)
 
-    def preload_all_matchups_async(self, bracket_key: str = "LOW_RANK"):
+    def preload_all_matchups_async(self, bracket_key: str = "LOW_RANK", custom_token: str = None):
         """Background worker to download the entire Dota 2 matchup matrix in batches of 25 heroes."""
         if self.is_preloading:
             return
@@ -346,7 +370,7 @@ class StratzClient:
                 batch = all_hero_ids[i:i + batch_size]
                 needed = [h_id for h_id in batch if h_id not in self.matchups]
                 if needed:
-                    self.fetch_matchups_batch(needed, bracket_key=bracket_key)
+                    self.fetch_matchups_batch(needed, bracket_key=bracket_key, custom_token=custom_token)
                 self.preload_progress = min(100, int((i + len(batch)) / total * 100))
                 time.sleep(0.5)
 

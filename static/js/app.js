@@ -38,6 +38,8 @@ const state = {
   recsSearchQuery: '',
   selectedAttr: 'all',
   fetchTimeout: null,
+  user: null,
+  activeAuthTab: 'login',
 };
 
 // DOM Elements
@@ -82,6 +84,51 @@ const elements = {
   resetDraftBtn: document.getElementById('resetDraftBtn'),
   copyDraftBtn: document.getElementById('copyDraftBtn'),
   toast: document.getElementById('toast'),
+
+  // User Auth & Profile Elements
+  authOpenBtn: document.getElementById('authOpenBtn'),
+  userProfileBadge: document.getElementById('userProfileBadge'),
+  userAvatarImg: document.getElementById('userAvatarImg'),
+  userAvatarFallback: document.getElementById('userAvatarFallback'),
+  userNameDisplay: document.getElementById('userNameDisplay'),
+  userTokenStatusDot: document.getElementById('userTokenStatusDot'),
+
+  authModal: document.getElementById('authModal'),
+  authModalBackdrop: document.getElementById('authModalBackdrop'),
+  closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+  authModalTitle: document.getElementById('authModalTitle'),
+  authTabLogin: document.getElementById('authTabLogin'),
+  authTabRegister: document.getElementById('authTabRegister'),
+  loginForm: document.getElementById('loginForm'),
+  loginEmail: document.getElementById('loginEmail'),
+  loginPassword: document.getElementById('loginPassword'),
+  loginErrorMsg: document.getElementById('loginErrorMsg'),
+  loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+  registerForm: document.getElementById('registerForm'),
+  regName: document.getElementById('regName'),
+  regEmail: document.getElementById('regEmail'),
+  regPassword: document.getElementById('regPassword'),
+  registerErrorMsg: document.getElementById('registerErrorMsg'),
+  registerSubmitBtn: document.getElementById('registerSubmitBtn'),
+
+  profileModal: document.getElementById('profileModal'),
+  profileModalBackdrop: document.getElementById('profileModalBackdrop'),
+  closeProfileModalBtn: document.getElementById('closeProfileModalBtn'),
+  closeProfileBtn2: document.getElementById('closeProfileBtn2'),
+  cabinetAvatarImg: document.getElementById('cabinetAvatarImg'),
+  cabinetAvatarFallback: document.getElementById('cabinetAvatarFallback'),
+  cabinetUserName: document.getElementById('cabinetUserName'),
+  cabinetUserEmail: document.getElementById('cabinetUserEmail'),
+  cabinetStatusDot: document.getElementById('cabinetStatusDot'),
+  cabinetStatusLabel: document.getElementById('cabinetStatusLabel'),
+  stratzTokenInput: document.getElementById('stratzTokenInput'),
+  toggleTokenVisibilityBtn: document.getElementById('toggleTokenVisibilityBtn'),
+  saveStratzTokenBtn: document.getElementById('saveStratzTokenBtn'),
+  deleteStratzTokenBtn: document.getElementById('deleteStratzTokenBtn'),
+  tokenStatusBanner: document.getElementById('tokenStatusBanner'),
+  tokenStatusBannerText: document.getElementById('tokenStatusBannerText'),
+  syncUserTokenBtn: document.getElementById('syncUserTokenBtn'),
+  logoutBtn: document.getElementById('logoutBtn'),
 };
 
 // Init Application
@@ -89,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   renderSlots();
   renderBans();
+  await initAuth();
   await loadHeroes();
   await triggerUpdate();
   pollStatus();
@@ -246,10 +294,66 @@ function setupEventListeners() {
     filterAndRenderHeroesGrid();
   });
 
-  // Keyboard shortcut: Escape to close modal
+  // User Auth & Cabinet Listeners
+  if (elements.authOpenBtn) {
+    elements.authOpenBtn.addEventListener('click', openAuthModal);
+  }
+  if (elements.userProfileBadge) {
+    elements.userProfileBadge.addEventListener('click', openProfileModal);
+  }
+  if (elements.closeAuthModalBtn) {
+    elements.closeAuthModalBtn.addEventListener('click', closeAuthModal);
+  }
+  if (elements.authModalBackdrop) {
+    elements.authModalBackdrop.addEventListener('click', closeAuthModal);
+  }
+  if (elements.closeProfileModalBtn) {
+    elements.closeProfileModalBtn.addEventListener('click', closeProfileModal);
+  }
+  if (elements.closeProfileBtn2) {
+    elements.closeProfileBtn2.addEventListener('click', closeProfileModal);
+  }
+  if (elements.profileModalBackdrop) {
+    elements.profileModalBackdrop.addEventListener('click', closeProfileModal);
+  }
+  if (elements.authTabLogin) {
+    elements.authTabLogin.addEventListener('click', () => switchAuthTab('login'));
+  }
+  if (elements.authTabRegister) {
+    elements.authTabRegister.addEventListener('click', () => switchAuthTab('register'));
+  }
+  if (elements.loginForm) {
+    elements.loginForm.addEventListener('submit', handleLogin);
+  }
+  if (elements.registerForm) {
+    elements.registerForm.addEventListener('submit', handleRegister);
+  }
+  if (elements.toggleTokenVisibilityBtn) {
+    elements.toggleTokenVisibilityBtn.addEventListener('click', toggleTokenVisibility);
+  }
+  if (elements.saveStratzTokenBtn) {
+    elements.saveStratzTokenBtn.addEventListener('click', handleSaveToken);
+  }
+  if (elements.deleteStratzTokenBtn) {
+    elements.deleteStratzTokenBtn.addEventListener('click', handleDeleteToken);
+  }
+  if (elements.syncUserTokenBtn) {
+    elements.syncUserTokenBtn.addEventListener('click', handleSyncToken);
+  }
+  if (elements.logoutBtn) {
+    elements.logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  // Keyboard shortcut: Escape to close modals
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && elements.heroPickerModal.style.display !== 'none') {
-      closeModal();
+    if (e.key === 'Escape') {
+      if (elements.heroPickerModal && elements.heroPickerModal.style.display !== 'none') {
+        closeModal();
+      } else if (elements.authModal && elements.authModal.style.display !== 'none') {
+        closeAuthModal();
+      } else if (elements.profileModal && elements.profileModal.style.display !== 'none') {
+        closeProfileModal();
+      }
     }
   });
 }
@@ -915,10 +1019,19 @@ async function pollStatus() {
       elements.statusText.textContent = `Кэширование: ${data.preloadProgress}%`;
       setTimeout(pollStatus, 2000);
     } else {
-      elements.statusText.textContent = `Stratz API: Онлайн (${data.cachedMatchupsCount} героев)`;
+      if (data.authMode === 'personal_token') {
+        elements.statusText.textContent = `Stratz API: Мой токен (${data.cachedMatchupsCount} героев)`;
+        if (elements.statusBadge) elements.statusBadge.title = 'Авторизован: используется персональный токен Stratz API';
+      } else if (data.authMode === 'authenticated_no_token') {
+        elements.statusText.textContent = `Кэш: Оффлайн (${data.cachedMatchupsCount} героев)`;
+        if (elements.statusBadge) elements.statusBadge.title = 'Авторизован: токен не указан, используется оффлайн-кэш';
+      } else {
+        elements.statusText.textContent = `Кэш: Оффлайн (${data.cachedMatchupsCount} героев)`;
+        if (elements.statusBadge) elements.statusBadge.title = 'Анонимный режим: только локальный кэш (Stratz API не расходуется)';
+      }
     }
   } catch (err) {
-    elements.statusText.textContent = 'Stratz API: Локальный режим';
+    elements.statusText.textContent = 'Stratz API: Оффлайн-кэш';
   }
 }
 
@@ -931,3 +1044,324 @@ function showToast(msg, isError = false) {
     elements.toast.classList.remove('show');
   }, 2500);
 }
+
+// ==========================================
+// USER AUTHENTICATION & STRATZ TOKEN CABINET
+// ==========================================
+
+async function initAuth() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (data.authenticated && data.user) {
+      state.user = data.user;
+    } else {
+      state.user = null;
+    }
+    updateUserUI();
+  } catch (err) {
+    console.error('Failed to init auth:', err);
+    state.user = null;
+    updateUserUI();
+  }
+}
+
+function updateUserUI() {
+  if (state.user) {
+    if (elements.authOpenBtn) elements.authOpenBtn.style.display = 'none';
+    if (elements.userProfileBadge) {
+      elements.userProfileBadge.style.display = 'flex';
+      const displayName = state.user.name || state.user.email.split('@')[0];
+      if (elements.userNameDisplay) elements.userNameDisplay.textContent = displayName;
+
+      if (state.user.avatarUrl && elements.userAvatarImg) {
+        elements.userAvatarImg.src = state.user.avatarUrl;
+        elements.userAvatarImg.style.display = 'block';
+        if (elements.userAvatarFallback) elements.userAvatarFallback.style.display = 'none';
+      } else {
+        if (elements.userAvatarImg) elements.userAvatarImg.style.display = 'none';
+        if (elements.userAvatarFallback) {
+          elements.userAvatarFallback.textContent = (displayName[0] || 'U').toUpperCase();
+          elements.userAvatarFallback.style.display = 'inline-flex';
+        }
+      }
+
+      if (elements.userTokenStatusDot) {
+        if (state.user.hasStratzToken) {
+          elements.userTokenStatusDot.className = 'user-token-dot active';
+          elements.userTokenStatusDot.title = 'STRATZ API: Персональный токен активен';
+        } else {
+          elements.userTokenStatusDot.className = 'user-token-dot';
+          elements.userTokenStatusDot.title = 'Оффлайн-кэш: токен не указан';
+        }
+      }
+    }
+  } else {
+    if (elements.authOpenBtn) elements.authOpenBtn.style.display = 'inline-flex';
+    if (elements.userProfileBadge) elements.userProfileBadge.style.display = 'none';
+  }
+}
+
+function openAuthModal() {
+  switchAuthTab('login');
+  if (elements.loginErrorMsg) elements.loginErrorMsg.style.display = 'none';
+  if (elements.registerErrorMsg) elements.registerErrorMsg.style.display = 'none';
+  if (elements.authModal) elements.authModal.style.display = 'flex';
+  setTimeout(() => elements.loginEmail?.focus(), 50);
+}
+
+function closeAuthModal() {
+  if (elements.authModal) elements.authModal.style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+  state.activeAuthTab = tab;
+  if (tab === 'login') {
+    elements.authTabLogin?.classList.add('active');
+    elements.authTabRegister?.classList.remove('active');
+    if (elements.loginForm) elements.loginForm.style.display = 'flex';
+    if (elements.registerForm) elements.registerForm.style.display = 'none';
+    if (elements.authModalTitle) elements.authModalTitle.textContent = 'Вход в аккаунт';
+  } else {
+    elements.authTabLogin?.classList.remove('active');
+    elements.authTabRegister?.classList.add('active');
+    if (elements.loginForm) elements.loginForm.style.display = 'none';
+    if (elements.registerForm) elements.registerForm.style.display = 'flex';
+    if (elements.authModalTitle) elements.authModalTitle.textContent = 'Создание аккаунта';
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = elements.loginEmail.value.trim();
+  const password = elements.loginPassword.value;
+  elements.loginErrorMsg.style.display = 'none';
+  elements.loginSubmitBtn.disabled = true;
+  elements.loginSubmitBtn.textContent = 'Вход...';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (data.success && data.user) {
+      state.user = data.user;
+      updateUserUI();
+      closeAuthModal();
+      showToast(`Добро пожаловать, ${data.user.name || 'друг'}!`);
+      pollStatus();
+    } else {
+      elements.loginErrorMsg.textContent = data.message || 'Ошибка авторизации';
+      elements.loginErrorMsg.style.display = 'block';
+    }
+  } catch (err) {
+    elements.loginErrorMsg.textContent = 'Ошибка соединения с сервером';
+    elements.loginErrorMsg.style.display = 'block';
+  } finally {
+    elements.loginSubmitBtn.disabled = false;
+    elements.loginSubmitBtn.textContent = 'Войти';
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const name = elements.regName.value.trim();
+  const email = elements.regEmail.value.trim();
+  const password = elements.regPassword.value;
+  elements.registerErrorMsg.style.display = 'none';
+  elements.registerSubmitBtn.disabled = true;
+  elements.registerSubmitBtn.textContent = 'Регистрация...';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (data.success && data.user) {
+      state.user = data.user;
+      updateUserUI();
+      closeAuthModal();
+      showToast('Аккаунт создан! Добавьте ваш токен STRATZ API в кабинете.');
+      pollStatus();
+      openProfileModal();
+    } else {
+      elements.registerErrorMsg.textContent = data.message || 'Ошибка регистрации';
+      elements.registerErrorMsg.style.display = 'block';
+    }
+  } catch (err) {
+    elements.registerErrorMsg.textContent = 'Ошибка соединения с сервером';
+    elements.registerErrorMsg.style.display = 'block';
+  } finally {
+    elements.registerSubmitBtn.disabled = false;
+    elements.registerSubmitBtn.textContent = 'Зарегистрироваться';
+  }
+}
+
+function openProfileModal() {
+  if (!state.user) return;
+  const displayName = state.user.name || state.user.email.split('@')[0];
+  if (elements.cabinetUserName) elements.cabinetUserName.textContent = displayName;
+  if (elements.cabinetUserEmail) elements.cabinetUserEmail.textContent = state.user.email;
+
+  if (state.user.avatarUrl && elements.cabinetAvatarImg) {
+    elements.cabinetAvatarImg.src = state.user.avatarUrl;
+    elements.cabinetAvatarImg.style.display = 'block';
+    if (elements.cabinetAvatarFallback) elements.cabinetAvatarFallback.style.display = 'none';
+  } else {
+    if (elements.cabinetAvatarImg) elements.cabinetAvatarImg.style.display = 'none';
+    if (elements.cabinetAvatarFallback) {
+      elements.cabinetAvatarFallback.textContent = (displayName[0] || 'U').toUpperCase();
+      elements.cabinetAvatarFallback.style.display = 'inline-flex';
+    }
+  }
+
+  updateProfileTokenView();
+  if (elements.profileModal) elements.profileModal.style.display = 'flex';
+}
+
+function closeProfileModal() {
+  if (elements.profileModal) elements.profileModal.style.display = 'none';
+}
+
+function updateProfileTokenView() {
+  if (!state.user) return;
+  const hasToken = !!state.user.hasStratzToken;
+
+  if (hasToken) {
+    elements.cabinetStatusDot.className = 'cabinet-status-dot active';
+    elements.cabinetStatusLabel.textContent = 'Режим: Персональный STRATZ API';
+    elements.stratzTokenInput.value = '';
+    elements.stratzTokenInput.placeholder = state.user.maskedToken ? `Текущий токен: ${state.user.maskedToken}` : 'Токен сохранен';
+    elements.deleteStratzTokenBtn.style.display = 'inline-flex';
+
+    elements.tokenStatusBanner.className = 'token-status-banner active';
+    elements.tokenStatusBannerText.textContent = `Токен активен (${state.user.maskedToken || 'персональный'}). Live-запросы и обновление идут через ваш аккаунт.`;
+  } else {
+    elements.cabinetStatusDot.className = 'cabinet-status-dot';
+    elements.cabinetStatusLabel.textContent = 'Режим: Оффлайн-кэш';
+    elements.stratzTokenInput.value = '';
+    elements.stratzTokenInput.placeholder = 'Вставьте ваш STRATZ Bearer токен...';
+    elements.deleteStratzTokenBtn.style.display = 'none';
+
+    elements.tokenStatusBanner.className = 'token-status-banner neutral';
+    elements.tokenStatusBannerText.textContent = 'Токен не установлен. Приложение использует оффлайн-кэш и не расходует лимиты Stratz.';
+  }
+}
+
+function toggleTokenVisibility() {
+  const isPass = elements.stratzTokenInput.type === 'password';
+  elements.stratzTokenInput.type = isPass ? 'text' : 'password';
+  elements.toggleTokenVisibilityBtn.textContent = isPass ? '🔒' : '👁';
+}
+
+async function handleSaveToken() {
+  const token = elements.stratzTokenInput.value.trim();
+  if (!token) {
+    if (state.user && state.user.hasStratzToken) {
+      showToast('Токен уже сохранен. Введите новый токен для замены.', true);
+    } else {
+      showToast('Пожалуйста, вставьте ваш STRATZ Bearer токен', true);
+    }
+    return;
+  }
+
+  elements.saveStratzTokenBtn.disabled = true;
+  elements.saveStratzTokenBtn.textContent = 'Проверка токена...';
+  elements.tokenStatusBannerText.textContent = 'Проверка токена через Stratz GraphQL API...';
+  elements.tokenStatusBanner.className = 'token-status-banner neutral';
+
+  try {
+    const res = await fetch('/api/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      state.user.hasStratzToken = true;
+      state.user.maskedToken = data.maskedToken;
+      updateUserUI();
+      updateProfileTokenView();
+      showToast('Токен STRATZ API успешно проверен и сохранен!');
+      pollStatus();
+    } else {
+      elements.tokenStatusBanner.className = 'token-status-banner error';
+      elements.tokenStatusBannerText.textContent = data.message || 'Ошибка валидации токена';
+      showToast(data.message || 'Недействительный токен STRATZ API', true);
+    }
+  } catch (err) {
+    elements.tokenStatusBanner.className = 'token-status-banner error';
+    elements.tokenStatusBannerText.textContent = 'Ошибка связи с сервером при валидации';
+    showToast('Ошибка при отправке токена', true);
+  } finally {
+    elements.saveStratzTokenBtn.disabled = false;
+    elements.saveStratzTokenBtn.textContent = 'Проверить и сохранить токен';
+  }
+}
+
+async function handleDeleteToken() {
+  if (!confirm('Вы уверены, что хотите удалить свой STRATZ токен? Драфтер вернется в режим оффлайн-кэша.')) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/token', { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      state.user.hasStratzToken = false;
+      state.user.maskedToken = '';
+      updateUserUI();
+      updateProfileTokenView();
+      showToast('Токен удален. Включен оффлайн-кэш.');
+      pollStatus();
+    }
+  } catch (err) {
+    showToast('Ошибка при удалении токена', true);
+  }
+}
+
+async function handleSyncToken() {
+  if (!state.user || !state.user.hasStratzToken) {
+    showToast('Сначала введите и сохраните свой STRATZ API токен!', true);
+    return;
+  }
+
+  elements.syncUserTokenBtn.disabled = true;
+  elements.syncUserTokenBtn.textContent = 'Синхронизация...';
+
+  try {
+    const res = await fetch('/api/preload', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'Синхронизация запущена через ваш токен API!');
+      pollStatus();
+    } else {
+      showToast(data.message || 'Не удалось запустить синхронизацию', true);
+    }
+  } catch (err) {
+    showToast('Ошибка запуска синхронизации', true);
+  } finally {
+    setTimeout(() => {
+      elements.syncUserTokenBtn.disabled = false;
+      elements.syncUserTokenBtn.textContent = 'Обновить базу через мой API';
+    }, 2000);
+  }
+}
+
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    state.user = null;
+    updateUserUI();
+    closeProfileModal();
+    showToast('Вы вышли из системы. Включен анонимный оффлайн-режим.');
+    pollStatus();
+  } catch (err) {
+    showToast('Ошибка выхода из аккаунта', true);
+  }
+}
+

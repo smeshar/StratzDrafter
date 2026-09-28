@@ -56,6 +56,26 @@
             Сброс
           </button>
         </div>
+
+        <!-- User Authentication & Cabinet Toggle -->
+        <div class="user-auth-wrap" id="userAuthWrap">
+          <button id="authOpenBtn" class="btn btn-auth-open" title="Войти в личный кабинет">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Войти</span>
+          </button>
+
+          <div id="userProfileBadge" class="user-profile-badge" style="display: none;" title="Личный кабинет и токен">
+            <div class="avatar-holder">
+              <img id="userAvatarImg" class="user-avatar-mini" src="" alt="Avatar" style="display: none;">
+              <span id="userAvatarFallback" class="user-avatar-fallback">U</span>
+            </div>
+            <span id="userNameDisplay" class="user-badge-name">Профиль</span>
+            <span id="userTokenStatusDot" class="user-token-dot" title="Оффлайн-кэш"></span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -122,9 +142,7 @@
       <!-- DRAFT METER & MATCHUP OVERVIEW -->
       <section class="matchup-meter-panel">
         <div class="meter-vs-group">
-          <div class="vs-badge">ПОСОСИ</div>
           <span class="meter-winrate-title">WINRATE</span>
-          <div class="vs-badge">VS</div>
         </div>
         <div class="meter-wrapper">
           <div class="meter-bar-container">
@@ -286,6 +304,154 @@
             <span><strong>ЛКМ</strong> — выбрать героя для текущего слота</span>
             <span><strong>ПКМ</strong> — отправить героя в бан</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTH MODAL (LOGIN & REGISTRATION & GOOGLE SIGN-IN) -->
+    <div class="hero-pool-modal" id="authModal" style="display: none;">
+      <div class="modal-backdrop" id="authModalBackdrop"></div>
+      <div class="modal-dialog auth-dialog">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3 class="modal-title" id="authModalTitle">Вход в аккаунт</h3>
+            <span class="modal-subtitle">Для использования персонального токена Stratz API</span>
+          </div>
+          <button class="modal-close-btn" id="closeAuthModalBtn">✕</button>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="authTabLogin">Вход</button>
+          <button class="auth-tab-btn" id="authTabRegister">Регистрация</button>
+        </div>
+
+        <div class="auth-body">
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label for="loginEmail">Email или логин</label>
+              <input type="text" id="loginEmail" placeholder="your@email.com или никнейм" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Пароль</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <div id="loginErrorMsg" class="auth-error-msg" style="display: none;"></div>
+            <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">
+              Войти
+            </button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+              <label for="regName">Имя или никнейм</label>
+              <input type="text" id="regName" placeholder="Ваш никнейм" required autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="regEmail">Email</label>
+              <input type="email" id="regEmail" placeholder="your@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Пароль</label>
+              <input type="password" id="regPassword" placeholder="Минимум 4 символа" required minlength="4" autocomplete="new-password">
+            </div>
+            <div id="registerErrorMsg" class="auth-error-msg" style="display: none;"></div>
+            <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">
+              Зарегистрироваться
+            </button>
+          </form>
+
+          <div class="auth-anonymous-hint">
+            <span>Анонимный режим работает без входа и использует локальный кэш матчапов.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER PROFILE & STRATZ TOKEN CABINET MODAL -->
+    <div class="hero-pool-modal" id="profileModal" style="display: none;">
+      <div class="modal-backdrop" id="profileModalBackdrop"></div>
+      <div class="modal-dialog cabinet-dialog">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3 class="modal-title">Личный кабинет</h3>
+            <span class="modal-subtitle">Управление аккаунтом и токеном STRATZ API</span>
+          </div>
+          <button class="modal-close-btn" id="closeProfileModalBtn">✕</button>
+        </div>
+
+        <div class="cabinet-body">
+          <!-- Profile Card -->
+          <div class="cabinet-user-card">
+            <div class="cabinet-avatar-wrap">
+              <img id="cabinetAvatarImg" src="" alt="Avatar" class="cabinet-avatar-img" style="display: none;">
+              <span id="cabinetAvatarFallback" class="cabinet-avatar-fallback">U</span>
+            </div>
+            <div class="cabinet-user-details">
+              <h4 id="cabinetUserName" class="cabinet-user-name">Пользователь</h4>
+              <span id="cabinetUserEmail" class="cabinet-user-email">email@example.com</span>
+              <div class="cabinet-status-pill">
+                <span class="cabinet-status-dot" id="cabinetStatusDot"></span>
+                <span id="cabinetStatusLabel">Режим: Оффлайн-кэш</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- STRATZ API Token Settings -->
+          <div class="token-settings-card">
+            <div class="token-card-header">
+              <div class="token-card-title-group">
+                <h4 class="token-card-title">Персональный токен STRATZ API</h4>
+                <p class="token-card-desc">
+                  В анонимном режиме драфтер использует локальный кэш. Укажите свой токен, чтобы живые запросы
+                  и обновление шли через ваш ключ Stratz.
+                </p>
+              </div>
+              <a href="https://stratz.com/api" target="_blank" rel="noopener noreferrer" class="token-get-link" title="Получить ключ на сайте Stratz">
+                Получить ключ ↗
+              </a>
+            </div>
+
+            <div class="token-input-group">
+              <div class="token-field-wrapper">
+                <input type="password" id="stratzTokenInput" class="styled-token-input" placeholder="Вставьте ваш STRATZ Bearer токен..." autocomplete="off">
+                <button type="button" id="toggleTokenVisibilityBtn" class="btn-token-eye" title="Показать/скрыть">👁</button>
+              </div>
+              <div class="token-actions-row">
+                <button type="button" id="saveStratzTokenBtn" class="btn btn-primary btn-sm">
+                  Проверить и сохранить токен
+                </button>
+                <button type="button" id="deleteStratzTokenBtn" class="btn btn-danger-outline btn-sm" style="display: none;">
+                  Удалить токен
+                </button>
+              </div>
+            </div>
+
+            <div id="tokenStatusBanner" class="token-status-banner neutral">
+              <span id="tokenStatusBannerText">Токен не установлен. Приложение использует оффлайн-кэш.</span>
+            </div>
+          </div>
+
+          <!-- Live Sync Actions -->
+          <div class="sync-actions-card">
+            <div class="sync-card-info">
+              <h5 class="sync-card-title">Синхронизация матчапов</h5>
+              <p class="sync-card-desc">Обновить матрицу контрпиков с серверов Stratz через ваш токен.</p>
+            </div>
+            <button type="button" id="syncUserTokenBtn" class="btn btn-secondary btn-sm">
+              Обновить базу через мой API
+            </button>
+          </div>
+        </div>
+
+        <div class="cabinet-footer">
+          <button type="button" id="logoutBtn" class="btn btn-danger-outline btn-sm">
+            Выйти из аккаунта
+          </button>
+          <button type="button" id="closeProfileBtn2" class="btn btn-secondary btn-sm">
+            Закрыть
+          </button>
         </div>
       </div>
     </div>
