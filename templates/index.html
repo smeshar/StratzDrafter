@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stratz Custom Drafter | Dota 2</title>
-  <meta name="description" content="Кастомный драфтер Dota 2 на базе Stratz API с упором на контрпики и гибкую мету для соло и пати.">
+  <meta name="description"
+    content="Кастомный драфтер Dota 2 на базе Stratz API с упором на контрпики и гибкую мету для соло и пати.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
   <div class="app-container">
     <!-- TOP HEADER -->
     <header class="app-header">
       <div class="logo-group">
-        <div class="dota-logo-mark">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <path d="M2.5 4.5l14 15h5v-5L7.5 4.5h-5zm16 2.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM4.5 17a2.5 2.5 0 105 0 2.5 2.5 0 00-5 0z"/>
-          </svg>
-        </div>
         <div>
           <h1 class="logo-title">STRATZ <span>DRAFTER</span></h1>
           <p class="logo-subtitle">Контрпики 70% • Вся команда • Офф-мета гибкость</p>
@@ -48,7 +48,8 @@
 
         <!-- Action Buttons -->
         <div class="header-buttons">
-          <button id="copyDraftBtn" class="btn btn-secondary" title="Скопировать готовые рекомендации для отправки в Discord / Telegram">
+          <button id="copyDraftBtn" class="btn btn-secondary"
+            title="Скопировать готовые рекомендации для отправки в Discord / Telegram">
             В Discord
           </button>
           <button id="resetDraftBtn" class="btn btn-danger-outline" title="Сбросить всех выбранных героев">
@@ -118,6 +119,7 @@
       <!-- DRAFT METER & MATCHUP OVERVIEW -->
       <section class="matchup-meter-panel">
         <div class="meter-vs-group">
+          <div class="vs-badge">ПОСОСИ</div>
           <span class="meter-winrate-title">WINRATE</span>
           <div class="vs-badge">VS</div>
         </div>
@@ -131,7 +133,8 @@
             <span class="meter-score enemies-score" id="enemiesAdvScore">50.0% Враг</span>
           </div>
         </div>
-        <p class="meter-summary-text" id="draftInsight">Выберите героев врага или союзников для получения умных рекомендаций.</p>
+        <p class="meter-summary-text" id="draftInsight">Выберите героев врага или союзников для получения умных
+          рекомендаций.</p>
         <div class="active-slot-pill" id="activeSlotNotice">
           Активный слот: <strong id="activeSlotName">Позиция 1 (Керри)</strong>
         </div>
@@ -178,8 +181,10 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </span>
-            <input type="text" id="recsHeroSearchInput" placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..." autocomplete="off">
-            <button class="recs-clear-btn" id="clearRecsSearchBtn" style="display:none;" title="Очистить поиск">✕</button>
+            <input type="text" id="recsHeroSearchInput" placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..."
+              autocomplete="off">
+            <button class="recs-clear-btn" id="clearRecsSearchBtn" style="display:none;"
+              title="Очистить поиск">✕</button>
           </div>
 
           <!-- View Mode Switcher -->
@@ -213,6 +218,25 @@
       </div>
     </section>
 
+    <!-- APP FOOTER WITH CONTACTS -->
+    <footer class="app-footer">
+      <div class="footer-contacts">
+        <a href="https://t.me/noootle" target="_blank" rel="noopener noreferrer" class="contact-link tg-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+          <span>Telegram: <strong>@noootle</strong></span>
+        </a>
+        <span class="footer-separator">•</span>
+        <a href="https://github.com/smeshar/StratzDrafter" target="_blank" rel="noopener noreferrer" class="contact-link gh-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span>GitHub: <strong>smeshar/StratzDrafter</strong></span>
+        </a>
+      </div>
+    </footer>
+
     <!-- HERO POOL MODAL / DRAWER -->
     <div class="hero-pool-modal" id="heroPickerModal" style="display: none;">
       <div class="modal-backdrop" id="modalBackdrop"></div>
@@ -233,7 +257,8 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </span>
-            <input type="text" id="heroSearchInput" placeholder="Поиск героя (например: фурион, снайпер, папич, am, axe)..." autocomplete="off">
+            <input type="text" id="heroSearchInput"
+              placeholder="Поиск героя (например: фурион, снайпер, папич, am, axe)..." autocomplete="off">
             <button class="search-clear-btn" id="clearSearchBtn" style="display:none;">✕</button>
           </div>
 
@@ -265,4 +290,5 @@
 
   <script src="/static/js/app.js"></script>
 </body>
+
 </html>

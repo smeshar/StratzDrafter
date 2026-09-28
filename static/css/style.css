@@ -1508,6 +1508,83 @@ body {
 }
 
 /* ==========================================================================
+   APP FOOTER (CONTACTS)
+   ========================================================================== */
+.app-footer {
+  margin-top: 36px;
+  padding: 16px 24px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-main);
+}
+
+.footer-contacts {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contact-link strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.contact-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.contact-link.tg-link:hover {
+  color: #00d2ff;
+  border-color: rgba(0, 210, 255, 0.5);
+  box-shadow: 0 0 14px rgba(0, 210, 255, 0.3);
+}
+
+.contact-link.tg-link:hover strong {
+  color: #00d2ff;
+}
+
+.contact-link.gh-link:hover {
+  color: #f6c445;
+  border-color: rgba(246, 196, 69, 0.5);
+  box-shadow: 0 0 14px rgba(246, 196, 69, 0.3);
+}
+
+.contact-link.gh-link:hover strong {
+  color: #f6c445;
+}
+
+.footer-separator {
+  color: var(--text-muted);
+  font-size: 14px;
+  user-select: none;
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 @media (max-width: 1200px) {
