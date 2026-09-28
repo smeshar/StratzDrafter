@@ -6,18 +6,18 @@
 // Application State
 const state = {
   allies: [
-    { id: null, role: 'pos1', roleLabel: 'Позиция 1 (Керри)', friend: 'Поз 1 (Керри)' },
-    { id: null, role: 'pos2', roleLabel: 'Позиция 2 (Мид)', friend: 'Поз 2 (Мид)' },
-    { id: null, role: 'pos3', roleLabel: 'Позиция 3 (Тройка)', friend: 'Поз 3 (Оффлейн)' },
-    { id: null, role: 'pos4', roleLabel: 'Позиция 4 (Четверка)', friend: 'Поз 4 (Семи-сап)' },
-    { id: null, role: 'pos5', roleLabel: 'Позиция 5 (Пятерка)', friend: 'Поз 5 (Фулл-сап)' },
+    { id: null, role: 'pos1', roleLabel: 'Керри' },
+    { id: null, role: 'pos2', roleLabel: 'Мидер' },
+    { id: null, role: 'pos3', roleLabel: 'Тройка' },
+    { id: null, role: 'pos4', roleLabel: '4 поз' },
+    { id: null, role: 'pos5', roleLabel: 'Саппорт' },
   ],
   enemies: [
-    { id: null, label: 'Враг 1' },
-    { id: null, label: 'Враг 2' },
-    { id: null, label: 'Враг 3' },
-    { id: null, label: 'Враг 4' },
-    { id: null, label: 'Враг 5' },
+    { id: null, label: 'Керри' },
+    { id: null, label: 'Мидер' },
+    { id: null, label: 'Тройка' },
+    { id: null, label: '4 поз' },
+    { id: null, label: 'Саппорт' },
   ],
   bans: [],
   activeSlot: { team: 'allies', index: 0 },
@@ -284,7 +284,7 @@ function renderSlots() {
           <div class="slot-info">
             <span class="slot-role-tag">${slot.roleLabel}</span>
             ${hero ? `<span class="slot-hero-name">${hero.displayName}</span>` : `<span class="slot-empty-text">Выбрать героя</span>`}
-            <span class="slot-friend-name" title="Кликните чтобы изменить ник друга" onclick="editFriendName(event, ${i})">${slot.friend}</span>
+            ${slot.friend ? `<span class="slot-friend-name" title="Кликните чтобы изменить ник друга" onclick="editFriendName(event, ${i})">${slot.friend}</span>` : ''}
           </div>
         </div>
         ${hero ? `<button class="slot-remove-btn" onclick="clearSlot(event, 'allies', ${i})" title="Удалить">✕</button>` : ''}
@@ -335,7 +335,7 @@ function renderSlots() {
 }
 
 // Edit friend nickname on slot
-window.editFriendName = function(e, index) {
+window.editFriendName = function (e, index) {
   e.stopPropagation();
   const current = state.allies[index].friend;
   const newName = prompt('Введите имя друга или роль для этого слота:', current);
@@ -385,7 +385,7 @@ function updateActiveSlotIndicator() {
 }
 
 // Clear single slot
-window.clearSlot = function(e, team, index) {
+window.clearSlot = function (e, team, index) {
   e.stopPropagation();
   if (team === 'allies') {
     state.allies[index].id = null;
@@ -419,7 +419,7 @@ function renderBans() {
 }
 
 // Remove Ban
-window.removeBan = function(e, heroId) {
+window.removeBan = function (e, heroId) {
   e.stopPropagation();
   state.bans = state.bans.filter(id => id !== heroId);
   renderBans();
@@ -430,7 +430,9 @@ window.removeBan = function(e, heroId) {
 // Open Hero Picker Modal
 function openModalForSlot(team, index) {
   state.activeSlot = { team, index };
-  const slotName = team === 'allies' ? `${state.allies[index].roleLabel} (${state.allies[index].friend})` : `Вражеский пик ${index + 1}`;
+  const slotName = team === 'allies'
+    ? (state.allies[index].friend ? `${state.allies[index].roleLabel} (${state.allies[index].friend})` : state.allies[index].roleLabel)
+    : `Вражеский пик ${index + 1}`;
   elements.modalTargetTitle.textContent = `Выбор героя для: ${slotName}`;
   elements.heroPickerModal.style.display = 'flex';
   elements.heroSearchInput.value = '';
@@ -491,7 +493,7 @@ function filterAndRenderHeroesGrid() {
 }
 
 // Hero cell left-click
-window.onHeroCellClick = function(heroId) {
+window.onHeroCellClick = function (heroId) {
   // If hero is already picked or banned, ignore
   const pickedIds = new Set([
     ...state.allies.map(s => s.id).filter(Boolean),
@@ -528,7 +530,7 @@ window.onHeroCellClick = function(heroId) {
 };
 
 // Hero cell right-click (Ban hero)
-window.onHeroCellRightClick = function(e, heroId) {
+window.onHeroCellRightClick = function (e, heroId) {
   e.preventDefault();
   if (state.bans.includes(heroId)) {
     state.bans = state.bans.filter(id => id !== heroId);
@@ -547,7 +549,7 @@ window.onHeroCellRightClick = function(e, heroId) {
 };
 
 // Pick hero directly from recommendations card
-window.pickHeroForPosition = function(heroId, posKey) {
+window.pickHeroForPosition = function (heroId, posKey) {
   const allySlotIdx = state.allies.findIndex(s => s.role === posKey);
   const targetIdx = allySlotIdx !== -1 ? allySlotIdx : state.allies.findIndex(s => s.id === null);
 
@@ -620,11 +622,11 @@ function renderCurrentRecommendations() {
 // Render Team Matrix View (5 Columns)
 function renderTeamMatrix(matrix) {
   const roles = [
-    { key: 'pos1', title: 'ПОЗ 1 • КЕРРИ', tag: '1' },
-    { key: 'pos2', title: 'ПОЗ 2 • МИД', tag: '2' },
-    { key: 'pos3', title: 'ПОЗ 3 • ОФФЛЕЙН', tag: '3' },
-    { key: 'pos4', title: 'ПОЗ 4 • СЕМИ-САП', tag: '4' },
-    { key: 'pos5', title: 'ПОЗ 5 • ФУЛЛ-САП', tag: '5' },
+    { key: 'pos1', title: 'КЕРРИ' },
+    { key: 'pos2', title: 'МИД' },
+    { key: 'pos3', title: 'ТРОЙКА' },
+    { key: 'pos4', title: '4 ПОЗ' },
+    { key: 'pos5', title: 'САППОРТ' },
   ];
 
   elements.teamMatrixContainer.innerHTML = roles.map(r => {
@@ -649,7 +651,7 @@ function renderTeamMatrix(matrix) {
     return `
       <div class="matrix-column">
         <div class="matrix-col-header">
-          <span class="matrix-col-title">[${r.tag}] ${r.title}</span>
+          <span class="matrix-col-title">${r.title}</span>
           <span class="matrix-col-count">${countLabel}</span>
         </div>
         <div class="matrix-cards-list">
@@ -859,9 +861,9 @@ function copyDraftToDiscord() {
   const roles = [
     { key: 'pos1', name: 'ПОЗ 1 (КЕРРИ)' },
     { key: 'pos2', name: 'ПОЗ 2 (МИД)' },
-    { key: 'pos3', name: 'ПОЗ 3 (ОФФЛЕЙН)' },
-    { key: 'pos4', name: 'ПОЗ 4 (САППОРТ)' },
-    { key: 'pos5', name: 'ПОЗ 5 (ФУЛЛ-САП)' },
+    { key: 'pos3', name: 'ПОЗ 3 (ТРОЙКА)' },
+    { key: 'pos4', name: 'ПОЗ 4 (4 ПОЗ)' },
+    { key: 'pos5', name: 'ПОЗ 5 (САППОРТ ОПУЩЕННЫЙ)' },
   ];
 
   roles.forEach(r => {
