@@ -136,6 +136,11 @@ function setupEventListeners() {
     state.activeSlot = { team: 'allies', index: 0 };
     renderSlots();
     renderBans();
+    elements.alliesWinBar.style.width = '50%';
+    elements.enemiesWinBar.style.width = '50%';
+    elements.alliesAdvScore.textContent = '50.0% Наша';
+    elements.enemiesAdvScore.textContent = '50.0% Враг';
+    elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
     debouncedUpdate();
     showToast('Драфт сброшен');
   });
@@ -565,10 +570,12 @@ function debouncedUpdate() {
 async function triggerUpdate() {
   const alliesIds = state.allies.map(s => s.id).filter(Boolean);
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
+  const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
+    alliesRoles: alliesRoles,
     bans: state.bans,
     weights: state.weights,
     allowOffMeta: state.allowOffMeta,
@@ -586,7 +593,9 @@ async function triggerUpdate() {
     if (data.success && data.matrix) {
       state.matrixData = data.matrix;
       renderCurrentRecommendations();
-      updateDraftMeter(data.matrix, enemiesIds);
+      if (data.analysis) {
+        updateDraftMeter(data.analysis);
+      }
     }
   } catch (err) {
     console.error('Error fetching team matrix:', err);
@@ -695,10 +704,12 @@ function renderMatrixHeroCard(h, posKey) {
 async function loadDetailedRecs() {
   const alliesIds = state.allies.map(s => s.id).filter(Boolean);
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
+  const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
+    alliesRoles: alliesRoles,
     bans: state.bans,
     weights: state.weights,
     role: state.currentRoleFilter,
@@ -716,6 +727,9 @@ async function loadDetailedRecs() {
     if (data.success && data.recommendations) {
       state.recsListData = data.recommendations;
       renderDetailedRecs(data.recommendations);
+      if (data.analysis) {
+        updateDraftMeter(data.analysis);
+      }
     }
   } catch (err) {
     console.error('Error fetching recommendations:', err);
@@ -798,57 +812,32 @@ function renderDetailedRecs(recs) {
   }).join('');
 }
 
-// Update Draft Win Meter
-function updateDraftMeter(matrix, enemiesIds) {
+// Update Draft Win Meter from analytical model
+function updateDraftMeter(analysis) {
   const alliesFilled = state.allies.filter(s => s.id !== null);
-  const enemiesCount = enemiesIds.length;
+  const enemiesFilled = state.enemies.filter(s => s.id !== null);
 
-  if (enemiesCount === 0 && alliesFilled.length === 0) {
+  if (enemiesFilled.length === 0 && alliesFilled.length === 0) {
     elements.alliesWinBar.style.width = '50%';
     elements.enemiesWinBar.style.width = '50%';
-    elements.alliesAdvScore.textContent = '50% Шанс';
-    elements.enemiesAdvScore.textContent = '50% Шанс';
+    elements.alliesAdvScore.textContent = '50.0% Наша';
+    elements.enemiesAdvScore.textContent = '50.0% Враг';
     elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
     return;
   }
 
-  // Calculate advantage of picked allies against picked enemies
-  let totalAdv = 0;
-  let matchupComparisons = 0;
+  if (!analysis) return;
 
-  alliesFilled.forEach(a => {
-    enemiesIds.forEach(eId => {
-      matchupComparisons++;
-    });
-  });
-
-  // Calculate baseline estimation
-  let alliesPercent = 50.0;
-  if (enemiesCount > 0 && alliesFilled.length > 0) {
-    // Collect average scores of our picked heroes
-    let scoreSum = 0;
-    alliesFilled.forEach(a => {
-      const rec = (matrix.pos1 || []).find(r => r.id === a.id) ||
-                  (matrix.pos2 || []).find(r => r.id === a.id) ||
-                  (matrix.pos3 || []).find(r => r.id === a.id);
-      if (rec) scoreSum += rec.totalScore;
-    });
-    const avgScore = scoreSum / alliesFilled.length;
-    alliesPercent = Math.min(85, Math.max(15, 50.0 + (avgScore * 2.5)));
-  }
-
+  const alliesPercent = Math.min(85.0, Math.max(15.0, Number(analysis.alliesWinRate ?? 50.0)));
   const enemiesPercent = 100.0 - alliesPercent;
+
   elements.alliesWinBar.style.width = `${alliesPercent.toFixed(1)}%`;
   elements.enemiesWinBar.style.width = `${enemiesPercent.toFixed(1)}%`;
-  elements.alliesAdvScore.textContent = `${alliesPercent.toFixed(0)}% Наша`;
-  elements.enemiesAdvScore.textContent = `${enemiesPercent.toFixed(0)}% Враг`;
+  elements.alliesAdvScore.textContent = `${alliesPercent.toFixed(1)}% Наша`;
+  elements.enemiesAdvScore.textContent = `${enemiesPercent.toFixed(1)}% Враг`;
 
-  if (alliesPercent > 55) {
-    elements.draftInsight.textContent = `Отличный драфт! Преимущество по контрпикам +${(alliesPercent - 50).toFixed(1)}%.`;
-  } else if (alliesPercent < 45) {
-    elements.draftInsight.textContent = `Предупреждение: вражеский драфт имеет преимущество. Возьмите сильные контрпики!`;
-  } else {
-    elements.draftInsight.textContent = `Баланс драфта равный (~50%). Следующие пики определят преимущество.`;
+  if (analysis.insight) {
+    elements.draftInsight.textContent = analysis.insight;
   }
 }
 

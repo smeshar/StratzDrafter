@@ -77,12 +77,21 @@ def recommend():
         bracket_key=bracket
     )
 
+    analysis = client.calculate_draft_analysis(
+        allies=allies,
+        enemies=enemies,
+        weights=weights,
+        bracket_key=bracket,
+        allies_roles=data.get("alliesRoles")
+    )
+
     return jsonify({
         "success": True,
         "role": role,
         "roleLabel": POSITION_LABELS.get(role, "Все роли"),
         "totalCandidates": len(recs),
-        "recommendations": recs[:50]  # Return top 50
+        "recommendations": recs[:50],  # Return top 50
+        "analysis": analysis
     })
 
 
@@ -107,9 +116,41 @@ def team_matrix():
         bracket_key=bracket
     )
 
+    analysis = client.calculate_draft_analysis(
+        allies=allies,
+        enemies=enemies,
+        weights=weights,
+        bracket_key=bracket,
+        allies_roles=data.get("alliesRoles")
+    )
+
     return jsonify({
         "success": True,
-        "matrix": matrix
+        "matrix": matrix,
+        "analysis": analysis
+    })
+
+
+@app.route("/api/draft_analysis", methods=["POST"])
+def draft_analysis():
+    """Direct fast endpoint for computing draft win rate and analytical insights."""
+    data = request.get_json() or {}
+    allies = [int(x) for x in data.get("allies", []) if x is not None]
+    enemies = [int(x) for x in data.get("enemies", []) if x is not None]
+    weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
+    bracket = data.get("bracket", "LOW_RANK")
+
+    analysis = client.calculate_draft_analysis(
+        allies=allies,
+        enemies=enemies,
+        weights=weights,
+        bracket_key=bracket,
+        allies_roles=data.get("alliesRoles")
+    )
+
+    return jsonify({
+        "success": True,
+        "analysis": analysis
     })
 
 

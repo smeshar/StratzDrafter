@@ -117,15 +117,18 @@
 
       <!-- DRAFT METER & MATCHUP OVERVIEW -->
       <section class="matchup-meter-panel">
-        <div class="vs-badge">VS</div>
+        <div class="meter-vs-group">
+          <span class="meter-winrate-title">WINRATE</span>
+          <div class="vs-badge">VS</div>
+        </div>
         <div class="meter-wrapper">
           <div class="meter-bar-container">
             <div class="meter-fill allies-fill" id="alliesWinBar" style="width: 50%;"></div>
             <div class="meter-fill enemies-fill" id="enemiesWinBar" style="width: 50%;"></div>
           </div>
           <div class="meter-labels">
-            <span class="meter-score allies-score" id="alliesAdvScore">50% Шанс</span>
-            <span class="meter-score enemies-score" id="enemiesAdvScore">50% Шанс</span>
+            <span class="meter-score allies-score" id="alliesAdvScore">50.0% Наша</span>
+            <span class="meter-score enemies-score" id="enemiesAdvScore">50.0% Враг</span>
           </div>
         </div>
         <p class="meter-summary-text" id="draftInsight">Выберите героев врага или союзников для получения умных рекомендаций.</p>

@@ -577,3 +577,215 @@ class StratzClient:
             )
             matrix[role_key] = recs[:50]  # Return top 50 so client can search across all viable picks
         return matrix
+
+    def calculate_draft_analysis(
+        self,
+        allies: list[int],
+        enemies: list[int],
+        weights: dict = None,
+        bracket_key: str = "LOW_RANK",
+        allies_roles: list[dict] = None
+    ) -> dict:
+        """
+        Calculates realistic draft win rate prediction and analytical breakdown
+        based on head-to-head counters, team synergies, and meta win rates.
+        """
+        if weights is None:
+            weights = {"counter": 70, "synergy": 20, "meta": 10}
+
+        w_c = max(0.0, float(weights.get("counter", 70)))
+        w_s = max(0.0, float(weights.get("synergy", 20)))
+        w_m = max(0.0, float(weights.get("meta", 10)))
+
+        allies = [int(x) for x in allies if x is not None]
+        enemies = [int(x) for x in enemies if x is not None]
+
+        if not allies and not enemies:
+            return {
+                "alliesWinRate": 50.0,
+                "enemiesWinRate": 50.0,
+                "counterAdvantage": 0.0,
+                "synergyAdvantage": 0.0,
+                "metaAdvantage": 0.0,
+                "bestCounters": [],
+                "biggestThreats": [],
+                "insight": "Выберите героев врага или союзников для получения умных рекомендаций."
+            }
+
+        needed_heroes = set(allies + enemies)
+        self.ensure_matchups(list(needed_heroes), bracket_key=bracket_key)
+
+        # 1. Counter (Matchup) Advantage between Allies and Enemies
+        pair_advantages = []
+        best_counters = []
+        biggest_threats = []
+
+        for a_id in allies:
+            a_name = self.heroes.get(a_id, {}).get("displayName", f"Hero {a_id}")
+            for e_id in enemies:
+                e_name = self.heroes.get(e_id, {}).get("displayName", f"Hero {e_id}")
+
+                adv_a = None
+                adv_e = None
+                if a_id in self.matchups and "vs" in self.matchups[a_id]:
+                    entry = self.matchups[a_id]["vs"].get(e_id)
+                    if entry:
+                        adv_a = entry.get("synergy", 0.0)
+
+                if e_id in self.matchups and "vs" in self.matchups[e_id]:
+                    entry = self.matchups[e_id]["vs"].get(a_id)
+                    if entry:
+                        adv_e = -entry.get("synergy", 0.0)
+
+                if adv_a is not None and adv_e is not None:
+                    adv = (adv_a + adv_e) / 2.0
+                elif adv_a is not None:
+                    adv = adv_a
+                elif adv_e is not None:
+                    adv = adv_e
+                else:
+                    adv = 0.0
+
+                pair_advantages.append((a_id, e_id, adv))
+
+                if adv >= 0.4:
+                    best_counters.append({
+                        "allyId": a_id,
+                        "allyName": a_name,
+                        "enemyId": e_id,
+                        "enemyName": e_name,
+                        "advantage": round(adv, 1)
+                    })
+                elif adv <= -0.4:
+                    biggest_threats.append({
+                        "allyId": a_id,
+                        "allyName": a_name,
+                        "enemyId": e_id,
+                        "enemyName": e_name,
+                        "advantage": round(abs(adv), 1)
+                    })
+
+        best_counters.sort(key=lambda x: x["advantage"], reverse=True)
+        biggest_threats.sort(key=lambda x: x["advantage"], reverse=True)
+
+        avg_counter_adv = (sum(adv for _, _, adv in pair_advantages) / len(pair_advantages)) if pair_advantages else 0.0
+
+        # 2. Synergies within Allies and within Enemies
+        ally_syns = []
+        if len(allies) >= 2:
+            for i in range(len(allies)):
+                for j in range(i + 1, len(allies)):
+                    a1, a2 = allies[i], allies[j]
+                    s1 = self.matchups.get(a1, {}).get("with", {}).get(a2, {}).get("synergy")
+                    s2 = self.matchups.get(a2, {}).get("with", {}).get(a1, {}).get("synergy")
+                    if s1 is not None and s2 is not None:
+                        ally_syns.append((s1 + s2) / 2.0)
+                    elif s1 is not None:
+                        ally_syns.append(s1)
+                    elif s2 is not None:
+                        ally_syns.append(s2)
+
+        avg_ally_syn = (sum(ally_syns) / len(ally_syns)) if ally_syns else 0.0
+
+        enemy_syns = []
+        if len(enemies) >= 2:
+            for i in range(len(enemies)):
+                for j in range(i + 1, len(enemies)):
+                    e1, e2 = enemies[i], enemies[j]
+                    s1 = self.matchups.get(e1, {}).get("with", {}).get(e2, {}).get("synergy")
+                    s2 = self.matchups.get(e2, {}).get("with", {}).get(e1, {}).get("synergy")
+                    if s1 is not None and s2 is not None:
+                        enemy_syns.append((s1 + s2) / 2.0)
+                    elif s1 is not None:
+                        enemy_syns.append(s1)
+                    elif s2 is not None:
+                        enemy_syns.append(s2)
+
+        avg_enemy_syn = (sum(enemy_syns) / len(enemy_syns)) if enemy_syns else 0.0
+        synergy_adv = avg_ally_syn - avg_enemy_syn
+
+        # 3. Meta Win Rates
+        roles_dict = {}
+        if allies_roles and isinstance(allies_roles, list):
+            for ar in allies_roles:
+                if isinstance(ar, dict) and "id" in ar and "role" in ar:
+                    roles_dict[ar["id"]] = ar["role"]
+
+        ally_wrs = []
+        for a in allies:
+            r = roles_dict.get(a)
+            pos_str = POSITION_MAP.get(r) if r else None
+            if pos_str and (a, pos_str) in self.position_stats and self.position_stats[(a, pos_str)].get("matchCount", 0) >= 100:
+                ally_wrs.append(self.position_stats[(a, pos_str)]["winRate"])
+            else:
+                ally_wrs.append(self.hero_totals.get(a, {}).get("winRate", 50.0))
+
+        enemy_wrs = [self.hero_totals.get(e, {}).get("winRate", 50.0) for e in enemies]
+        avg_ally_wr = (sum(ally_wrs) / len(ally_wrs)) if ally_wrs else 50.0
+        avg_enemy_wr = (sum(enemy_wrs) / len(enemy_wrs)) if enemy_wrs else 50.0
+        meta_adv = avg_ally_wr - avg_enemy_wr
+
+        # 4. Total Weighted Advantage with Adaptive Weights
+        if allies and enemies:
+            eff_wc = w_c
+            eff_ws = w_s if (len(allies) >= 2 or len(enemies) >= 2) else 0.0
+            eff_wm = w_m
+            scale = 1.0 + 0.15 * (min(len(allies), len(enemies)) - 1)
+        elif allies:
+            eff_wc = 0.0
+            eff_ws = w_s if len(allies) >= 2 else 0.0
+            eff_wm = w_m
+            scale = 1.0 + 0.1 * (len(allies) - 1)
+        else:
+            eff_wc = 0.0
+            eff_ws = w_s if len(enemies) >= 2 else 0.0
+            eff_wm = w_m
+            scale = 1.0 + 0.1 * (len(enemies) - 1)
+
+        tot_w = eff_wc + eff_ws + eff_wm
+        if tot_w > 0:
+            tot_adv = (eff_wc * avg_counter_adv + eff_ws * synergy_adv + eff_wm * meta_adv) / tot_w
+        else:
+            tot_adv = 0.0
+
+        net_adv = tot_adv * scale
+        allies_wr = max(15.0, min(85.0, 50.0 + net_adv))
+        enemies_wr = 100.0 - allies_wr
+
+        # 5. Descriptive Russian Insight
+        if allies and enemies:
+            diff = allies_wr - 50.0
+            if allies_wr >= 53.0:
+                if best_counters:
+                    bc = best_counters[0]
+                    insight = f"Отличный драфт! Преимущество нашей команды +{diff:.1f}%. Ключевой контрпик: {bc['allyName']} закрывает {bc['enemyName']} (+{bc['advantage']}%)."
+                else:
+                    insight = f"Отличный драфт! Преимущество нашей команды +{diff:.1f}% по оценке контрпиков и меты."
+            elif allies_wr <= 47.0:
+                if biggest_threats:
+                    bt = biggest_threats[0]
+                    insight = f"Предупреждение: у врага преимущество +{-diff:.1f}%. Главная угроза: {bt['enemyName']} против {bt['allyName']} (+{bt['advantage']}%). Возьмите сильные контрпики!"
+                else:
+                    insight = f"Предупреждение: вражеский драфт имеет преимущество (+{-diff:.1f}%). Выберите сильные контрпики из колонок!"
+            else:
+                if best_counters:
+                    bc = best_counters[0]
+                    insight = f"Баланс драфта равный (~{allies_wr:.1f}%). {bc['allyName']} закрывает {bc['enemyName']} (+{bc['advantage']}%). Следующие пики определят победителя."
+                else:
+                    insight = f"Баланс драфта равный (~{allies_wr:.1f}%). Подбирайте героев по рекомендованным позициям."
+        elif allies:
+            syn_txt = f", синергия пиков: +{avg_ally_syn:.1f}%" if len(allies) >= 2 and avg_ally_syn != 0 else ""
+            insight = f"Драфт союзников: средний винрейт героев {avg_ally_wr:.1f}%{syn_txt}. Добавьте врагов для расчета контрпиков."
+        else:
+            insight = f"Драфт врагов: средний винрейт героев {avg_enemy_wr:.1f}%. Подберите контрпики из рекомендаций ниже."
+
+        return {
+            "alliesWinRate": round(allies_wr, 1),
+            "enemiesWinRate": round(enemies_wr, 1),
+            "counterAdvantage": round(avg_counter_adv, 2),
+            "synergyAdvantage": round(synergy_adv, 2),
+            "metaAdvantage": round(meta_adv, 2),
+            "bestCounters": best_counters[:3],
+            "biggestThreats": biggest_threats[:3],
+            "insight": insight
+        }
