@@ -108,7 +108,7 @@ body {
 }
 
 .logo-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -295,7 +295,7 @@ body {
 }
 
 .pref-value {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 17px;
   font-weight: 700;
   color: var(--gold-accent);
@@ -438,7 +438,7 @@ body {
 }
 
 .team-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -624,7 +624,7 @@ body {
 }
 
 .meter-winrate-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 48px;
   font-weight: 700;
   letter-spacing: 3.5px;
@@ -636,7 +636,7 @@ body {
 }
 
 .vs-badge {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -679,7 +679,7 @@ body {
   justify-content: space-between;
   font-size: 12px;
   font-weight: 700;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .allies-score {
@@ -797,7 +797,7 @@ body {
 }
 
 .recs-main-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 1.2px;
@@ -957,7 +957,7 @@ body {
 }
 
 .matrix-col-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -1026,7 +1026,7 @@ body {
 }
 
 .matrix-score-badge {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 700;
   padding: 2px 6px;
@@ -1222,7 +1222,7 @@ body {
 }
 
 .card-total-badge {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -1286,7 +1286,7 @@ body {
 }
 
 .modal-title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #fff;
