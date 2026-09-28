@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stratz Custom Drafter | Dota 2</title>
+  <meta name="description" content="Кастомный драфтер Dota 2 на базе Stratz API с упором на контрпики и гибкую мету для соло и пати.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- TOP HEADER -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="dota-logo-mark">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <path d="M2.5 4.5l14 15h5v-5L7.5 4.5h-5zm16 2.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM4.5 17a2.5 2.5 0 105 0 2.5 2.5 0 00-5 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">STRATZ <span>DRAFTER</span></h1>
+          <p class="logo-subtitle">Контрпики 70% • Вся команда • Офф-мета гибкость</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Rank Bracket Selector -->
+        <div class="control-field">
+          <label for="bracketSelect">Ранг матча</label>
+          <select id="bracketSelect" class="styled-select">
+            <option value="LOW_RANK" selected>Рекрут - Герой (Herald-Archon)</option>
+            <option value="HERALD_GUARDIAN">Рекрут / Страж (Herald-Guardian)</option>
+            <option value="CRUSADER_ARCHON">Рыцарь / Герой (Crusader-Archon)</option>
+            <option value="ALL">Все ранги (All)</option>
+            <option value="LEGEND_ANCIENT">Легенда / Властелин (Legend-Ancient)</option>
+            <option value="DIVINE_IMMORTAL">Божество / Титан (Divine-Immortal)</option>
+          </select>
+        </div>
+
+        <!-- Preload / API Status -->
+        <div class="status-indicator" id="statusBadge" title="Статус базы данных">
+          <span class="status-dot"></span>
+          <span id="statusText">Stratz API: Онлайн</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="header-buttons">
+          <button id="copyDraftBtn" class="btn btn-secondary" title="Скопировать готовые рекомендации для отправки в Discord / Telegram">
+            В Discord
+          </button>
+          <button id="resetDraftBtn" class="btn btn-danger-outline" title="Сбросить всех выбранных героев">
+            Сброс
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- WEIGHTS & PREFERENCES BAR -->
+    <section class="preferences-panel">
+      <div class="pref-card">
+        <div class="pref-label-row">
+          <span class="pref-title">Контрпики врагов</span>
+          <span class="pref-value" id="counterVal">70%</span>
+        </div>
+        <input type="range" id="counterWeight" class="range-slider slider-counter" min="0" max="100" value="70">
+        <span class="pref-hint">Приоритет наказания пиков врага</span>
+      </div>
+
+      <div class="pref-card">
+        <div class="pref-label-row">
+          <span class="pref-title">Синергия команды</span>
+          <span class="pref-value" id="synergyVal">20%</span>
+        </div>
+        <input type="range" id="synergyWeight" class="range-slider slider-synergy" min="0" max="100" value="20">
+        <span class="pref-hint">Связки и комбо с союзниками</span>
+      </div>
+
+      <div class="pref-card">
+        <div class="pref-label-row">
+          <span class="pref-title">Мета (Общий винрейт)</span>
+          <span class="pref-value" id="metaVal">10%</span>
+        </div>
+        <input type="range" id="metaWeight" class="range-slider slider-meta" min="0" max="100" value="10">
+        <span class="pref-hint">Влияние общего % побед в патче</span>
+      </div>
+
+      <div class="pref-card pref-toggle-card">
+        <label class="toggle-container" for="offMetaToggle">
+          <input type="checkbox" id="offMetaToggle" checked>
+          <span class="toggle-slider"></span>
+          <div class="toggle-text">
+            <span class="pref-title">Разрешить офф-мета</span>
+            <span class="pref-hint">Керри Фурион, Мид Рубик и др. сильные контрпики</span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- MAIN DRAFT ARENA -->
+    <main class="draft-arena">
+      <!-- ALLIES (OUR TEAM) -->
+      <section class="team-panel team-allies">
+        <div class="team-header">
+          <h2 class="team-title radiant-text">
+            <span class="dot-green"></span> НАША КОМАНДА
+          </h2>
+          <span class="team-count" id="alliesCount">0 / 5</span>
+        </div>
+
+        <div class="slots-container" id="alliesSlots">
+          <!-- Populated by JavaScript: 5 slots with roles -->
+        </div>
+      </section>
+
+      <!-- DRAFT METER & MATCHUP OVERVIEW -->
+      <section class="matchup-meter-panel">
+        <div class="vs-badge">VS</div>
+        <div class="meter-wrapper">
+          <div class="meter-bar-container">
+            <div class="meter-fill allies-fill" id="alliesWinBar" style="width: 50%;"></div>
+            <div class="meter-fill enemies-fill" id="enemiesWinBar" style="width: 50%;"></div>
+          </div>
+          <div class="meter-labels">
+            <span class="meter-score allies-score" id="alliesAdvScore">50% Шанс</span>
+            <span class="meter-score enemies-score" id="enemiesAdvScore">50% Шанс</span>
+          </div>
+        </div>
+        <p class="meter-summary-text" id="draftInsight">Выберите героев врага или союзников для получения умных рекомендаций.</p>
+        <div class="active-slot-pill" id="activeSlotNotice">
+          Активный слот: <strong id="activeSlotName">Позиция 1 (Керри)</strong>
+        </div>
+      </section>
+
+      <!-- ENEMIES (THEIR TEAM) -->
+      <section class="team-panel team-enemies">
+        <div class="team-header">
+          <h2 class="team-title dire-text">
+            <span class="dot-red"></span> КОМАНДА ВРАГА
+          </h2>
+          <span class="team-count" id="enemiesCount">0 / 5</span>
+        </div>
+
+        <div class="slots-container" id="enemiesSlots">
+          <!-- Populated by JavaScript: 5 enemy slots -->
+        </div>
+      </section>
+    </main>
+
+    <!-- BANNED HEROES BAR -->
+    <section class="bans-bar">
+      <span class="bans-label">Забаненные герои:</span>
+      <div class="bans-list" id="bansList">
+        <span class="no-bans-hint">Кликните правой кнопкой на героя в списке или выберите слот чтобы забанить</span>
+      </div>
+      <button id="clearBansBtn" class="btn btn-xs btn-muted" style="display: none;">Очистить баны</button>
+    </section>
+
+    <!-- RECOMMENDATIONS SECTION -->
+    <section class="recommendations-section">
+      <div class="recs-header">
+        <div class="recs-title-group">
+          <h2 class="recs-main-title">РЕКОМЕНДАЦИИ ПО ДРАФТУ</h2>
+          <p class="recs-sub-title">Подсказки с учетом ваших 70% контрпиков и текущей ситуации</p>
+        </div>
+
+        <div class="recs-header-actions">
+          <!-- Recommendations Hero Search -->
+          <div class="recs-search-wrapper">
+            <span class="recs-search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input type="text" id="recsHeroSearchInput" placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..." autocomplete="off">
+            <button class="recs-clear-btn" id="clearRecsSearchBtn" style="display:none;" title="Очистить поиск">✕</button>
+          </div>
+
+          <!-- View Mode Switcher -->
+          <div class="view-switchers">
+            <div class="tabs-group" id="viewModeTabs">
+              <button class="tab-btn active" data-view="matrix">Сетка команды</button>
+              <button class="tab-btn" data-view="list">Подробный список</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROLE FILTER TABS (For Detailed List View) -->
+      <div class="role-filter-bar" id="roleFilterBar" style="display: none;">
+        <button class="role-pill active" data-role="all">Все герои</button>
+        <button class="role-pill" data-role="pos1">Поз 1 (Керри)</button>
+        <button class="role-pill" data-role="pos2">Поз 2 (Мид)</button>
+        <button class="role-pill" data-role="pos3">Поз 3 (Тройка)</button>
+        <button class="role-pill" data-role="pos4">Поз 4 (Четверка)</button>
+        <button class="role-pill" data-role="pos5">Поз 5 (Пятерка)</button>
+      </div>
+
+      <!-- TEAM MATRIX VIEW (Default: 5 columns for friends) -->
+      <div class="team-matrix-grid" id="teamMatrixContainer">
+        <!-- 5 Columns: Pos 1, Pos 2, Pos 3, Pos 4, Pos 5 -->
+      </div>
+
+      <!-- DETAILED LIST VIEW -->
+      <div class="recs-list-container" id="recsListContainer" style="display: none;">
+        <!-- Filled with cards -->
+      </div>
+    </section>
+
+    <!-- HERO POOL MODAL / DRAWER -->
+    <div class="hero-pool-modal" id="heroPickerModal" style="display: none;">
+      <div class="modal-backdrop" id="modalBackdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3 class="modal-title" id="modalTargetTitle">Выберите героя</h3>
+            <span class="modal-subtitle">Поиск по русским названиям, сленгу («фура», «ам», «пудж») и роли</span>
+          </div>
+          <button class="modal-close-btn" id="closeModalBtn">✕</button>
+        </div>
+
+        <div class="modal-search-bar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input type="text" id="heroSearchInput" placeholder="Поиск героя (например: фурион, снайпер, папич, am, axe)..." autocomplete="off">
+            <button class="search-clear-btn" id="clearSearchBtn" style="display:none;">✕</button>
+          </div>
+
+          <div class="attr-filters" id="attrFilterGroup">
+            <button class="attr-btn active" data-attr="all">Все</button>
+            <button class="attr-btn str-btn" data-attr="str">Сила</button>
+            <button class="attr-btn agi-btn" data-attr="agi">Ловкость</button>
+            <button class="attr-btn int-btn" data-attr="int">Интеллект</button>
+            <button class="attr-btn all-btn" data-attr="all_attr">Универсал</button>
+          </div>
+        </div>
+
+        <div class="heroes-grid" id="heroesGrid">
+          <!-- All heroes icons -->
+        </div>
+
+        <div class="modal-footer">
+          <div class="quick-action-hint">
+            <span><strong>ЛКМ</strong> — выбрать героя для текущего слота</span>
+            <span><strong>ПКМ</strong> — отправить героя в бан</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

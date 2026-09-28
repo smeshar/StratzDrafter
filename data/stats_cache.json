@@ -1,0 +1,3816 @@
+{
+  "totals": {
+    "1": {
+      "matchCount": 962385,
+      "winCount": 495480,
+      "winRate": 51.48
+    },
+    "2": {
+      "matchCount": 1073157,
+      "winCount": 554618,
+      "winRate": 51.68
+    },
+    "3": {
+      "matchCount": 159756,
+      "winCount": 76887,
+      "winRate": 48.13
+    },
+    "4": {
+      "matchCount": 335059,
+      "winCount": 167076,
+      "winRate": 49.86
+    },
+    "5": {
+      "matchCount": 609579,
+      "winCount": 310390,
+      "winRate": 50.92
+    },
+    "6": {
+      "matchCount": 1085432,
+      "winCount": 597849,
+      "winRate": 55.08
+    },
+    "7": {
+      "matchCount": 878887,
+      "winCount": 415028,
+      "winRate": 47.22
+    },
+    "8": {
+      "matchCount": 1291715,
+      "winCount": 693387,
+      "winRate": 53.68
+    },
+    "9": {
+      "matchCount": 432541,
+      "winCount": 224603,
+      "winRate": 51.93
+    },
+    "10": {
+      "matchCount": 624633,
+      "winCount": 283214,
+      "winRate": 45.34
+    },
+    "11": {
+      "matchCount": 1015801,
+      "winCount": 477819,
+      "winRate": 47.04
+    },
+    "12": {
+      "matchCount": 371485,
+      "winCount": 192622,
+      "winRate": 51.85
+    },
+    "13": {
+      "matchCount": 331505,
+      "winCount": 156962,
+      "winRate": 47.35
+    },
+    "14": {
+      "matchCount": 2075166,
+      "winCount": 1102354,
+      "winRate": 53.12
+    },
+    "15": {
+      "matchCount": 356466,
+      "winCount": 182189,
+      "winRate": 51.11
+    },
+    "16": {
+      "matchCount": 343187,
+      "winCount": 176240,
+      "winRate": 51.35
+    },
+    "17": {
+      "matchCount": 458114,
+      "winCount": 223230,
+      "winRate": 48.73
+    },
+    "18": {
+      "matchCount": 358531,
+      "winCount": 178217,
+      "winRate": 49.71
+    },
+    "19": {
+      "matchCount": 454569,
+      "winCount": 211349,
+      "winRate": 46.49
+    },
+    "20": {
+      "matchCount": 443422,
+      "winCount": 238003,
+      "winRate": 53.67
+    },
+    "21": {
+      "matchCount": 1372522,
+      "winCount": 695176,
+      "winRate": 50.65
+    },
+    "22": {
+      "matchCount": 917958,
+      "winCount": 455119,
+      "winRate": 49.58
+    },
+    "23": {
+      "matchCount": 270090,
+      "winCount": 132038,
+      "winRate": 48.89
+    },
+    "25": {
+      "matchCount": 640483,
+      "winCount": 312579,
+      "winRate": 48.8
+    },
+    "26": {
+      "matchCount": 1494605,
+      "winCount": 744684,
+      "winRate": 49.82
+    },
+    "27": {
+      "matchCount": 860561,
+      "winCount": 447875,
+      "winRate": 52.04
+    },
+    "28": {
+      "matchCount": 570198,
+      "winCount": 298101,
+      "winRate": 52.28
+    },
+    "29": {
+      "matchCount": 1115530,
+      "winCount": 674017,
+      "winRate": 60.42
+    },
+    "30": {
+      "matchCount": 1159616,
+      "winCount": 630341,
+      "winRate": 54.36
+    },
+    "31": {
+      "matchCount": 691846,
+      "winCount": 376063,
+      "winRate": 54.36
+    },
+    "32": {
+      "matchCount": 363610,
+      "winCount": 177987,
+      "winRate": 48.95
+    },
+    "33": {
+      "matchCount": 247403,
+      "winCount": 125200,
+      "winRate": 50.61
+    },
+    "34": {
+      "matchCount": 338201,
+      "winCount": 158677,
+      "winRate": 46.92
+    },
+    "35": {
+      "matchCount": 1503916,
+      "winCount": 739600,
+      "winRate": 49.18
+    },
+    "36": {
+      "matchCount": 879121,
+      "winCount": 462304,
+      "winRate": 52.59
+    },
+    "37": {
+      "matchCount": 437422,
+      "winCount": 223171,
+      "winRate": 51.02
+    },
+    "38": {
+      "matchCount": 206286,
+      "winCount": 91176,
+      "winRate": 44.2
+    },
+    "39": {
+      "matchCount": 827721,
+      "winCount": 406103,
+      "winRate": 49.06
+    },
+    "40": {
+      "matchCount": 954722,
+      "winCount": 490798,
+      "winRate": 51.41
+    },
+    "41": {
+      "matchCount": 540443,
+      "winCount": 269609,
+      "winRate": 49.89
+    },
+    "42": {
+      "matchCount": 607543,
+      "winCount": 327046,
+      "winRate": 53.83
+    },
+    "43": {
+      "matchCount": 241281,
+      "winCount": 117887,
+      "winRate": 48.86
+    },
+    "44": {
+      "matchCount": 965728,
+      "winCount": 476726,
+      "winRate": 49.36
+    },
+    "45": {
+      "matchCount": 312717,
+      "winCount": 152735,
+      "winRate": 48.84
+    },
+    "46": {
+      "matchCount": 308323,
+      "winCount": 142216,
+      "winRate": 46.13
+    },
+    "47": {
+      "matchCount": 805254,
+      "winCount": 422509,
+      "winRate": 52.47
+    },
+    "48": {
+      "matchCount": 418002,
+      "winCount": 213691,
+      "winRate": 51.12
+    },
+    "49": {
+      "matchCount": 573675,
+      "winCount": 274007,
+      "winRate": 47.76
+    },
+    "50": {
+      "matchCount": 314948,
+      "winCount": 163901,
+      "winRate": 52.04
+    },
+    "51": {
+      "matchCount": 256360,
+      "winCount": 127077,
+      "winRate": 49.57
+    },
+    "52": {
+      "matchCount": 312666,
+      "winCount": 157216,
+      "winRate": 50.28
+    },
+    "53": {
+      "matchCount": 822548,
+      "winCount": 364645,
+      "winRate": 44.33
+    },
+    "54": {
+      "matchCount": 442740,
+      "winCount": 224704,
+      "winRate": 50.75
+    },
+    "55": {
+      "matchCount": 134996,
+      "winCount": 67819,
+      "winRate": 50.24
+    },
+    "56": {
+      "matchCount": 480636,
+      "winCount": 233073,
+      "winRate": 48.49
+    },
+    "57": {
+      "matchCount": 252046,
+      "winCount": 131915,
+      "winRate": 52.34
+    },
+    "58": {
+      "matchCount": 211228,
+      "winCount": 107139,
+      "winRate": 50.72
+    },
+    "59": {
+      "matchCount": 507776,
+      "winCount": 251544,
+      "winRate": 49.54
+    },
+    "60": {
+      "matchCount": 250805,
+      "winCount": 126131,
+      "winRate": 50.29
+    },
+    "61": {
+      "matchCount": 398453,
+      "winCount": 207422,
+      "winRate": 52.06
+    },
+    "62": {
+      "matchCount": 371298,
+      "winCount": 185060,
+      "winRate": 49.84
+    },
+    "63": {
+      "matchCount": 719356,
+      "winCount": 367653,
+      "winRate": 51.11
+    },
+    "64": {
+      "matchCount": 859474,
+      "winCount": 425095,
+      "winRate": 49.46
+    },
+    "65": {
+      "matchCount": 134826,
+      "winCount": 58461,
+      "winRate": 43.36
+    },
+    "66": {
+      "matchCount": 85795,
+      "winCount": 39402,
+      "winRate": 45.93
+    },
+    "67": {
+      "matchCount": 567044,
+      "winCount": 278103,
+      "winRate": 49.04
+    },
+    "68": {
+      "matchCount": 489264,
+      "winCount": 254961,
+      "winRate": 52.11
+    },
+    "69": {
+      "matchCount": 204457,
+      "winCount": 92082,
+      "winRate": 45.04
+    },
+    "70": {
+      "matchCount": 706012,
+      "winCount": 351700,
+      "winRate": 49.82
+    },
+    "71": {
+      "matchCount": 721006,
+      "winCount": 360780,
+      "winRate": 50.04
+    },
+    "72": {
+      "matchCount": 347859,
+      "winCount": 166025,
+      "winRate": 47.73
+    },
+    "73": {
+      "matchCount": 280030,
+      "winCount": 144435,
+      "winRate": 51.58
+    },
+    "74": {
+      "matchCount": 1197091,
+      "winCount": 607120,
+      "winRate": 50.72
+    },
+    "75": {
+      "matchCount": 708667,
+      "winCount": 348867,
+      "winRate": 49.23
+    },
+    "76": {
+      "matchCount": 352087,
+      "winCount": 183980,
+      "winRate": 52.25
+    },
+    "77": {
+      "matchCount": 123423,
+      "winCount": 61261,
+      "winRate": 49.63
+    },
+    "78": {
+      "matchCount": 142255,
+      "winCount": 66085,
+      "winRate": 46.46
+    },
+    "79": {
+      "matchCount": 188286,
+      "winCount": 90377,
+      "winRate": 48.0
+    },
+    "80": {
+      "matchCount": 190612,
+      "winCount": 78926,
+      "winRate": 41.41
+    },
+    "81": {
+      "matchCount": 332780,
+      "winCount": 178530,
+      "winRate": 53.65
+    },
+    "82": {
+      "matchCount": 187571,
+      "winCount": 96112,
+      "winRate": 51.24
+    },
+    "83": {
+      "matchCount": 606979,
+      "winCount": 272404,
+      "winRate": 44.88
+    },
+    "84": {
+      "matchCount": 1108425,
+      "winCount": 577983,
+      "winRate": 52.14
+    },
+    "85": {
+      "matchCount": 465920,
+      "winCount": 239684,
+      "winRate": 51.44
+    },
+    "86": {
+      "matchCount": 1104970,
+      "winCount": 534795,
+      "winRate": 48.4
+    },
+    "87": {
+      "matchCount": 388865,
+      "winCount": 195078,
+      "winRate": 50.17
+    },
+    "88": {
+      "matchCount": 435803,
+      "winCount": 226833,
+      "winRate": 52.05
+    },
+    "89": {
+      "matchCount": 133941,
+      "winCount": 67615,
+      "winRate": 50.48
+    },
+    "90": {
+      "matchCount": 200909,
+      "winCount": 94818,
+      "winRate": 47.19
+    },
+    "91": {
+      "matchCount": 224006,
+      "winCount": 112034,
+      "winRate": 50.01
+    },
+    "92": {
+      "matchCount": 133461,
+      "winCount": 64088,
+      "winRate": 48.02
+    },
+    "93": {
+      "matchCount": 1005834,
+      "winCount": 475858,
+      "winRate": 47.31
+    },
+    "94": {
+      "matchCount": 348124,
+      "winCount": 179696,
+      "winRate": 51.62
+    },
+    "95": {
+      "matchCount": 314080,
+      "winCount": 162720,
+      "winRate": 51.81
+    },
+    "96": {
+      "matchCount": 508113,
+      "winCount": 266237,
+      "winRate": 52.4
+    },
+    "97": {
+      "matchCount": 608592,
+      "winCount": 294830,
+      "winRate": 48.44
+    },
+    "98": {
+      "matchCount": 432073,
+      "winCount": 211156,
+      "winRate": 48.87
+    },
+    "99": {
+      "matchCount": 367993,
+      "winCount": 179071,
+      "winRate": 48.66
+    },
+    "100": {
+      "matchCount": 314959,
+      "winCount": 150053,
+      "winRate": 47.64
+    },
+    "101": {
+      "matchCount": 890217,
+      "winCount": 461984,
+      "winRate": 51.9
+    },
+    "102": {
+      "matchCount": 342110,
+      "winCount": 174967,
+      "winRate": 51.14
+    },
+    "103": {
+      "matchCount": 103079,
+      "winCount": 51840,
+      "winRate": 50.29
+    },
+    "104": {
+      "matchCount": 874381,
+      "winCount": 451885,
+      "winRate": 51.68
+    },
+    "105": {
+      "matchCount": 792891,
+      "winCount": 376900,
+      "winRate": 47.53
+    },
+    "106": {
+      "matchCount": 343107,
+      "winCount": 165475,
+      "winRate": 48.23
+    },
+    "107": {
+      "matchCount": 216497,
+      "winCount": 101915,
+      "winRate": 47.07
+    },
+    "108": {
+      "matchCount": 258788,
+      "winCount": 128973,
+      "winRate": 49.84
+    },
+    "109": {
+      "matchCount": 258527,
+      "winCount": 118336,
+      "winRate": 45.77
+    },
+    "110": {
+      "matchCount": 249037,
+      "winCount": 125956,
+      "winRate": 50.58
+    },
+    "111": {
+      "matchCount": 226281,
+      "winCount": 110064,
+      "winRate": 48.64
+    },
+    "112": {
+      "matchCount": 251455,
+      "winCount": 131109,
+      "winRate": 52.14
+    },
+    "113": {
+      "matchCount": 218990,
+      "winCount": 105940,
+      "winRate": 48.38
+    },
+    "114": {
+      "matchCount": 443864,
+      "winCount": 195134,
+      "winRate": 43.96
+    },
+    "119": {
+      "matchCount": 341303,
+      "winCount": 169621,
+      "winRate": 49.7
+    },
+    "120": {
+      "matchCount": 112929,
+      "winCount": 42961,
+      "winRate": 38.04
+    },
+    "121": {
+      "matchCount": 236525,
+      "winCount": 118028,
+      "winRate": 49.9
+    },
+    "123": {
+      "matchCount": 506247,
+      "winCount": 244820,
+      "winRate": 48.36
+    },
+    "126": {
+      "matchCount": 273142,
+      "winCount": 137743,
+      "winRate": 50.43
+    },
+    "128": {
+      "matchCount": 485830,
+      "winCount": 231624,
+      "winRate": 47.68
+    },
+    "129": {
+      "matchCount": 430014,
+      "winCount": 204050,
+      "winRate": 47.45
+    },
+    "131": {
+      "matchCount": 243755,
+      "winCount": 114826,
+      "winRate": 47.11
+    },
+    "135": {
+      "matchCount": 331059,
+      "winCount": 164009,
+      "winRate": 49.54
+    },
+    "136": {
+      "matchCount": 300383,
+      "winCount": 137346,
+      "winRate": 45.72
+    },
+    "137": {
+      "matchCount": 314753,
+      "winCount": 151356,
+      "winRate": 48.09
+    },
+    "138": {
+      "matchCount": 305676,
+      "winCount": 158908,
+      "winRate": 51.99
+    },
+    "145": {
+      "matchCount": 359068,
+      "winCount": 162632,
+      "winRate": 45.29
+    },
+    "155": {
+      "matchCount": 2170619,
+      "winCount": 946163,
+      "winRate": 43.59
+    }
+  },
+  "positions": {
+    "1:POSITION_1": {
+      "matchCount": 35550,
+      "winCount": 18053,
+      "winRate": 50.78
+    },
+    "1:POSITION_2": {
+      "matchCount": 1573,
+      "winCount": 868,
+      "winRate": 55.18
+    },
+    "1:POSITION_3": {
+      "matchCount": 841,
+      "winCount": 437,
+      "winRate": 51.96
+    },
+    "1:POSITION_4": {
+      "matchCount": 220,
+      "winCount": 109,
+      "winRate": 49.55
+    },
+    "1:POSITION_5": {
+      "matchCount": 358,
+      "winCount": 162,
+      "winRate": 45.25
+    },
+    "2:POSITION_1": {
+      "matchCount": 386,
+      "winCount": 174,
+      "winRate": 45.08
+    },
+    "2:POSITION_2": {
+      "matchCount": 980,
+      "winCount": 513,
+      "winRate": 52.35
+    },
+    "2:POSITION_3": {
+      "matchCount": 55801,
+      "winCount": 28448,
+      "winRate": 50.98
+    },
+    "2:POSITION_4": {
+      "matchCount": 1723,
+      "winCount": 833,
+      "winRate": 48.35
+    },
+    "2:POSITION_5": {
+      "matchCount": 728,
+      "winCount": 381,
+      "winRate": 52.34
+    },
+    "3:POSITION_1": {
+      "matchCount": 26,
+      "winCount": 12,
+      "winRate": 46.15
+    },
+    "3:POSITION_2": {
+      "matchCount": 449,
+      "winCount": 218,
+      "winRate": 48.55
+    },
+    "3:POSITION_3": {
+      "matchCount": 62,
+      "winCount": 31,
+      "winRate": 50.0
+    },
+    "3:POSITION_4": {
+      "matchCount": 3228,
+      "winCount": 1592,
+      "winRate": 49.32
+    },
+    "3:POSITION_5": {
+      "matchCount": 5366,
+      "winCount": 2733,
+      "winRate": 50.93
+    },
+    "4:POSITION_1": {
+      "matchCount": 6941,
+      "winCount": 3482,
+      "winRate": 50.17
+    },
+    "4:POSITION_2": {
+      "matchCount": 2171,
+      "winCount": 1165,
+      "winRate": 53.66
+    },
+    "4:POSITION_3": {
+      "matchCount": 1801,
+      "winCount": 924,
+      "winRate": 51.3
+    },
+    "4:POSITION_4": {
+      "matchCount": 346,
+      "winCount": 165,
+      "winRate": 47.69
+    },
+    "4:POSITION_5": {
+      "matchCount": 240,
+      "winCount": 108,
+      "winRate": 45.0
+    },
+    "5:POSITION_1": {
+      "matchCount": 147,
+      "winCount": 57,
+      "winRate": 38.78
+    },
+    "5:POSITION_2": {
+      "matchCount": 579,
+      "winCount": 298,
+      "winRate": 51.47
+    },
+    "5:POSITION_3": {
+      "matchCount": 190,
+      "winCount": 91,
+      "winRate": 47.89
+    },
+    "5:POSITION_4": {
+      "matchCount": 13817,
+      "winCount": 7177,
+      "winRate": 51.94
+    },
+    "5:POSITION_5": {
+      "matchCount": 33682,
+      "winCount": 17622,
+      "winRate": 52.32
+    },
+    "6:POSITION_1": {
+      "matchCount": 29483,
+      "winCount": 13585,
+      "winRate": 46.08
+    },
+    "6:POSITION_2": {
+      "matchCount": 3714,
+      "winCount": 1804,
+      "winRate": 48.57
+    },
+    "6:POSITION_3": {
+      "matchCount": 539,
+      "winCount": 262,
+      "winRate": 48.61
+    },
+    "6:POSITION_4": {
+      "matchCount": 325,
+      "winCount": 158,
+      "winRate": 48.62
+    },
+    "6:POSITION_5": {
+      "matchCount": 496,
+      "winCount": 202,
+      "winRate": 40.73
+    },
+    "7:POSITION_1": {
+      "matchCount": 556,
+      "winCount": 218,
+      "winRate": 39.21
+    },
+    "7:POSITION_2": {
+      "matchCount": 11398,
+      "winCount": 5779,
+      "winRate": 50.7
+    },
+    "7:POSITION_3": {
+      "matchCount": 17564,
+      "winCount": 8400,
+      "winRate": 47.83
+    },
+    "7:POSITION_4": {
+      "matchCount": 12995,
+      "winCount": 6553,
+      "winRate": 50.43
+    },
+    "7:POSITION_5": {
+      "matchCount": 7061,
+      "winCount": 3500,
+      "winRate": 49.57
+    },
+    "8:POSITION_1": {
+      "matchCount": 53887,
+      "winCount": 28114,
+      "winRate": 52.17
+    },
+    "8:POSITION_2": {
+      "matchCount": 1005,
+      "winCount": 522,
+      "winRate": 51.94
+    },
+    "8:POSITION_3": {
+      "matchCount": 1441,
+      "winCount": 702,
+      "winRate": 48.72
+    },
+    "8:POSITION_4": {
+      "matchCount": 205,
+      "winCount": 96,
+      "winRate": 46.83
+    },
+    "8:POSITION_5": {
+      "matchCount": 382,
+      "winCount": 171,
+      "winRate": 44.76
+    },
+    "9:POSITION_1": {
+      "matchCount": 857,
+      "winCount": 388,
+      "winRate": 45.27
+    },
+    "9:POSITION_2": {
+      "matchCount": 2330,
+      "winCount": 1235,
+      "winRate": 53.0
+    },
+    "9:POSITION_3": {
+      "matchCount": 968,
+      "winCount": 466,
+      "winRate": 48.14
+    },
+    "9:POSITION_4": {
+      "matchCount": 19054,
+      "winCount": 10422,
+      "winRate": 54.7
+    },
+    "9:POSITION_5": {
+      "matchCount": 13207,
+      "winCount": 7121,
+      "winRate": 53.92
+    },
+    "10:POSITION_1": {
+      "matchCount": 7998,
+      "winCount": 3953,
+      "winRate": 49.42
+    },
+    "10:POSITION_2": {
+      "matchCount": 795,
+      "winCount": 390,
+      "winRate": 49.06
+    },
+    "10:POSITION_3": {
+      "matchCount": 138,
+      "winCount": 62,
+      "winRate": 44.93
+    },
+    "10:POSITION_4": {
+      "matchCount": 51,
+      "winCount": 20,
+      "winRate": 39.22
+    },
+    "10:POSITION_5": {
+      "matchCount": 129,
+      "winCount": 56,
+      "winRate": 43.41
+    },
+    "11:POSITION_1": {
+      "matchCount": 13955,
+      "winCount": 5666,
+      "winRate": 40.6
+    },
+    "11:POSITION_2": {
+      "matchCount": 22291,
+      "winCount": 10510,
+      "winRate": 47.15
+    },
+    "11:POSITION_3": {
+      "matchCount": 675,
+      "winCount": 298,
+      "winRate": 44.15
+    },
+    "11:POSITION_4": {
+      "matchCount": 402,
+      "winCount": 191,
+      "winRate": 47.51
+    },
+    "11:POSITION_5": {
+      "matchCount": 410,
+      "winCount": 162,
+      "winRate": 39.51
+    },
+    "12:POSITION_1": {
+      "matchCount": 37878,
+      "winCount": 21104,
+      "winRate": 55.72
+    },
+    "12:POSITION_2": {
+      "matchCount": 548,
+      "winCount": 297,
+      "winRate": 54.2
+    },
+    "12:POSITION_3": {
+      "matchCount": 874,
+      "winCount": 462,
+      "winRate": 52.86
+    },
+    "12:POSITION_4": {
+      "matchCount": 169,
+      "winCount": 84,
+      "winRate": 49.7
+    },
+    "12:POSITION_5": {
+      "matchCount": 295,
+      "winCount": 126,
+      "winRate": 42.71
+    },
+    "13:POSITION_1": {
+      "matchCount": 33,
+      "winCount": 13,
+      "winRate": 39.39
+    },
+    "13:POSITION_2": {
+      "matchCount": 6631,
+      "winCount": 3149,
+      "winRate": 47.49
+    },
+    "13:POSITION_3": {
+      "matchCount": 66,
+      "winCount": 28,
+      "winRate": 42.42
+    },
+    "13:POSITION_4": {
+      "matchCount": 217,
+      "winCount": 104,
+      "winRate": 47.93
+    },
+    "13:POSITION_5": {
+      "matchCount": 132,
+      "winCount": 59,
+      "winRate": 44.7
+    },
+    "14:POSITION_1": {
+      "matchCount": 1239,
+      "winCount": 595,
+      "winRate": 48.02
+    },
+    "14:POSITION_2": {
+      "matchCount": 10632,
+      "winCount": 5506,
+      "winRate": 51.79
+    },
+    "14:POSITION_3": {
+      "matchCount": 18240,
+      "winCount": 9181,
+      "winRate": 50.33
+    },
+    "14:POSITION_4": {
+      "matchCount": 29518,
+      "winCount": 14837,
+      "winRate": 50.26
+    },
+    "14:POSITION_5": {
+      "matchCount": 24708,
+      "winCount": 12282,
+      "winRate": 49.71
+    },
+    "15:POSITION_1": {
+      "matchCount": 3042,
+      "winCount": 1405,
+      "winRate": 46.19
+    },
+    "15:POSITION_2": {
+      "matchCount": 5566,
+      "winCount": 2803,
+      "winRate": 50.36
+    },
+    "15:POSITION_3": {
+      "matchCount": 10147,
+      "winCount": 5091,
+      "winRate": 50.17
+    },
+    "15:POSITION_4": {
+      "matchCount": 763,
+      "winCount": 376,
+      "winRate": 49.28
+    },
+    "15:POSITION_5": {
+      "matchCount": 369,
+      "winCount": 179,
+      "winRate": 48.51
+    },
+    "16:POSITION_1": {
+      "matchCount": 115,
+      "winCount": 50,
+      "winRate": 43.48
+    },
+    "16:POSITION_2": {
+      "matchCount": 2438,
+      "winCount": 1293,
+      "winRate": 53.04
+    },
+    "16:POSITION_3": {
+      "matchCount": 7311,
+      "winCount": 3704,
+      "winRate": 50.66
+    },
+    "16:POSITION_4": {
+      "matchCount": 2002,
+      "winCount": 1031,
+      "winRate": 51.5
+    },
+    "16:POSITION_5": {
+      "matchCount": 1034,
+      "winCount": 515,
+      "winRate": 49.81
+    },
+    "17:POSITION_1": {
+      "matchCount": 281,
+      "winCount": 123,
+      "winRate": 43.77
+    },
+    "17:POSITION_2": {
+      "matchCount": 14531,
+      "winCount": 7254,
+      "winRate": 49.92
+    },
+    "17:POSITION_3": {
+      "matchCount": 162,
+      "winCount": 82,
+      "winRate": 50.62
+    },
+    "17:POSITION_4": {
+      "matchCount": 192,
+      "winCount": 82,
+      "winRate": 42.71
+    },
+    "17:POSITION_5": {
+      "matchCount": 130,
+      "winCount": 52,
+      "winRate": 40.0
+    },
+    "18:POSITION_1": {
+      "matchCount": 22666,
+      "winCount": 11481,
+      "winRate": 50.65
+    },
+    "18:POSITION_2": {
+      "matchCount": 434,
+      "winCount": 213,
+      "winRate": 49.08
+    },
+    "18:POSITION_3": {
+      "matchCount": 3607,
+      "winCount": 1759,
+      "winRate": 48.77
+    },
+    "18:POSITION_4": {
+      "matchCount": 289,
+      "winCount": 139,
+      "winRate": 48.1
+    },
+    "18:POSITION_5": {
+      "matchCount": 235,
+      "winCount": 107,
+      "winRate": 45.53
+    },
+    "19:POSITION_1": {
+      "matchCount": 2169,
+      "winCount": 881,
+      "winRate": 40.62
+    },
+    "19:POSITION_2": {
+      "matchCount": 1425,
+      "winCount": 660,
+      "winRate": 46.32
+    },
+    "19:POSITION_3": {
+      "matchCount": 4178,
+      "winCount": 1900,
+      "winRate": 45.48
+    },
+    "19:POSITION_4": {
+      "matchCount": 1866,
+      "winCount": 883,
+      "winRate": 47.32
+    },
+    "19:POSITION_5": {
+      "matchCount": 862,
+      "winCount": 391,
+      "winRate": 45.36
+    },
+    "20:POSITION_1": {
+      "matchCount": 5413,
+      "winCount": 2851,
+      "winRate": 52.67
+    },
+    "20:POSITION_2": {
+      "matchCount": 2940,
+      "winCount": 1627,
+      "winRate": 55.34
+    },
+    "20:POSITION_3": {
+      "matchCount": 2075,
+      "winCount": 1120,
+      "winRate": 53.98
+    },
+    "20:POSITION_4": {
+      "matchCount": 11102,
+      "winCount": 5677,
+      "winRate": 51.13
+    },
+    "20:POSITION_5": {
+      "matchCount": 11645,
+      "winCount": 6059,
+      "winRate": 52.03
+    },
+    "21:POSITION_1": {
+      "matchCount": 6925,
+      "winCount": 3048,
+      "winRate": 44.01
+    },
+    "21:POSITION_2": {
+      "matchCount": 16090,
+      "winCount": 7805,
+      "winRate": 48.51
+    },
+    "21:POSITION_3": {
+      "matchCount": 4433,
+      "winCount": 2083,
+      "winRate": 46.99
+    },
+    "21:POSITION_4": {
+      "matchCount": 16387,
+      "winCount": 7742,
+      "winRate": 47.24
+    },
+    "21:POSITION_5": {
+      "matchCount": 7135,
+      "winCount": 3329,
+      "winRate": 46.66
+    },
+    "22:POSITION_1": {
+      "matchCount": 330,
+      "winCount": 141,
+      "winRate": 42.73
+    },
+    "22:POSITION_2": {
+      "matchCount": 14155,
+      "winCount": 7050,
+      "winRate": 49.81
+    },
+    "22:POSITION_3": {
+      "matchCount": 784,
+      "winCount": 353,
+      "winRate": 45.03
+    },
+    "22:POSITION_4": {
+      "matchCount": 15941,
+      "winCount": 8424,
+      "winRate": 52.84
+    },
+    "22:POSITION_5": {
+      "matchCount": 10114,
+      "winCount": 5177,
+      "winRate": 51.19
+    },
+    "23:POSITION_1": {
+      "matchCount": 343,
+      "winCount": 135,
+      "winRate": 39.36
+    },
+    "23:POSITION_2": {
+      "matchCount": 3709,
+      "winCount": 1761,
+      "winRate": 47.48
+    },
+    "23:POSITION_3": {
+      "matchCount": 7710,
+      "winCount": 3665,
+      "winRate": 47.54
+    },
+    "23:POSITION_4": {
+      "matchCount": 739,
+      "winCount": 348,
+      "winRate": 47.09
+    },
+    "23:POSITION_5": {
+      "matchCount": 361,
+      "winCount": 173,
+      "winRate": 47.92
+    },
+    "25:POSITION_1": {
+      "matchCount": 2422,
+      "winCount": 987,
+      "winRate": 40.75
+    },
+    "25:POSITION_2": {
+      "matchCount": 43970,
+      "winCount": 20936,
+      "winRate": 47.61
+    },
+    "25:POSITION_3": {
+      "matchCount": 937,
+      "winCount": 407,
+      "winRate": 43.44
+    },
+    "25:POSITION_4": {
+      "matchCount": 5685,
+      "winCount": 2615,
+      "winRate": 46.0
+    },
+    "25:POSITION_5": {
+      "matchCount": 3377,
+      "winCount": 1555,
+      "winRate": 46.05
+    },
+    "26:POSITION_1": {
+      "matchCount": 410,
+      "winCount": 178,
+      "winRate": 43.41
+    },
+    "26:POSITION_2": {
+      "matchCount": 7700,
+      "winCount": 4143,
+      "winRate": 53.81
+    },
+    "26:POSITION_3": {
+      "matchCount": 647,
+      "winCount": 301,
+      "winRate": 46.52
+    },
+    "26:POSITION_4": {
+      "matchCount": 28001,
+      "winCount": 14193,
+      "winRate": 50.69
+    },
+    "26:POSITION_5": {
+      "matchCount": 46369,
+      "winCount": 23331,
+      "winRate": 50.32
+    },
+    "27:POSITION_1": {
+      "matchCount": 260,
+      "winCount": 112,
+      "winRate": 43.08
+    },
+    "27:POSITION_2": {
+      "matchCount": 381,
+      "winCount": 183,
+      "winRate": 48.03
+    },
+    "27:POSITION_3": {
+      "matchCount": 295,
+      "winCount": 123,
+      "winRate": 41.69
+    },
+    "27:POSITION_4": {
+      "matchCount": 16786,
+      "winCount": 8625,
+      "winRate": 51.38
+    },
+    "27:POSITION_5": {
+      "matchCount": 37323,
+      "winCount": 19281,
+      "winRate": 51.66
+    },
+    "28:POSITION_1": {
+      "matchCount": 455,
+      "winCount": 211,
+      "winRate": 46.37
+    },
+    "28:POSITION_2": {
+      "matchCount": 1410,
+      "winCount": 769,
+      "winRate": 54.54
+    },
+    "28:POSITION_3": {
+      "matchCount": 20740,
+      "winCount": 10676,
+      "winRate": 51.48
+    },
+    "28:POSITION_4": {
+      "matchCount": 767,
+      "winCount": 359,
+      "winRate": 46.81
+    },
+    "28:POSITION_5": {
+      "matchCount": 268,
+      "winCount": 127,
+      "winRate": 47.39
+    },
+    "29:POSITION_1": {
+      "matchCount": 137,
+      "winCount": 61,
+      "winRate": 44.53
+    },
+    "29:POSITION_2": {
+      "matchCount": 306,
+      "winCount": 154,
+      "winRate": 50.33
+    },
+    "29:POSITION_3": {
+      "matchCount": 18994,
+      "winCount": 9771,
+      "winRate": 51.44
+    },
+    "29:POSITION_4": {
+      "matchCount": 1230,
+      "winCount": 609,
+      "winRate": 49.51
+    },
+    "29:POSITION_5": {
+      "matchCount": 546,
+      "winCount": 277,
+      "winRate": 50.73
+    },
+    "30:POSITION_1": {
+      "matchCount": 129,
+      "winCount": 49,
+      "winRate": 37.98
+    },
+    "30:POSITION_2": {
+      "matchCount": 562,
+      "winCount": 272,
+      "winRate": 48.4
+    },
+    "30:POSITION_3": {
+      "matchCount": 225,
+      "winCount": 107,
+      "winRate": 47.56
+    },
+    "30:POSITION_4": {
+      "matchCount": 20654,
+      "winCount": 10670,
+      "winRate": 51.66
+    },
+    "30:POSITION_5": {
+      "matchCount": 39163,
+      "winCount": 20483,
+      "winRate": 52.3
+    },
+    "31:POSITION_1": {
+      "matchCount": 81,
+      "winCount": 37,
+      "winRate": 45.68
+    },
+    "31:POSITION_2": {
+      "matchCount": 144,
+      "winCount": 64,
+      "winRate": 44.44
+    },
+    "31:POSITION_3": {
+      "matchCount": 117,
+      "winCount": 54,
+      "winRate": 46.15
+    },
+    "31:POSITION_4": {
+      "matchCount": 11357,
+      "winCount": 5914,
+      "winRate": 52.07
+    },
+    "31:POSITION_5": {
+      "matchCount": 22742,
+      "winCount": 12074,
+      "winRate": 53.09
+    },
+    "32:POSITION_1": {
+      "matchCount": 8198,
+      "winCount": 4005,
+      "winRate": 48.85
+    },
+    "32:POSITION_2": {
+      "matchCount": 5249,
+      "winCount": 2881,
+      "winRate": 54.89
+    },
+    "32:POSITION_3": {
+      "matchCount": 1555,
+      "winCount": 851,
+      "winRate": 54.73
+    },
+    "32:POSITION_4": {
+      "matchCount": 2064,
+      "winCount": 1079,
+      "winRate": 52.28
+    },
+    "32:POSITION_5": {
+      "matchCount": 955,
+      "winCount": 436,
+      "winRate": 45.65
+    },
+    "33:POSITION_1": {
+      "matchCount": 104,
+      "winCount": 48,
+      "winRate": 46.15
+    },
+    "33:POSITION_2": {
+      "matchCount": 297,
+      "winCount": 144,
+      "winRate": 48.48
+    },
+    "33:POSITION_3": {
+      "matchCount": 3046,
+      "winCount": 1492,
+      "winRate": 48.98
+    },
+    "33:POSITION_4": {
+      "matchCount": 4394,
+      "winCount": 2218,
+      "winRate": 50.48
+    },
+    "33:POSITION_5": {
+      "matchCount": 2607,
+      "winCount": 1338,
+      "winRate": 51.32
+    },
+    "34:POSITION_1": {
+      "matchCount": 138,
+      "winCount": 63,
+      "winRate": 45.65
+    },
+    "34:POSITION_2": {
+      "matchCount": 12234,
+      "winCount": 6158,
+      "winRate": 50.34
+    },
+    "34:POSITION_3": {
+      "matchCount": 105,
+      "winCount": 46,
+      "winRate": 43.81
+    },
+    "34:POSITION_4": {
+      "matchCount": 416,
+      "winCount": 194,
+      "winRate": 46.63
+    },
+    "34:POSITION_5": {
+      "matchCount": 318,
+      "winCount": 160,
+      "winRate": 50.31
+    },
+    "35:POSITION_1": {
+      "matchCount": 11662,
+      "winCount": 5113,
+      "winRate": 43.84
+    },
+    "35:POSITION_2": {
+      "matchCount": 43332,
+      "winCount": 21236,
+      "winRate": 49.01
+    },
+    "35:POSITION_3": {
+      "matchCount": 2989,
+      "winCount": 1351,
+      "winRate": 45.2
+    },
+    "35:POSITION_4": {
+      "matchCount": 9306,
+      "winCount": 4543,
+      "winRate": 48.82
+    },
+    "35:POSITION_5": {
+      "matchCount": 4128,
+      "winCount": 1876,
+      "winRate": 45.45
+    },
+    "36:POSITION_1": {
+      "matchCount": 2787,
+      "winCount": 1420,
+      "winRate": 50.95
+    },
+    "36:POSITION_2": {
+      "matchCount": 23445,
+      "winCount": 12098,
+      "winRate": 51.6
+    },
+    "36:POSITION_3": {
+      "matchCount": 15948,
+      "winCount": 8001,
+      "winRate": 50.17
+    },
+    "36:POSITION_4": {
+      "matchCount": 1679,
+      "winCount": 796,
+      "winRate": 47.41
+    },
+    "36:POSITION_5": {
+      "matchCount": 865,
+      "winCount": 421,
+      "winRate": 48.67
+    },
+    "37:POSITION_1": {
+      "matchCount": 140,
+      "winCount": 60,
+      "winRate": 42.86
+    },
+    "37:POSITION_2": {
+      "matchCount": 226,
+      "winCount": 90,
+      "winRate": 39.82
+    },
+    "37:POSITION_3": {
+      "matchCount": 226,
+      "winCount": 94,
+      "winRate": 41.59
+    },
+    "37:POSITION_4": {
+      "matchCount": 7510,
+      "winCount": 3678,
+      "winRate": 48.97
+    },
+    "37:POSITION_5": {
+      "matchCount": 12817,
+      "winCount": 6282,
+      "winRate": 49.01
+    },
+    "38:POSITION_1": {
+      "matchCount": 198,
+      "winCount": 75,
+      "winRate": 37.88
+    },
+    "38:POSITION_2": {
+      "matchCount": 1224,
+      "winCount": 517,
+      "winRate": 42.24
+    },
+    "38:POSITION_3": {
+      "matchCount": 3623,
+      "winCount": 1595,
+      "winRate": 44.02
+    },
+    "38:POSITION_4": {
+      "matchCount": 209,
+      "winCount": 79,
+      "winRate": 37.8
+    },
+    "38:POSITION_5": {
+      "matchCount": 91,
+      "winCount": 50,
+      "winRate": 54.95
+    },
+    "39:POSITION_1": {
+      "matchCount": 227,
+      "winCount": 91,
+      "winRate": 40.09
+    },
+    "39:POSITION_2": {
+      "matchCount": 21893,
+      "winCount": 10730,
+      "winRate": 49.01
+    },
+    "39:POSITION_3": {
+      "matchCount": 654,
+      "winCount": 312,
+      "winRate": 47.71
+    },
+    "39:POSITION_4": {
+      "matchCount": 2843,
+      "winCount": 1332,
+      "winRate": 46.85
+    },
+    "39:POSITION_5": {
+      "matchCount": 1353,
+      "winCount": 653,
+      "winRate": 48.26
+    },
+    "40:POSITION_1": {
+      "matchCount": 363,
+      "winCount": 173,
+      "winRate": 47.66
+    },
+    "40:POSITION_2": {
+      "matchCount": 623,
+      "winCount": 264,
+      "winRate": 42.38
+    },
+    "40:POSITION_3": {
+      "matchCount": 931,
+      "winCount": 386,
+      "winRate": 41.46
+    },
+    "40:POSITION_4": {
+      "matchCount": 11473,
+      "winCount": 5338,
+      "winRate": 46.53
+    },
+    "40:POSITION_5": {
+      "matchCount": 10132,
+      "winCount": 4915,
+      "winRate": 48.51
+    },
+    "41:POSITION_1": {
+      "matchCount": 24313,
+      "winCount": 12565,
+      "winRate": 51.68
+    },
+    "41:POSITION_2": {
+      "matchCount": 459,
+      "winCount": 240,
+      "winRate": 52.29
+    },
+    "41:POSITION_3": {
+      "matchCount": 1115,
+      "winCount": 553,
+      "winRate": 49.6
+    },
+    "41:POSITION_4": {
+      "matchCount": 200,
+      "winCount": 92,
+      "winRate": 46.0
+    },
+    "41:POSITION_5": {
+      "matchCount": 296,
+      "winCount": 120,
+      "winRate": 40.54
+    },
+    "42:POSITION_1": {
+      "matchCount": 9889,
+      "winCount": 5169,
+      "winRate": 52.27
+    },
+    "42:POSITION_2": {
+      "matchCount": 916,
+      "winCount": 525,
+      "winRate": 57.31
+    },
+    "42:POSITION_3": {
+      "matchCount": 29660,
+      "winCount": 16599,
+      "winRate": 55.96
+    },
+    "42:POSITION_4": {
+      "matchCount": 804,
+      "winCount": 403,
+      "winRate": 50.12
+    },
+    "42:POSITION_5": {
+      "matchCount": 360,
+      "winCount": 176,
+      "winRate": 48.89
+    },
+    "43:POSITION_1": {
+      "matchCount": 127,
+      "winCount": 43,
+      "winRate": 33.86
+    },
+    "43:POSITION_2": {
+      "matchCount": 5758,
+      "winCount": 2693,
+      "winRate": 46.77
+    },
+    "43:POSITION_3": {
+      "matchCount": 3299,
+      "winCount": 1543,
+      "winRate": 46.77
+    },
+    "43:POSITION_4": {
+      "matchCount": 1341,
+      "winCount": 621,
+      "winRate": 46.31
+    },
+    "43:POSITION_5": {
+      "matchCount": 711,
+      "winCount": 347,
+      "winRate": 48.8
+    },
+    "44:POSITION_1": {
+      "matchCount": 41351,
+      "winCount": 21933,
+      "winRate": 53.04
+    },
+    "44:POSITION_2": {
+      "matchCount": 2364,
+      "winCount": 1266,
+      "winRate": 53.55
+    },
+    "44:POSITION_3": {
+      "matchCount": 1203,
+      "winCount": 576,
+      "winRate": 47.88
+    },
+    "44:POSITION_4": {
+      "matchCount": 342,
+      "winCount": 167,
+      "winRate": 48.83
+    },
+    "44:POSITION_5": {
+      "matchCount": 663,
+      "winCount": 290,
+      "winRate": 43.74
+    },
+    "45:POSITION_1": {
+      "matchCount": 71,
+      "winCount": 30,
+      "winRate": 42.25
+    },
+    "45:POSITION_2": {
+      "matchCount": 1657,
+      "winCount": 736,
+      "winRate": 44.42
+    },
+    "45:POSITION_3": {
+      "matchCount": 244,
+      "winCount": 113,
+      "winRate": 46.31
+    },
+    "45:POSITION_4": {
+      "matchCount": 5375,
+      "winCount": 2678,
+      "winRate": 49.82
+    },
+    "45:POSITION_5": {
+      "matchCount": 5128,
+      "winCount": 2457,
+      "winRate": 47.91
+    },
+    "46:POSITION_1": {
+      "matchCount": 8822,
+      "winCount": 3935,
+      "winRate": 44.6
+    },
+    "46:POSITION_2": {
+      "matchCount": 4429,
+      "winCount": 2099,
+      "winRate": 47.39
+    },
+    "46:POSITION_3": {
+      "matchCount": 168,
+      "winCount": 69,
+      "winRate": 41.07
+    },
+    "46:POSITION_4": {
+      "matchCount": 44,
+      "winCount": 22,
+      "winRate": 50.0
+    },
+    "46:POSITION_5": {
+      "matchCount": 73,
+      "winCount": 22,
+      "winRate": 30.14
+    },
+    "47:POSITION_1": {
+      "matchCount": 2342,
+      "winCount": 1014,
+      "winRate": 43.3
+    },
+    "47:POSITION_2": {
+      "matchCount": 13306,
+      "winCount": 6324,
+      "winRate": 47.53
+    },
+    "47:POSITION_3": {
+      "matchCount": 8077,
+      "winCount": 3756,
+      "winRate": 46.5
+    },
+    "47:POSITION_4": {
+      "matchCount": 2128,
+      "winCount": 1011,
+      "winRate": 47.51
+    },
+    "47:POSITION_5": {
+      "matchCount": 1274,
+      "winCount": 615,
+      "winRate": 48.27
+    },
+    "48:POSITION_1": {
+      "matchCount": 24689,
+      "winCount": 12390,
+      "winRate": 50.18
+    },
+    "48:POSITION_2": {
+      "matchCount": 2222,
+      "winCount": 1082,
+      "winRate": 48.69
+    },
+    "48:POSITION_3": {
+      "matchCount": 559,
+      "winCount": 269,
+      "winRate": 48.12
+    },
+    "48:POSITION_4": {
+      "matchCount": 361,
+      "winCount": 173,
+      "winRate": 47.92
+    },
+    "48:POSITION_5": {
+      "matchCount": 343,
+      "winCount": 156,
+      "winRate": 45.48
+    },
+    "49:POSITION_1": {
+      "matchCount": 2201,
+      "winCount": 1095,
+      "winRate": 49.75
+    },
+    "49:POSITION_2": {
+      "matchCount": 8540,
+      "winCount": 4643,
+      "winRate": 54.37
+    },
+    "49:POSITION_3": {
+      "matchCount": 17503,
+      "winCount": 9070,
+      "winRate": 51.82
+    },
+    "49:POSITION_4": {
+      "matchCount": 333,
+      "winCount": 168,
+      "winRate": 50.45
+    },
+    "49:POSITION_5": {
+      "matchCount": 142,
+      "winCount": 72,
+      "winRate": 50.7
+    },
+    "50:POSITION_1": {
+      "matchCount": 81,
+      "winCount": 34,
+      "winRate": 41.98
+    },
+    "50:POSITION_2": {
+      "matchCount": 251,
+      "winCount": 121,
+      "winRate": 48.21
+    },
+    "50:POSITION_3": {
+      "matchCount": 95,
+      "winCount": 45,
+      "winRate": 47.37
+    },
+    "50:POSITION_4": {
+      "matchCount": 3941,
+      "winCount": 1899,
+      "winRate": 48.19
+    },
+    "50:POSITION_5": {
+      "matchCount": 10288,
+      "winCount": 5012,
+      "winRate": 48.72
+    },
+    "51:POSITION_1": {
+      "matchCount": 58,
+      "winCount": 20,
+      "winRate": 34.48
+    },
+    "51:POSITION_2": {
+      "matchCount": 226,
+      "winCount": 109,
+      "winRate": 48.23
+    },
+    "51:POSITION_3": {
+      "matchCount": 2284,
+      "winCount": 1041,
+      "winRate": 45.58
+    },
+    "51:POSITION_4": {
+      "matchCount": 4512,
+      "winCount": 2169,
+      "winRate": 48.07
+    },
+    "51:POSITION_5": {
+      "matchCount": 3157,
+      "winCount": 1442,
+      "winRate": 45.68
+    },
+    "52:POSITION_1": {
+      "matchCount": 185,
+      "winCount": 97,
+      "winRate": 52.43
+    },
+    "52:POSITION_2": {
+      "matchCount": 2894,
+      "winCount": 1538,
+      "winRate": 53.14
+    },
+    "52:POSITION_3": {
+      "matchCount": 373,
+      "winCount": 197,
+      "winRate": 52.82
+    },
+    "52:POSITION_4": {
+      "matchCount": 598,
+      "winCount": 276,
+      "winRate": 46.15
+    },
+    "52:POSITION_5": {
+      "matchCount": 380,
+      "winCount": 165,
+      "winRate": 43.42
+    },
+    "53:POSITION_1": {
+      "matchCount": 5404,
+      "winCount": 2157,
+      "winRate": 39.91
+    },
+    "53:POSITION_2": {
+      "matchCount": 6564,
+      "winCount": 2878,
+      "winRate": 43.85
+    },
+    "53:POSITION_3": {
+      "matchCount": 1927,
+      "winCount": 765,
+      "winRate": 39.7
+    },
+    "53:POSITION_4": {
+      "matchCount": 9104,
+      "winCount": 3877,
+      "winRate": 42.59
+    },
+    "53:POSITION_5": {
+      "matchCount": 4551,
+      "winCount": 1916,
+      "winRate": 42.1
+    },
+    "54:POSITION_1": {
+      "matchCount": 37774,
+      "winCount": 19729,
+      "winRate": 52.23
+    },
+    "54:POSITION_2": {
+      "matchCount": 323,
+      "winCount": 171,
+      "winRate": 52.94
+    },
+    "54:POSITION_3": {
+      "matchCount": 4818,
+      "winCount": 2463,
+      "winRate": 51.12
+    },
+    "54:POSITION_4": {
+      "matchCount": 268,
+      "winCount": 129,
+      "winRate": 48.13
+    },
+    "54:POSITION_5": {
+      "matchCount": 296,
+      "winCount": 126,
+      "winRate": 42.57
+    },
+    "55:POSITION_1": {
+      "matchCount": 124,
+      "winCount": 59,
+      "winRate": 47.58
+    },
+    "55:POSITION_2": {
+      "matchCount": 489,
+      "winCount": 244,
+      "winRate": 49.9
+    },
+    "55:POSITION_3": {
+      "matchCount": 9082,
+      "winCount": 4584,
+      "winRate": 50.47
+    },
+    "55:POSITION_4": {
+      "matchCount": 1588,
+      "winCount": 803,
+      "winRate": 50.57
+    },
+    "55:POSITION_5": {
+      "matchCount": 757,
+      "winCount": 371,
+      "winRate": 49.01
+    },
+    "56:POSITION_1": {
+      "matchCount": 6274,
+      "winCount": 2926,
+      "winRate": 46.64
+    },
+    "56:POSITION_2": {
+      "matchCount": 6498,
+      "winCount": 3337,
+      "winRate": 51.35
+    },
+    "56:POSITION_3": {
+      "matchCount": 752,
+      "winCount": 366,
+      "winRate": 48.67
+    },
+    "56:POSITION_4": {
+      "matchCount": 961,
+      "winCount": 483,
+      "winRate": 50.26
+    },
+    "56:POSITION_5": {
+      "matchCount": 393,
+      "winCount": 197,
+      "winRate": 50.13
+    },
+    "57:POSITION_1": {
+      "matchCount": 92,
+      "winCount": 44,
+      "winRate": 47.83
+    },
+    "57:POSITION_2": {
+      "matchCount": 228,
+      "winCount": 122,
+      "winRate": 53.51
+    },
+    "57:POSITION_3": {
+      "matchCount": 2421,
+      "winCount": 1169,
+      "winRate": 48.29
+    },
+    "57:POSITION_4": {
+      "matchCount": 1729,
+      "winCount": 843,
+      "winRate": 48.76
+    },
+    "57:POSITION_5": {
+      "matchCount": 1669,
+      "winCount": 844,
+      "winRate": 50.57
+    },
+    "58:POSITION_1": {
+      "matchCount": 110,
+      "winCount": 44,
+      "winRate": 40.0
+    },
+    "58:POSITION_2": {
+      "matchCount": 1009,
+      "winCount": 503,
+      "winRate": 49.85
+    },
+    "58:POSITION_3": {
+      "matchCount": 516,
+      "winCount": 245,
+      "winRate": 47.48
+    },
+    "58:POSITION_4": {
+      "matchCount": 3248,
+      "winCount": 1560,
+      "winRate": 48.03
+    },
+    "58:POSITION_5": {
+      "matchCount": 2886,
+      "winCount": 1403,
+      "winRate": 48.61
+    },
+    "59:POSITION_1": {
+      "matchCount": 361,
+      "winCount": 136,
+      "winRate": 37.67
+    },
+    "59:POSITION_2": {
+      "matchCount": 5551,
+      "winCount": 2510,
+      "winRate": 45.22
+    },
+    "59:POSITION_3": {
+      "matchCount": 3240,
+      "winCount": 1375,
+      "winRate": 42.44
+    },
+    "59:POSITION_4": {
+      "matchCount": 728,
+      "winCount": 324,
+      "winRate": 44.51
+    },
+    "59:POSITION_5": {
+      "matchCount": 624,
+      "winCount": 302,
+      "winRate": 48.4
+    },
+    "60:POSITION_1": {
+      "matchCount": 218,
+      "winCount": 96,
+      "winRate": 44.04
+    },
+    "60:POSITION_2": {
+      "matchCount": 819,
+      "winCount": 417,
+      "winRate": 50.92
+    },
+    "60:POSITION_3": {
+      "matchCount": 19702,
+      "winCount": 9885,
+      "winRate": 50.17
+    },
+    "60:POSITION_4": {
+      "matchCount": 374,
+      "winCount": 182,
+      "winRate": 48.66
+    },
+    "60:POSITION_5": {
+      "matchCount": 62,
+      "winCount": 29,
+      "winRate": 46.77
+    },
+    "61:POSITION_1": {
+      "matchCount": 423,
+      "winCount": 178,
+      "winRate": 42.08
+    },
+    "61:POSITION_2": {
+      "matchCount": 3731,
+      "winCount": 1751,
+      "winRate": 46.93
+    },
+    "61:POSITION_3": {
+      "matchCount": 514,
+      "winCount": 232,
+      "winRate": 45.14
+    },
+    "61:POSITION_4": {
+      "matchCount": 67,
+      "winCount": 28,
+      "winRate": 41.79
+    },
+    "61:POSITION_5": {
+      "matchCount": 53,
+      "winCount": 18,
+      "winRate": 33.96
+    },
+    "62:POSITION_1": {
+      "matchCount": 329,
+      "winCount": 114,
+      "winRate": 34.65
+    },
+    "62:POSITION_2": {
+      "matchCount": 600,
+      "winCount": 273,
+      "winRate": 45.5
+    },
+    "62:POSITION_3": {
+      "matchCount": 695,
+      "winCount": 307,
+      "winRate": 44.17
+    },
+    "62:POSITION_4": {
+      "matchCount": 15835,
+      "winCount": 8224,
+      "winRate": 51.94
+    },
+    "62:POSITION_5": {
+      "matchCount": 5137,
+      "winCount": 2595,
+      "winRate": 50.52
+    },
+    "63:POSITION_1": {
+      "matchCount": 7478,
+      "winCount": 3455,
+      "winRate": 46.2
+    },
+    "63:POSITION_2": {
+      "matchCount": 3211,
+      "winCount": 1613,
+      "winRate": 50.23
+    },
+    "63:POSITION_3": {
+      "matchCount": 1420,
+      "winCount": 698,
+      "winRate": 49.15
+    },
+    "63:POSITION_4": {
+      "matchCount": 3343,
+      "winCount": 1639,
+      "winRate": 49.03
+    },
+    "63:POSITION_5": {
+      "matchCount": 1645,
+      "winCount": 764,
+      "winRate": 46.44
+    },
+    "64:POSITION_1": {
+      "matchCount": 171,
+      "winCount": 63,
+      "winRate": 36.84
+    },
+    "64:POSITION_2": {
+      "matchCount": 1239,
+      "winCount": 597,
+      "winRate": 48.18
+    },
+    "64:POSITION_3": {
+      "matchCount": 302,
+      "winCount": 159,
+      "winRate": 52.65
+    },
+    "64:POSITION_4": {
+      "matchCount": 10563,
+      "winCount": 5258,
+      "winRate": 49.78
+    },
+    "64:POSITION_5": {
+      "matchCount": 16607,
+      "winCount": 8140,
+      "winRate": 49.02
+    },
+    "65:POSITION_1": {
+      "matchCount": 20,
+      "winCount": 7,
+      "winRate": 35.0
+    },
+    "65:POSITION_2": {
+      "matchCount": 407,
+      "winCount": 178,
+      "winRate": 43.73
+    },
+    "65:POSITION_3": {
+      "matchCount": 337,
+      "winCount": 169,
+      "winRate": 50.15
+    },
+    "65:POSITION_4": {
+      "matchCount": 797,
+      "winCount": 373,
+      "winRate": 46.8
+    },
+    "65:POSITION_5": {
+      "matchCount": 517,
+      "winCount": 216,
+      "winRate": 41.78
+    },
+    "66:POSITION_1": {
+      "matchCount": 12,
+      "winCount": 4,
+      "winRate": 33.33
+    },
+    "66:POSITION_2": {
+      "matchCount": 22,
+      "winCount": 10,
+      "winRate": 45.45
+    },
+    "66:POSITION_3": {
+      "matchCount": 20,
+      "winCount": 6,
+      "winRate": 30.0
+    },
+    "66:POSITION_4": {
+      "matchCount": 285,
+      "winCount": 133,
+      "winRate": 46.67
+    },
+    "66:POSITION_5": {
+      "matchCount": 680,
+      "winCount": 331,
+      "winRate": 48.68
+    },
+    "67:POSITION_1": {
+      "matchCount": 32756,
+      "winCount": 17962,
+      "winRate": 54.84
+    },
+    "67:POSITION_2": {
+      "matchCount": 755,
+      "winCount": 421,
+      "winRate": 55.76
+    },
+    "67:POSITION_3": {
+      "matchCount": 1527,
+      "winCount": 853,
+      "winRate": 55.86
+    },
+    "67:POSITION_4": {
+      "matchCount": 150,
+      "winCount": 79,
+      "winRate": 52.67
+    },
+    "67:POSITION_5": {
+      "matchCount": 272,
+      "winCount": 146,
+      "winRate": 53.68
+    },
+    "68:POSITION_1": {
+      "matchCount": 104,
+      "winCount": 45,
+      "winRate": 43.27
+    },
+    "68:POSITION_2": {
+      "matchCount": 1398,
+      "winCount": 679,
+      "winRate": 48.57
+    },
+    "68:POSITION_3": {
+      "matchCount": 150,
+      "winCount": 67,
+      "winRate": 44.67
+    },
+    "68:POSITION_4": {
+      "matchCount": 9244,
+      "winCount": 4831,
+      "winRate": 52.26
+    },
+    "68:POSITION_5": {
+      "matchCount": 12531,
+      "winCount": 6566,
+      "winRate": 52.4
+    },
+    "69:POSITION_1": {
+      "matchCount": 349,
+      "winCount": 164,
+      "winRate": 46.99
+    },
+    "69:POSITION_2": {
+      "matchCount": 444,
+      "winCount": 229,
+      "winRate": 51.58
+    },
+    "69:POSITION_3": {
+      "matchCount": 12518,
+      "winCount": 6130,
+      "winRate": 48.97
+    },
+    "69:POSITION_4": {
+      "matchCount": 524,
+      "winCount": 235,
+      "winRate": 44.85
+    },
+    "69:POSITION_5": {
+      "matchCount": 203,
+      "winCount": 107,
+      "winRate": 52.71
+    },
+    "70:POSITION_1": {
+      "matchCount": 14546,
+      "winCount": 6826,
+      "winRate": 46.93
+    },
+    "70:POSITION_2": {
+      "matchCount": 850,
+      "winCount": 433,
+      "winRate": 50.94
+    },
+    "70:POSITION_3": {
+      "matchCount": 1701,
+      "winCount": 780,
+      "winRate": 45.86
+    },
+    "70:POSITION_4": {
+      "matchCount": 104,
+      "winCount": 62,
+      "winRate": 59.62
+    },
+    "70:POSITION_5": {
+      "matchCount": 139,
+      "winCount": 53,
+      "winRate": 38.13
+    },
+    "71:POSITION_1": {
+      "matchCount": 267,
+      "winCount": 110,
+      "winRate": 41.2
+    },
+    "71:POSITION_2": {
+      "matchCount": 1490,
+      "winCount": 764,
+      "winRate": 51.28
+    },
+    "71:POSITION_3": {
+      "matchCount": 9265,
+      "winCount": 4511,
+      "winRate": 48.69
+    },
+    "71:POSITION_4": {
+      "matchCount": 30916,
+      "winCount": 16172,
+      "winRate": 52.31
+    },
+    "71:POSITION_5": {
+      "matchCount": 9610,
+      "winCount": 4914,
+      "winRate": 51.13
+    },
+    "72:POSITION_1": {
+      "matchCount": 2198,
+      "winCount": 922,
+      "winRate": 41.95
+    },
+    "72:POSITION_2": {
+      "matchCount": 1214,
+      "winCount": 534,
+      "winRate": 43.99
+    },
+    "72:POSITION_3": {
+      "matchCount": 483,
+      "winCount": 214,
+      "winRate": 44.31
+    },
+    "72:POSITION_4": {
+      "matchCount": 2447,
+      "winCount": 1232,
+      "winRate": 50.35
+    },
+    "72:POSITION_5": {
+      "matchCount": 1440,
+      "winCount": 689,
+      "winRate": 47.85
+    },
+    "73:POSITION_1": {
+      "matchCount": 2510,
+      "winCount": 1193,
+      "winRate": 47.53
+    },
+    "73:POSITION_2": {
+      "matchCount": 1443,
+      "winCount": 753,
+      "winRate": 52.18
+    },
+    "73:POSITION_3": {
+      "matchCount": 2247,
+      "winCount": 1109,
+      "winRate": 49.35
+    },
+    "73:POSITION_4": {
+      "matchCount": 1159,
+      "winCount": 622,
+      "winRate": 53.67
+    },
+    "73:POSITION_5": {
+      "matchCount": 774,
+      "winCount": 410,
+      "winRate": 52.97
+    },
+    "74:POSITION_1": {
+      "matchCount": 211,
+      "winCount": 95,
+      "winRate": 45.02
+    },
+    "74:POSITION_2": {
+      "matchCount": 34583,
+      "winCount": 17978,
+      "winRate": 51.99
+    },
+    "74:POSITION_3": {
+      "matchCount": 533,
+      "winCount": 263,
+      "winRate": 49.34
+    },
+    "74:POSITION_4": {
+      "matchCount": 9157,
+      "winCount": 4655,
+      "winRate": 50.84
+    },
+    "74:POSITION_5": {
+      "matchCount": 5824,
+      "winCount": 2860,
+      "winRate": 49.11
+    },
+    "75:POSITION_1": {
+      "matchCount": 435,
+      "winCount": 186,
+      "winRate": 42.76
+    },
+    "75:POSITION_2": {
+      "matchCount": 5158,
+      "winCount": 2692,
+      "winRate": 52.19
+    },
+    "75:POSITION_3": {
+      "matchCount": 603,
+      "winCount": 303,
+      "winRate": 50.25
+    },
+    "75:POSITION_4": {
+      "matchCount": 14904,
+      "winCount": 7744,
+      "winRate": 51.96
+    },
+    "75:POSITION_5": {
+      "matchCount": 14098,
+      "winCount": 7378,
+      "winRate": 52.33
+    },
+    "76:POSITION_1": {
+      "matchCount": 318,
+      "winCount": 120,
+      "winRate": 37.74
+    },
+    "76:POSITION_2": {
+      "matchCount": 29825,
+      "winCount": 15540,
+      "winRate": 52.1
+    },
+    "76:POSITION_3": {
+      "matchCount": 451,
+      "winCount": 191,
+      "winRate": 42.35
+    },
+    "76:POSITION_4": {
+      "matchCount": 454,
+      "winCount": 192,
+      "winRate": 42.29
+    },
+    "76:POSITION_5": {
+      "matchCount": 286,
+      "winCount": 137,
+      "winRate": 47.9
+    },
+    "77:POSITION_1": {
+      "matchCount": 122,
+      "winCount": 47,
+      "winRate": 38.52
+    },
+    "77:POSITION_2": {
+      "matchCount": 318,
+      "winCount": 149,
+      "winRate": 46.86
+    },
+    "77:POSITION_3": {
+      "matchCount": 2126,
+      "winCount": 931,
+      "winRate": 43.79
+    },
+    "77:POSITION_4": {
+      "matchCount": 89,
+      "winCount": 31,
+      "winRate": 34.83
+    },
+    "77:POSITION_5": {
+      "matchCount": 39,
+      "winCount": 18,
+      "winRate": 46.15
+    },
+    "78:POSITION_1": {
+      "matchCount": 54,
+      "winCount": 27,
+      "winRate": 50.0
+    },
+    "78:POSITION_2": {
+      "matchCount": 335,
+      "winCount": 173,
+      "winRate": 51.64
+    },
+    "78:POSITION_3": {
+      "matchCount": 3689,
+      "winCount": 1804,
+      "winRate": 48.9
+    },
+    "78:POSITION_4": {
+      "matchCount": 190,
+      "winCount": 82,
+      "winRate": 43.16
+    },
+    "78:POSITION_5": {
+      "matchCount": 107,
+      "winCount": 55,
+      "winRate": 51.4
+    },
+    "79:POSITION_1": {
+      "matchCount": 33,
+      "winCount": 17,
+      "winRate": 51.52
+    },
+    "79:POSITION_2": {
+      "matchCount": 170,
+      "winCount": 71,
+      "winRate": 41.76
+    },
+    "79:POSITION_3": {
+      "matchCount": 52,
+      "winCount": 24,
+      "winRate": 46.15
+    },
+    "79:POSITION_4": {
+      "matchCount": 2047,
+      "winCount": 905,
+      "winRate": 44.21
+    },
+    "79:POSITION_5": {
+      "matchCount": 2762,
+      "winCount": 1290,
+      "winRate": 46.71
+    },
+    "80:POSITION_1": {
+      "matchCount": 5435,
+      "winCount": 2802,
+      "winRate": 51.55
+    },
+    "80:POSITION_2": {
+      "matchCount": 2585,
+      "winCount": 1368,
+      "winRate": 52.92
+    },
+    "80:POSITION_3": {
+      "matchCount": 913,
+      "winCount": 433,
+      "winRate": 47.43
+    },
+    "80:POSITION_4": {
+      "matchCount": 139,
+      "winCount": 53,
+      "winRate": 38.13
+    },
+    "80:POSITION_5": {
+      "matchCount": 127,
+      "winCount": 48,
+      "winRate": 37.8
+    },
+    "81:POSITION_1": {
+      "matchCount": 2567,
+      "winCount": 1250,
+      "winRate": 48.69
+    },
+    "81:POSITION_2": {
+      "matchCount": 460,
+      "winCount": 246,
+      "winRate": 53.48
+    },
+    "81:POSITION_3": {
+      "matchCount": 13038,
+      "winCount": 6586,
+      "winRate": 50.51
+    },
+    "81:POSITION_4": {
+      "matchCount": 508,
+      "winCount": 241,
+      "winRate": 47.44
+    },
+    "81:POSITION_5": {
+      "matchCount": 163,
+      "winCount": 77,
+      "winRate": 47.24
+    },
+    "82:POSITION_1": {
+      "matchCount": 489,
+      "winCount": 252,
+      "winRate": 51.53
+    },
+    "82:POSITION_2": {
+      "matchCount": 3196,
+      "winCount": 1702,
+      "winRate": 53.25
+    },
+    "82:POSITION_3": {
+      "matchCount": 202,
+      "winCount": 97,
+      "winRate": 48.02
+    },
+    "82:POSITION_4": {
+      "matchCount": 61,
+      "winCount": 29,
+      "winRate": 47.54
+    },
+    "82:POSITION_5": {
+      "matchCount": 50,
+      "winCount": 18,
+      "winRate": 36.0
+    },
+    "83:POSITION_1": {
+      "matchCount": 94,
+      "winCount": 34,
+      "winRate": 36.17
+    },
+    "83:POSITION_2": {
+      "matchCount": 73,
+      "winCount": 31,
+      "winRate": 42.47
+    },
+    "83:POSITION_3": {
+      "matchCount": 691,
+      "winCount": 298,
+      "winRate": 43.13
+    },
+    "83:POSITION_4": {
+      "matchCount": 3035,
+      "winCount": 1396,
+      "winRate": 46.0
+    },
+    "83:POSITION_5": {
+      "matchCount": 4909,
+      "winCount": 2272,
+      "winRate": 46.28
+    },
+    "84:POSITION_1": {
+      "matchCount": 792,
+      "winCount": 357,
+      "winRate": 45.08
+    },
+    "84:POSITION_2": {
+      "matchCount": 5648,
+      "winCount": 2827,
+      "winRate": 50.05
+    },
+    "84:POSITION_3": {
+      "matchCount": 11116,
+      "winCount": 5439,
+      "winRate": 48.93
+    },
+    "84:POSITION_4": {
+      "matchCount": 22961,
+      "winCount": 11564,
+      "winRate": 50.36
+    },
+    "84:POSITION_5": {
+      "matchCount": 22390,
+      "winCount": 11214,
+      "winRate": 50.08
+    },
+    "85:POSITION_1": {
+      "matchCount": 335,
+      "winCount": 139,
+      "winRate": 41.49
+    },
+    "85:POSITION_2": {
+      "matchCount": 622,
+      "winCount": 282,
+      "winRate": 45.34
+    },
+    "85:POSITION_3": {
+      "matchCount": 11630,
+      "winCount": 5537,
+      "winRate": 47.61
+    },
+    "85:POSITION_4": {
+      "matchCount": 15880,
+      "winCount": 7803,
+      "winRate": 49.14
+    },
+    "85:POSITION_5": {
+      "matchCount": 13852,
+      "winCount": 6687,
+      "winRate": 48.27
+    },
+    "86:POSITION_1": {
+      "matchCount": 231,
+      "winCount": 96,
+      "winRate": 41.56
+    },
+    "86:POSITION_2": {
+      "matchCount": 8555,
+      "winCount": 4094,
+      "winRate": 47.86
+    },
+    "86:POSITION_3": {
+      "matchCount": 727,
+      "winCount": 312,
+      "winRate": 42.92
+    },
+    "86:POSITION_4": {
+      "matchCount": 24726,
+      "winCount": 11971,
+      "winRate": 48.41
+    },
+    "86:POSITION_5": {
+      "matchCount": 18058,
+      "winCount": 8630,
+      "winRate": 47.79
+    },
+    "87:POSITION_1": {
+      "matchCount": 45,
+      "winCount": 15,
+      "winRate": 33.33
+    },
+    "87:POSITION_2": {
+      "matchCount": 156,
+      "winCount": 76,
+      "winRate": 48.72
+    },
+    "87:POSITION_3": {
+      "matchCount": 51,
+      "winCount": 23,
+      "winRate": 45.1
+    },
+    "87:POSITION_4": {
+      "matchCount": 7700,
+      "winCount": 3818,
+      "winRate": 49.58
+    },
+    "87:POSITION_5": {
+      "matchCount": 15496,
+      "winCount": 7627,
+      "winRate": 49.22
+    },
+    "88:POSITION_1": {
+      "matchCount": 134,
+      "winCount": 61,
+      "winRate": 45.52
+    },
+    "88:POSITION_2": {
+      "matchCount": 3425,
+      "winCount": 1842,
+      "winRate": 53.78
+    },
+    "88:POSITION_3": {
+      "matchCount": 1324,
+      "winCount": 679,
+      "winRate": 51.28
+    },
+    "88:POSITION_4": {
+      "matchCount": 8665,
+      "winCount": 4572,
+      "winRate": 52.76
+    },
+    "88:POSITION_5": {
+      "matchCount": 3500,
+      "winCount": 1797,
+      "winRate": 51.34
+    },
+    "89:POSITION_1": {
+      "matchCount": 3840,
+      "winCount": 2038,
+      "winRate": 53.07
+    },
+    "89:POSITION_2": {
+      "matchCount": 148,
+      "winCount": 98,
+      "winRate": 66.22
+    },
+    "89:POSITION_3": {
+      "matchCount": 266,
+      "winCount": 125,
+      "winRate": 46.99
+    },
+    "89:POSITION_4": {
+      "matchCount": 173,
+      "winCount": 86,
+      "winRate": 49.71
+    },
+    "89:POSITION_5": {
+      "matchCount": 151,
+      "winCount": 70,
+      "winRate": 46.36
+    },
+    "90:POSITION_1": {
+      "matchCount": 155,
+      "winCount": 63,
+      "winRate": 40.65
+    },
+    "90:POSITION_2": {
+      "matchCount": 7506,
+      "winCount": 3546,
+      "winRate": 47.24
+    },
+    "90:POSITION_3": {
+      "matchCount": 359,
+      "winCount": 165,
+      "winRate": 45.96
+    },
+    "90:POSITION_4": {
+      "matchCount": 3775,
+      "winCount": 1833,
+      "winRate": 48.56
+    },
+    "90:POSITION_5": {
+      "matchCount": 2732,
+      "winCount": 1254,
+      "winRate": 45.9
+    },
+    "91:POSITION_1": {
+      "matchCount": 453,
+      "winCount": 199,
+      "winRate": 43.93
+    },
+    "91:POSITION_2": {
+      "matchCount": 1651,
+      "winCount": 792,
+      "winRate": 47.97
+    },
+    "91:POSITION_3": {
+      "matchCount": 171,
+      "winCount": 83,
+      "winRate": 48.54
+    },
+    "91:POSITION_4": {
+      "matchCount": 1860,
+      "winCount": 872,
+      "winRate": 46.88
+    },
+    "91:POSITION_5": {
+      "matchCount": 5570,
+      "winCount": 2677,
+      "winRate": 48.06
+    },
+    "92:POSITION_1": {
+      "matchCount": 43,
+      "winCount": 19,
+      "winRate": 44.19
+    },
+    "92:POSITION_2": {
+      "matchCount": 1649,
+      "winCount": 880,
+      "winRate": 53.37
+    },
+    "92:POSITION_3": {
+      "matchCount": 1436,
+      "winCount": 729,
+      "winRate": 50.77
+    },
+    "92:POSITION_4": {
+      "matchCount": 653,
+      "winCount": 309,
+      "winRate": 47.32
+    },
+    "92:POSITION_5": {
+      "matchCount": 362,
+      "winCount": 174,
+      "winRate": 48.07
+    },
+    "93:POSITION_1": {
+      "matchCount": 22976,
+      "winCount": 11006,
+      "winRate": 47.9
+    },
+    "93:POSITION_2": {
+      "matchCount": 3774,
+      "winCount": 2004,
+      "winRate": 53.1
+    },
+    "93:POSITION_3": {
+      "matchCount": 1860,
+      "winCount": 966,
+      "winRate": 51.94
+    },
+    "93:POSITION_4": {
+      "matchCount": 730,
+      "winCount": 351,
+      "winRate": 48.08
+    },
+    "93:POSITION_5": {
+      "matchCount": 851,
+      "winCount": 419,
+      "winRate": 49.24
+    },
+    "94:POSITION_1": {
+      "matchCount": 7350,
+      "winCount": 4072,
+      "winRate": 55.4
+    },
+    "94:POSITION_2": {
+      "matchCount": 1785,
+      "winCount": 930,
+      "winRate": 52.1
+    },
+    "94:POSITION_3": {
+      "matchCount": 487,
+      "winCount": 258,
+      "winRate": 52.98
+    },
+    "94:POSITION_4": {
+      "matchCount": 89,
+      "winCount": 49,
+      "winRate": 55.06
+    },
+    "94:POSITION_5": {
+      "matchCount": 103,
+      "winCount": 55,
+      "winRate": 53.4
+    },
+    "95:POSITION_1": {
+      "matchCount": 6220,
+      "winCount": 3227,
+      "winRate": 51.88
+    },
+    "95:POSITION_2": {
+      "matchCount": 586,
+      "winCount": 316,
+      "winRate": 53.92
+    },
+    "95:POSITION_3": {
+      "matchCount": 927,
+      "winCount": 474,
+      "winRate": 51.13
+    },
+    "95:POSITION_4": {
+      "matchCount": 144,
+      "winCount": 80,
+      "winRate": 55.56
+    },
+    "95:POSITION_5": {
+      "matchCount": 145,
+      "winCount": 60,
+      "winRate": 41.38
+    },
+    "96:POSITION_1": {
+      "matchCount": 85,
+      "winCount": 41,
+      "winRate": 48.24
+    },
+    "96:POSITION_2": {
+      "matchCount": 327,
+      "winCount": 176,
+      "winRate": 53.82
+    },
+    "96:POSITION_3": {
+      "matchCount": 18557,
+      "winCount": 9600,
+      "winRate": 51.73
+    },
+    "96:POSITION_4": {
+      "matchCount": 589,
+      "winCount": 293,
+      "winRate": 49.75
+    },
+    "96:POSITION_5": {
+      "matchCount": 282,
+      "winCount": 134,
+      "winRate": 47.52
+    },
+    "97:POSITION_1": {
+      "matchCount": 468,
+      "winCount": 180,
+      "winRate": 38.46
+    },
+    "97:POSITION_2": {
+      "matchCount": 4390,
+      "winCount": 2170,
+      "winRate": 49.43
+    },
+    "97:POSITION_3": {
+      "matchCount": 13851,
+      "winCount": 6491,
+      "winRate": 46.86
+    },
+    "97:POSITION_4": {
+      "matchCount": 5149,
+      "winCount": 2511,
+      "winRate": 48.77
+    },
+    "97:POSITION_5": {
+      "matchCount": 3541,
+      "winCount": 1731,
+      "winRate": 48.88
+    },
+    "98:POSITION_1": {
+      "matchCount": 105,
+      "winCount": 50,
+      "winRate": 47.62
+    },
+    "98:POSITION_2": {
+      "matchCount": 881,
+      "winCount": 468,
+      "winRate": 53.12
+    },
+    "98:POSITION_3": {
+      "matchCount": 10518,
+      "winCount": 5016,
+      "winRate": 47.69
+    },
+    "98:POSITION_4": {
+      "matchCount": 316,
+      "winCount": 149,
+      "winRate": 47.15
+    },
+    "98:POSITION_5": {
+      "matchCount": 79,
+      "winCount": 39,
+      "winRate": 49.37
+    },
+    "99:POSITION_1": {
+      "matchCount": 547,
+      "winCount": 266,
+      "winRate": 48.63
+    },
+    "99:POSITION_2": {
+      "matchCount": 635,
+      "winCount": 314,
+      "winRate": 49.45
+    },
+    "99:POSITION_3": {
+      "matchCount": 25811,
+      "winCount": 12987,
+      "winRate": 50.32
+    },
+    "99:POSITION_4": {
+      "matchCount": 963,
+      "winCount": 492,
+      "winRate": 51.09
+    },
+    "99:POSITION_5": {
+      "matchCount": 341,
+      "winCount": 161,
+      "winRate": 47.21
+    },
+    "100:POSITION_1": {
+      "matchCount": 118,
+      "winCount": 51,
+      "winRate": 43.22
+    },
+    "100:POSITION_2": {
+      "matchCount": 786,
+      "winCount": 401,
+      "winRate": 51.02
+    },
+    "100:POSITION_3": {
+      "matchCount": 1714,
+      "winCount": 771,
+      "winRate": 44.98
+    },
+    "100:POSITION_4": {
+      "matchCount": 5285,
+      "winCount": 2545,
+      "winRate": 48.16
+    },
+    "100:POSITION_5": {
+      "matchCount": 4601,
+      "winCount": 2241,
+      "winRate": 48.71
+    },
+    "101:POSITION_1": {
+      "matchCount": 93,
+      "winCount": 46,
+      "winRate": 49.46
+    },
+    "101:POSITION_2": {
+      "matchCount": 6287,
+      "winCount": 3106,
+      "winRate": 49.4
+    },
+    "101:POSITION_3": {
+      "matchCount": 285,
+      "winCount": 147,
+      "winRate": 51.58
+    },
+    "101:POSITION_4": {
+      "matchCount": 19401,
+      "winCount": 9628,
+      "winRate": 49.63
+    },
+    "101:POSITION_5": {
+      "matchCount": 15902,
+      "winCount": 7779,
+      "winRate": 48.92
+    },
+    "102:POSITION_1": {
+      "matchCount": 546,
+      "winCount": 265,
+      "winRate": 48.53
+    },
+    "102:POSITION_2": {
+      "matchCount": 134,
+      "winCount": 60,
+      "winRate": 44.78
+    },
+    "102:POSITION_3": {
+      "matchCount": 3270,
+      "winCount": 1640,
+      "winRate": 50.15
+    },
+    "102:POSITION_4": {
+      "matchCount": 2133,
+      "winCount": 1133,
+      "winRate": 53.12
+    },
+    "102:POSITION_5": {
+      "matchCount": 2634,
+      "winCount": 1366,
+      "winRate": 51.86
+    },
+    "103:POSITION_1": {
+      "matchCount": 68,
+      "winCount": 26,
+      "winRate": 38.24
+    },
+    "103:POSITION_2": {
+      "matchCount": 97,
+      "winCount": 52,
+      "winRate": 53.61
+    },
+    "103:POSITION_3": {
+      "matchCount": 1170,
+      "winCount": 566,
+      "winRate": 48.38
+    },
+    "103:POSITION_4": {
+      "matchCount": 650,
+      "winCount": 350,
+      "winRate": 53.85
+    },
+    "103:POSITION_5": {
+      "matchCount": 530,
+      "winCount": 279,
+      "winRate": 52.64
+    },
+    "104:POSITION_1": {
+      "matchCount": 2005,
+      "winCount": 896,
+      "winRate": 44.69
+    },
+    "104:POSITION_2": {
+      "matchCount": 2337,
+      "winCount": 1201,
+      "winRate": 51.39
+    },
+    "104:POSITION_3": {
+      "matchCount": 42532,
+      "winCount": 22040,
+      "winRate": 51.82
+    },
+    "104:POSITION_4": {
+      "matchCount": 731,
+      "winCount": 357,
+      "winRate": 48.84
+    },
+    "104:POSITION_5": {
+      "matchCount": 239,
+      "winCount": 113,
+      "winRate": 47.28
+    },
+    "105:POSITION_1": {
+      "matchCount": 209,
+      "winCount": 76,
+      "winRate": 36.36
+    },
+    "105:POSITION_2": {
+      "matchCount": 4507,
+      "winCount": 2248,
+      "winRate": 49.88
+    },
+    "105:POSITION_3": {
+      "matchCount": 733,
+      "winCount": 343,
+      "winRate": 46.79
+    },
+    "105:POSITION_4": {
+      "matchCount": 20361,
+      "winCount": 10330,
+      "winRate": 50.73
+    },
+    "105:POSITION_5": {
+      "matchCount": 16081,
+      "winCount": 8199,
+      "winRate": 50.99
+    },
+    "106:POSITION_1": {
+      "matchCount": 469,
+      "winCount": 169,
+      "winRate": 36.03
+    },
+    "106:POSITION_2": {
+      "matchCount": 15120,
+      "winCount": 7265,
+      "winRate": 48.05
+    },
+    "106:POSITION_3": {
+      "matchCount": 336,
+      "winCount": 157,
+      "winRate": 46.73
+    },
+    "106:POSITION_4": {
+      "matchCount": 150,
+      "winCount": 65,
+      "winRate": 43.33
+    },
+    "106:POSITION_5": {
+      "matchCount": 69,
+      "winCount": 30,
+      "winRate": 43.48
+    },
+    "107:POSITION_1": {
+      "matchCount": 36,
+      "winCount": 13,
+      "winRate": 36.11
+    },
+    "107:POSITION_2": {
+      "matchCount": 4512,
+      "winCount": 2254,
+      "winRate": 49.96
+    },
+    "107:POSITION_3": {
+      "matchCount": 1833,
+      "winCount": 882,
+      "winRate": 48.12
+    },
+    "107:POSITION_4": {
+      "matchCount": 3000,
+      "winCount": 1497,
+      "winRate": 49.9
+    },
+    "107:POSITION_5": {
+      "matchCount": 1456,
+      "winCount": 722,
+      "winRate": 49.59
+    },
+    "108:POSITION_1": {
+      "matchCount": 130,
+      "winCount": 52,
+      "winRate": 40.0
+    },
+    "108:POSITION_2": {
+      "matchCount": 459,
+      "winCount": 223,
+      "winRate": 48.58
+    },
+    "108:POSITION_3": {
+      "matchCount": 19534,
+      "winCount": 9433,
+      "winRate": 48.29
+    },
+    "108:POSITION_4": {
+      "matchCount": 2055,
+      "winCount": 1024,
+      "winRate": 49.83
+    },
+    "108:POSITION_5": {
+      "matchCount": 1201,
+      "winCount": 599,
+      "winRate": 49.88
+    },
+    "109:POSITION_1": {
+      "matchCount": 10958,
+      "winCount": 5045,
+      "winRate": 46.04
+    },
+    "109:POSITION_2": {
+      "matchCount": 131,
+      "winCount": 73,
+      "winRate": 55.73
+    },
+    "109:POSITION_3": {
+      "matchCount": 243,
+      "winCount": 114,
+      "winRate": 46.91
+    },
+    "109:POSITION_4": {
+      "matchCount": 143,
+      "winCount": 69,
+      "winRate": 48.25
+    },
+    "109:POSITION_5": {
+      "matchCount": 146,
+      "winCount": 67,
+      "winRate": 45.89
+    },
+    "110:POSITION_1": {
+      "matchCount": 35,
+      "winCount": 15,
+      "winRate": 42.86
+    },
+    "110:POSITION_2": {
+      "matchCount": 2196,
+      "winCount": 1102,
+      "winRate": 50.18
+    },
+    "110:POSITION_3": {
+      "matchCount": 2351,
+      "winCount": 1124,
+      "winRate": 47.81
+    },
+    "110:POSITION_4": {
+      "matchCount": 5048,
+      "winCount": 2567,
+      "winRate": 50.85
+    },
+    "110:POSITION_5": {
+      "matchCount": 3090,
+      "winCount": 1557,
+      "winRate": 50.39
+    },
+    "111:POSITION_1": {
+      "matchCount": 27,
+      "winCount": 7,
+      "winRate": 25.93
+    },
+    "111:POSITION_2": {
+      "matchCount": 295,
+      "winCount": 120,
+      "winRate": 40.68
+    },
+    "111:POSITION_3": {
+      "matchCount": 40,
+      "winCount": 19,
+      "winRate": 47.5
+    },
+    "111:POSITION_4": {
+      "matchCount": 2134,
+      "winCount": 1052,
+      "winRate": 49.3
+    },
+    "111:POSITION_5": {
+      "matchCount": 6039,
+      "winCount": 2990,
+      "winRate": 49.51
+    },
+    "112:POSITION_1": {
+      "matchCount": 64,
+      "winCount": 29,
+      "winRate": 45.31
+    },
+    "112:POSITION_2": {
+      "matchCount": 430,
+      "winCount": 213,
+      "winRate": 49.53
+    },
+    "112:POSITION_3": {
+      "matchCount": 223,
+      "winCount": 103,
+      "winRate": 46.19
+    },
+    "112:POSITION_4": {
+      "matchCount": 5491,
+      "winCount": 2643,
+      "winRate": 48.13
+    },
+    "112:POSITION_5": {
+      "matchCount": 11709,
+      "winCount": 5741,
+      "winRate": 49.03
+    },
+    "113:POSITION_1": {
+      "matchCount": 583,
+      "winCount": 267,
+      "winRate": 45.8
+    },
+    "113:POSITION_2": {
+      "matchCount": 12725,
+      "winCount": 6959,
+      "winRate": 54.69
+    },
+    "113:POSITION_3": {
+      "matchCount": 102,
+      "winCount": 49,
+      "winRate": 48.04
+    },
+    "113:POSITION_4": {
+      "matchCount": 200,
+      "winCount": 77,
+      "winRate": 38.5
+    },
+    "113:POSITION_5": {
+      "matchCount": 136,
+      "winCount": 64,
+      "winRate": 47.06
+    },
+    "114:POSITION_1": {
+      "matchCount": 5916,
+      "winCount": 2685,
+      "winRate": 45.39
+    },
+    "114:POSITION_2": {
+      "matchCount": 3618,
+      "winCount": 1770,
+      "winRate": 48.92
+    },
+    "114:POSITION_3": {
+      "matchCount": 1129,
+      "winCount": 509,
+      "winRate": 45.08
+    },
+    "114:POSITION_4": {
+      "matchCount": 951,
+      "winCount": 432,
+      "winRate": 45.43
+    },
+    "114:POSITION_5": {
+      "matchCount": 424,
+      "winCount": 152,
+      "winRate": 35.85
+    },
+    "119:POSITION_1": {
+      "matchCount": 122,
+      "winCount": 42,
+      "winRate": 34.43
+    },
+    "119:POSITION_2": {
+      "matchCount": 1028,
+      "winCount": 516,
+      "winRate": 50.19
+    },
+    "119:POSITION_3": {
+      "matchCount": 207,
+      "winCount": 88,
+      "winRate": 42.51
+    },
+    "119:POSITION_4": {
+      "matchCount": 8362,
+      "winCount": 4003,
+      "winRate": 47.87
+    },
+    "119:POSITION_5": {
+      "matchCount": 8877,
+      "winCount": 4278,
+      "winRate": 48.19
+    },
+    "120:POSITION_1": {
+      "matchCount": 72,
+      "winCount": 28,
+      "winRate": 38.89
+    },
+    "120:POSITION_2": {
+      "matchCount": 4017,
+      "winCount": 1918,
+      "winRate": 47.75
+    },
+    "120:POSITION_3": {
+      "matchCount": 2076,
+      "winCount": 947,
+      "winRate": 45.62
+    },
+    "120:POSITION_4": {
+      "matchCount": 193,
+      "winCount": 80,
+      "winRate": 41.45
+    },
+    "120:POSITION_5": {
+      "matchCount": 86,
+      "winCount": 37,
+      "winRate": 43.02
+    },
+    "121:POSITION_1": {
+      "matchCount": 56,
+      "winCount": 20,
+      "winRate": 35.71
+    },
+    "121:POSITION_2": {
+      "matchCount": 360,
+      "winCount": 204,
+      "winRate": 56.67
+    },
+    "121:POSITION_3": {
+      "matchCount": 124,
+      "winCount": 60,
+      "winRate": 48.39
+    },
+    "121:POSITION_4": {
+      "matchCount": 8285,
+      "winCount": 4411,
+      "winRate": 53.24
+    },
+    "121:POSITION_5": {
+      "matchCount": 10679,
+      "winCount": 5598,
+      "winRate": 52.42
+    },
+    "123:POSITION_1": {
+      "matchCount": 267,
+      "winCount": 91,
+      "winRate": 34.08
+    },
+    "123:POSITION_2": {
+      "matchCount": 949,
+      "winCount": 428,
+      "winRate": 45.1
+    },
+    "123:POSITION_3": {
+      "matchCount": 352,
+      "winCount": 149,
+      "winRate": 42.33
+    },
+    "123:POSITION_4": {
+      "matchCount": 18468,
+      "winCount": 8797,
+      "winRate": 47.63
+    },
+    "123:POSITION_5": {
+      "matchCount": 16853,
+      "winCount": 7950,
+      "winRate": 47.17
+    },
+    "126:POSITION_1": {
+      "matchCount": 271,
+      "winCount": 116,
+      "winRate": 42.8
+    },
+    "126:POSITION_2": {
+      "matchCount": 9016,
+      "winCount": 4493,
+      "winRate": 49.83
+    },
+    "126:POSITION_3": {
+      "matchCount": 578,
+      "winCount": 287,
+      "winRate": 49.65
+    },
+    "126:POSITION_4": {
+      "matchCount": 282,
+      "winCount": 137,
+      "winRate": 48.58
+    },
+    "126:POSITION_5": {
+      "matchCount": 146,
+      "winCount": 66,
+      "winRate": 45.21
+    },
+    "128:POSITION_1": {
+      "matchCount": 342,
+      "winCount": 126,
+      "winRate": 36.84
+    },
+    "128:POSITION_2": {
+      "matchCount": 5974,
+      "winCount": 3098,
+      "winRate": 51.86
+    },
+    "128:POSITION_3": {
+      "matchCount": 1739,
+      "winCount": 775,
+      "winRate": 44.57
+    },
+    "128:POSITION_4": {
+      "matchCount": 11259,
+      "winCount": 5549,
+      "winRate": 49.29
+    },
+    "128:POSITION_5": {
+      "matchCount": 8151,
+      "winCount": 4099,
+      "winRate": 50.29
+    },
+    "129:POSITION_1": {
+      "matchCount": 62,
+      "winCount": 22,
+      "winRate": 35.48
+    },
+    "129:POSITION_2": {
+      "matchCount": 303,
+      "winCount": 144,
+      "winRate": 47.52
+    },
+    "129:POSITION_3": {
+      "matchCount": 9296,
+      "winCount": 4519,
+      "winRate": 48.61
+    },
+    "129:POSITION_4": {
+      "matchCount": 344,
+      "winCount": 165,
+      "winRate": 47.97
+    },
+    "129:POSITION_5": {
+      "matchCount": 163,
+      "winCount": 76,
+      "winRate": 46.63
+    },
+    "131:POSITION_1": {
+      "matchCount": 35,
+      "winCount": 14,
+      "winRate": 40.0
+    },
+    "131:POSITION_2": {
+      "matchCount": 73,
+      "winCount": 34,
+      "winRate": 46.58
+    },
+    "131:POSITION_3": {
+      "matchCount": 49,
+      "winCount": 22,
+      "winRate": 44.9
+    },
+    "131:POSITION_4": {
+      "matchCount": 4589,
+      "winCount": 2232,
+      "winRate": 48.64
+    },
+    "131:POSITION_5": {
+      "matchCount": 7729,
+      "winCount": 3838,
+      "winRate": 49.66
+    },
+    "135:POSITION_1": {
+      "matchCount": 133,
+      "winCount": 60,
+      "winRate": 45.11
+    },
+    "135:POSITION_2": {
+      "matchCount": 738,
+      "winCount": 390,
+      "winRate": 52.85
+    },
+    "135:POSITION_3": {
+      "matchCount": 21514,
+      "winCount": 10917,
+      "winRate": 50.74
+    },
+    "135:POSITION_4": {
+      "matchCount": 743,
+      "winCount": 377,
+      "winRate": 50.74
+    },
+    "135:POSITION_5": {
+      "matchCount": 310,
+      "winCount": 164,
+      "winRate": 52.9
+    },
+    "136:POSITION_1": {
+      "matchCount": 635,
+      "winCount": 265,
+      "winRate": 41.73
+    },
+    "136:POSITION_2": {
+      "matchCount": 3740,
+      "winCount": 1898,
+      "winRate": 50.75
+    },
+    "136:POSITION_3": {
+      "matchCount": 1760,
+      "winCount": 829,
+      "winRate": 47.1
+    },
+    "136:POSITION_4": {
+      "matchCount": 2099,
+      "winCount": 991,
+      "winRate": 47.21
+    },
+    "136:POSITION_5": {
+      "matchCount": 1440,
+      "winCount": 674,
+      "winRate": 46.81
+    },
+    "137:POSITION_1": {
+      "matchCount": 34,
+      "winCount": 19,
+      "winRate": 55.88
+    },
+    "137:POSITION_2": {
+      "matchCount": 1332,
+      "winCount": 780,
+      "winRate": 58.56
+    },
+    "137:POSITION_3": {
+      "matchCount": 6401,
+      "winCount": 3300,
+      "winRate": 51.55
+    },
+    "137:POSITION_4": {
+      "matchCount": 328,
+      "winCount": 159,
+      "winRate": 48.48
+    },
+    "137:POSITION_5": {
+      "matchCount": 113,
+      "winCount": 50,
+      "winRate": 44.25
+    },
+    "138:POSITION_1": {
+      "matchCount": 4567,
+      "winCount": 2237,
+      "winRate": 48.98
+    },
+    "138:POSITION_2": {
+      "matchCount": 1651,
+      "winCount": 853,
+      "winRate": 51.67
+    },
+    "138:POSITION_3": {
+      "matchCount": 279,
+      "winCount": 143,
+      "winRate": 51.25
+    },
+    "138:POSITION_4": {
+      "matchCount": 499,
+      "winCount": 253,
+      "winRate": 50.7
+    },
+    "138:POSITION_5": {
+      "matchCount": 330,
+      "winCount": 158,
+      "winRate": 47.88
+    },
+    "145:POSITION_1": {
+      "matchCount": 5204,
+      "winCount": 2129,
+      "winRate": 40.91
+    },
+    "145:POSITION_2": {
+      "matchCount": 4311,
+      "winCount": 2139,
+      "winRate": 49.62
+    },
+    "145:POSITION_3": {
+      "matchCount": 401,
+      "winCount": 177,
+      "winRate": 44.14
+    },
+    "145:POSITION_4": {
+      "matchCount": 97,
+      "winCount": 42,
+      "winRate": 43.3
+    },
+    "145:POSITION_5": {
+      "matchCount": 86,
+      "winCount": 32,
+      "winRate": 37.21
+    },
+    "155:POSITION_1": {
+      "matchCount": 32,
+      "winCount": 10,
+      "winRate": 31.25
+    },
+    "155:POSITION_2": {
+      "matchCount": 144,
+      "winCount": 83,
+      "winRate": 57.64
+    },
+    "155:POSITION_3": {
+      "matchCount": 1001,
+      "winCount": 449,
+      "winRate": 44.86
+    },
+    "155:POSITION_4": {
+      "matchCount": 1171,
+      "winCount": 529,
+      "winRate": 45.18
+    },
+    "155:POSITION_5": {
+      "matchCount": 1212,
+      "winCount": 604,
+      "winRate": 49.83
+    }
+  }
+}
