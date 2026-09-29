@@ -13,7 +13,10 @@ from users_db import (
     authenticate_user,
     get_user_by_id,
     update_user_stratz_token,
-    get_raw_stratz_token_for_user
+    get_raw_stratz_token_for_user,
+    increment_stat,
+    get_stat,
+    viewer_tracker
 )
 
 load_dotenv()
@@ -23,6 +26,14 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.secret_key = os.getenv("SECRET_KEY", "stratz-drafter-secret-key-12345")
 
 client = StratzClient()
+
+
+@app.before_request
+def track_site_visitor():
+    """Tracks active online site viewers by visitor ID, session, or remote address."""
+    if not request.path.startswith("/static/"):
+        vid = request.headers.get("X-Visitor-Id") or session.get("visitor_id") or request.remote_addr
+        viewer_tracker.record_activity(vid)
 
 # Initialize data on start
 print("[Server] Initializing Stratz data...")
@@ -53,6 +64,18 @@ def get_active_stratz_token():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/api/stats", methods=["GET", "POST"])
+def get_site_stats():
+    """Returns real-time site stats: current active viewers and total drafts generated."""
+    vid = request.headers.get("X-Visitor-Id") or session.get("visitor_id") or request.remote_addr
+    viewer_tracker.record_activity(vid)
+    return jsonify({
+        "success": True,
+        "onlineViewers": viewer_tracker.get_online_count(),
+        "totalDrafts": get_stat("total_drafts", 0)
+    })
 
 
 # ==============================================================================
@@ -244,12 +267,16 @@ def recommend():
         allies_roles=data.get("alliesRoles")
     )
 
+    total_drafts = increment_stat("total_drafts", 1)
+
     return jsonify({
         "success": True,
         "count": len(recommendations),
         "role": role,
         "recommendations": recommendations,
-        "analysis": analysis
+        "analysis": analysis,
+        "totalDrafts": total_drafts,
+        "onlineViewers": viewer_tracker.get_online_count()
     })
 
 
@@ -286,10 +313,14 @@ def team_matrix():
         allies_roles=data.get("alliesRoles")
     )
 
+    total_drafts = increment_stat("total_drafts", 1)
+
     return jsonify({
         "success": True,
         "matrix": matrix,
-        "analysis": analysis
+        "analysis": analysis,
+        "totalDrafts": total_drafts,
+        "onlineViewers": viewer_tracker.get_online_count()
     })
 
 
@@ -350,7 +381,9 @@ def status():
         "isPreloading": client.is_preloading,
         "preloadProgress": client.preload_progress,
         "currentBracket": client.current_bracket,
-        "availableBrackets": list(BRACKET_CONFIGS.keys())
+        "availableBrackets": list(BRACKET_CONFIGS.keys()),
+        "onlineViewers": viewer_tracker.get_online_count(),
+        "totalDrafts": get_stat("total_drafts", 0)
     })
 
 

@@ -33,6 +33,12 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS site_stats (
+                key TEXT PRIMARY KEY,
+                value INTEGER NOT NULL DEFAULT 0
+            )
+        """)
         conn.commit()
 
 
@@ -113,6 +119,76 @@ def get_raw_stratz_token_for_user(user_id: int) -> Optional[str]:
         cursor.execute("SELECT stratz_token FROM users WHERE id = ?", (user_id,))
         row = cursor.fetchone()
         return row["stratz_token"] if row and row["stratz_token"] else None
+
+
+def increment_stat(key: str, amount: int = 1) -> int:
+    """Increments integer statistic key atomically and returns new value."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+        row = cursor.fetchone()
+        if row is None:
+            new_val = amount
+            cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, new_val))
+        else:
+            new_val = row["value"] + amount
+            cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (new_val, key))
+        conn.commit()
+        return new_val
+
+
+def get_stat(key: str, default: int = 0) -> int:
+    """Retrieves integer statistic key."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+        row = cursor.fetchone()
+        return row["value"] if row else default
+
+
+def set_stat(key: str, value: int):
+    """Sets integer statistic key to a specific value."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+        row = cursor.fetchone()
+        if row is None:
+            cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, value))
+        else:
+            cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (value, key))
+        conn.commit()
+
+
+import time
+import threading
+
+
+class ViewerTracker:
+    """Thread-safe in-memory tracker for active site viewers."""
+    def __init__(self, timeout_seconds: int = 35):
+        self.timeout_seconds = timeout_seconds
+        self._lock = threading.Lock()
+        self._viewers: Dict[str, float] = {}
+
+    def record_activity(self, visitor_id: Optional[str] = None):
+        if not visitor_id:
+            visitor_id = "guest_default"
+        now = time.time()
+        with self._lock:
+            self._viewers[str(visitor_id)] = now
+            if len(self._viewers) > 150:
+                cutoff = now - 300
+                self._viewers = {k: v for k, v in self._viewers.items() if v >= cutoff}
+
+    def get_online_count(self) -> int:
+        now = time.time()
+        cutoff = now - self.timeout_seconds
+        with self._lock:
+            count = sum(1 for ts in self._viewers.values() if ts >= cutoff)
+            return max(1, count)
+
+
+viewer_tracker = ViewerTracker()
 
 
 # Ensure DB schema is ready on module import

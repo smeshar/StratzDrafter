@@ -85,6 +85,12 @@ const elements = {
   copyDraftBtn: document.getElementById('copyDraftBtn'),
   toast: document.getElementById('toast'),
 
+  // Site Activity Stats Elements
+  onlineViewersCount: document.getElementById('onlineViewersCount'),
+  totalDraftsCount: document.getElementById('totalDraftsCount'),
+  footerOnlineCount: document.getElementById('footerOnlineCount'),
+  footerDraftsCount: document.getElementById('footerDraftsCount'),
+
   // User Auth & Profile Elements
   authOpenBtn: document.getElementById('authOpenBtn'),
   userProfileBadge: document.getElementById('userProfileBadge'),
@@ -131,15 +137,54 @@ const elements = {
   logoutBtn: document.getElementById('logoutBtn'),
 };
 
+// Visitor ID and Stats Management
+function getVisitorId() {
+  let vid = sessionStorage.getItem('stratz_vid');
+  if (!vid) {
+    vid = 'v_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    sessionStorage.setItem('stratz_vid', vid);
+  }
+  return vid;
+}
+
+function updateStatsUI(onlineViewers, totalDrafts) {
+  if (onlineViewers !== undefined && onlineViewers !== null) {
+    const formattedOnline = Number(onlineViewers).toLocaleString('ru-RU');
+    if (elements.onlineViewersCount) elements.onlineViewersCount.textContent = formattedOnline;
+    if (elements.footerOnlineCount) elements.footerOnlineCount.textContent = formattedOnline;
+  }
+  if (totalDrafts !== undefined && totalDrafts !== null) {
+    const formattedDrafts = Number(totalDrafts).toLocaleString('ru-RU');
+    if (elements.totalDraftsCount) elements.totalDraftsCount.textContent = formattedDrafts;
+    if (elements.footerDraftsCount) elements.footerDraftsCount.textContent = formattedDrafts;
+  }
+}
+
+async function fetchSiteStats() {
+  try {
+    const res = await fetch('/api/stats', {
+      headers: { 'X-Visitor-Id': getVisitorId() }
+    });
+    const data = await res.json();
+    if (data.success) {
+      updateStatsUI(data.onlineViewers, data.totalDrafts);
+    }
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
 // Init Application
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   renderSlots();
   renderBans();
+  fetchSiteStats();
   await initAuth();
   await loadHeroes();
   await triggerUpdate();
   pollStatus();
+  setInterval(fetchSiteStats, 10000);
 });
 
 // Setup Events
@@ -210,7 +255,9 @@ function setupEventListeners() {
   });
 
   // Copy Draft to Clipboard for Discord
-  elements.copyDraftBtn.addEventListener('click', copyDraftToDiscord);
+  if (elements.copyDraftBtn) {
+    elements.copyDraftBtn.addEventListener('click', copyDraftToDiscord);
+  }
 
   // Recommendations Hero Search
   if (elements.recsHeroSearchInput) {
@@ -697,10 +744,16 @@ async function triggerUpdate() {
   try {
     const res = await fetch('/api/team_matrix', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Visitor-Id': getVisitorId()
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
+    if (data.onlineViewers !== undefined || data.totalDrafts !== undefined) {
+      updateStatsUI(data.onlineViewers, data.totalDrafts);
+    }
     if (data.success && data.matrix) {
       state.matrixData = data.matrix;
       renderCurrentRecommendations();
@@ -831,10 +884,16 @@ async function loadDetailedRecs() {
   try {
     const res = await fetch('/api/recommend', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Visitor-Id': getVisitorId()
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
+    if (data.onlineViewers !== undefined || data.totalDrafts !== undefined) {
+      updateStatsUI(data.onlineViewers, data.totalDrafts);
+    }
     if (data.success && data.recommendations) {
       state.recsListData = data.recommendations;
       renderDetailedRecs(data.recommendations);
@@ -1012,11 +1071,18 @@ function copyDraftToDiscord() {
 
 let wasPreloading = false;
 
-// Poll status of API and Background Preloading
+// Poll status of API, live visitors, draft count and Background Preloading
 async function pollStatus() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/status', {
+      headers: { 'X-Visitor-Id': getVisitorId() }
+    });
     const data = await res.json();
+
+    if (data.onlineViewers !== undefined || data.totalDrafts !== undefined) {
+      updateStatsUI(data.onlineViewers, data.totalDrafts);
+    }
+
     if (data.isPreloading) {
       wasPreloading = true;
       elements.statusText.textContent = `Синхронизация: ${data.preloadProgress}%`;
@@ -1038,9 +1104,12 @@ async function pollStatus() {
         elements.statusText.textContent = `База актуальна (${data.cachedMatchupsCount} героев)`;
         if (elements.statusBadge) elements.statusBadge.title = 'Локальный кэш: 127 героев загружено. Запросы к API не расходуются.';
       }
+
+      setTimeout(pollStatus, 10000);
     }
   } catch (err) {
     elements.statusText.textContent = 'Stratz API: Готово';
+    setTimeout(pollStatus, 10000);
   }
 }
 

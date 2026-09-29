@@ -75,6 +75,79 @@ body {
 }
 
 /* ==========================================================================
+   TOP RUNNING MARQUEE BANNER
+   ========================================================================== */
+.top-marquee-banner {
+  width: 100%;
+  background: rgba(22, 10, 16, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 51, 102, 0.28);
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+  z-index: 100;
+  padding: 7px 0;
+  display: flex;
+  align-items: center;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marqueeRun 24s linear infinite;
+}
+
+.top-marquee-banner:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-content {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding-right: 28px;
+  flex-shrink: 0;
+}
+
+.marquee-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #ff4d6d;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.marquee-icon {
+  width: 13px;
+  height: 13px;
+  color: #f6c445;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.marquee-sep {
+  color: #f6c445;
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+@keyframes marqueeRun {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ==========================================================================
    HEADER
    ========================================================================== */
 .app-header {
@@ -203,6 +276,74 @@ body {
     transform: scale(0.95);
     opacity: 0.8;
   }
+}
+
+/* Live Activity Stats in Header */
+.header-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 20, 32, 0.75);
+  border: 1px solid var(--glass-border);
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.stat-badge:hover {
+  background: rgba(22, 30, 48, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.stat-pulse-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--radiant-green);
+  border-radius: 50%;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.stat-pulse-dot-mini {
+  width: 6px;
+  height: 6px;
+  background: var(--radiant-green);
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+.stat-val {
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 14px;
+  text-align: center;
+}
+
+.stat-drafts .stat-icon {
+  color: var(--gold-accent);
+}
+
+.stat-drafts .stat-val {
+  color: #ffffff;
 }
 
 .header-buttons {
@@ -1547,8 +1688,30 @@ body {
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   box-shadow: var(--shadow-main);
+}
+
+.footer-stats-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.footer-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-stat-item strong {
+  color: #fff;
+  font-weight: 700;
 }
 
 .footer-contacts {
@@ -2094,5 +2257,21 @@ body {
   .header-controls {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .header-stats-group {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .footer-stats-info {
+    justify-content: center;
   }
 }
