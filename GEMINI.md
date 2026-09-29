@@ -24,6 +24,7 @@ StratzDrafter/
 ├── setup.bat               # Интерактивный установщик для друзей (запрос токена, pip, ярлык)
 ├── installer.iss           # Скрипт Inno Setup для сборки Windows Setup.exe с окном токена
 ├── build_exe.bat           # Сборка автономного исполняемого файла через PyInstaller
+├── deploy.sh               # Автоматическое развертывание на Ubuntu VPS (systemd + Nginx)
 ├── run_tests.bat           # Запуск тестового комплекса (Unit, API, Playwright E2E)
 ├── requirements.txt        # Python-зависимости (flask, requests, python-dotenv, pytest, playwright)
 ├── .env                    # Токен STRATZ_API (опционально), SECRET_KEY

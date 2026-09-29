@@ -397,8 +397,9 @@ def open_browser():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    host = os.environ.get("HOST", "127.0.0.1")
     print(f"\n=======================================================")
     print(f"  STRATZ DOTA 2 CUSTOM DRAFTER")
-    print(f"  Running locally on http://localhost:{port}")
+    print(f"  Running on http://{host}:{port}")
     print(f"=======================================================\n")
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host=host, port=port, debug=False)
