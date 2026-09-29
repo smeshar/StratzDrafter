@@ -615,6 +615,11 @@ body {
   background: rgba(30, 40, 60, 0.85);
 }
 
+.team-enemies .draft-slot.active-slot {
+  border-color: var(--dire-red);
+  background: rgba(45, 18, 24, 0.85);
+}
+
 .draft-slot.filled {
   background: rgba(16, 24, 38, 0.9);
 }
@@ -623,6 +628,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .slot-portrait-wrapper {
@@ -634,27 +641,63 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   position: relative;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-portrait-wrapper:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--gold-accent);
+}
+
+.team-enemies .slot-portrait-wrapper:hover {
+  border-color: var(--dire-red);
 }
 
 .slot-portrait-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.slot-portrait-wrapper:hover .slot-portrait-img {
+  transform: scale(1.05);
 }
 
 .slot-empty-icon {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 300;
   color: var(--text-muted);
-  opacity: 0.5;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: inline-block;
+  line-height: 1;
+}
+
+.slot-portrait-wrapper:hover .slot-empty-icon {
+  color: var(--gold-accent);
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.team-enemies .slot-portrait-wrapper:hover .slot-empty-icon {
+  color: var(--dire-red);
+  opacity: 1;
 }
 
 .slot-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
 .slot-role-tag {
@@ -1042,6 +1085,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.matrix-column.focused-pos {
+  border-color: var(--gold-accent);
+  background: rgba(20, 28, 44, 0.85);
+}
+
+.matrix-column.focused-pos .matrix-col-header {
+  border-bottom-color: rgba(246, 196, 69, 0.4);
 }
 
 .matrix-col-header {
