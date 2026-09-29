@@ -464,12 +464,12 @@ function renderSlots() {
     const hero = slot.id ? state.heroesMap[slot.id] : null;
     const isActive = state.activeSlot && state.activeSlot.team === 'allies' && state.activeSlot.index === i;
     return `
-      <div class="draft-slot ${hero ? 'filled' : ''} ${isActive ? 'active-slot' : ''}" data-team="allies" data-index="${i}">
+      <div class="draft-slot ${hero ? 'filled' : ''} ${isActive ? 'active-slot' : ''}" data-team="allies" data-index="${i}" title="${isActive ? 'Текущая выбранная позиция' : 'Кликните сбоку для фокуса на эту позицию'}">
         <div class="slot-left">
-          <div class="slot-portrait-wrapper">
+          <div class="slot-portrait-wrapper" data-action="pick" title="${hero ? 'Нажмите, чтобы сменить героя' : 'Нажмите на плюс, чтобы выбрать героя'}">
             ${hero ? `<img class="slot-portrait-img" src="${hero.iconUrl}" alt="${hero.displayName}">` : `<span class="slot-empty-icon">+</span>`}
           </div>
-          <div class="slot-info">
+          <div class="slot-info" title="Кликните сбоку для фокуса на эту позицию">
             <span class="slot-role-tag">${slot.roleLabel}</span>
             ${hero ? `<span class="slot-hero-name">${hero.displayName}</span>` : `<span class="slot-empty-text">Выбрать героя</span>`}
             ${slot.friend ? `<span class="slot-friend-name" title="Кликните чтобы изменить ник друга" onclick="editFriendName(event, ${i})">${slot.friend}</span>` : ''}
@@ -485,12 +485,12 @@ function renderSlots() {
     const hero = slot.id ? state.heroesMap[slot.id] : null;
     const isActive = state.activeSlot && state.activeSlot.team === 'enemies' && state.activeSlot.index === i;
     return `
-      <div class="draft-slot ${hero ? 'filled' : ''} ${isActive ? 'active-slot' : ''}" data-team="enemies" data-index="${i}">
+      <div class="draft-slot ${hero ? 'filled' : ''} ${isActive ? 'active-slot' : ''}" data-team="enemies" data-index="${i}" title="${isActive ? 'Текущая выбранная позиция' : 'Кликните сбоку для фокуса на эту позицию'}">
         <div class="slot-left">
-          <div class="slot-portrait-wrapper">
+          <div class="slot-portrait-wrapper" data-action="pick" title="${hero ? 'Нажмите, чтобы сменить героя' : 'Нажмите на плюс, чтобы выбрать героя'}">
             ${hero ? `<img class="slot-portrait-img" src="${hero.iconUrl}" alt="${hero.displayName}">` : `<span class="slot-empty-icon">+</span>`}
           </div>
-          <div class="slot-info">
+          <div class="slot-info" title="Кликните сбоку для фокуса на эту позицию">
             <span class="slot-role-tag">${slot.label}</span>
             ${hero ? `<span class="slot-hero-name">${hero.displayName}</span>` : `<span class="slot-empty-text">Пик противника</span>`}
           </div>
@@ -509,14 +509,23 @@ function renderSlots() {
   // Attach slot click listeners
   document.querySelectorAll('.draft-slot').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (e.target.classList.contains('slot-remove-btn') || e.target.classList.contains('slot-friend-name')) {
+      if (e.target.closest('.slot-remove-btn') || e.target.closest('.slot-friend-name')) {
         return;
       }
       const team = el.dataset.team;
       const index = parseInt(el.dataset.index, 10);
-      selectSlot(team, index);
+
+      // If clicked specifically on the portrait / plus wrapper, open picker modal
+      if (e.target.closest('.slot-portrait-wrapper')) {
+        openModalForSlot(team, index);
+      } else {
+        // If clicked on the side (role, name, empty text, or slot background), set focus
+        focusSlot(team, index);
+      }
     });
   });
+
+  updateMatrixColumnFocus();
 }
 
 // Edit friend nickname on slot
@@ -530,26 +539,32 @@ window.editFriendName = function (e, index) {
   }
 };
 
-// Select a slot
-function selectSlot(team, index) {
+// Focus a slot without opening the hero picker modal
+function focusSlot(team, index) {
   state.activeSlot = { team, index };
   renderSlots();
 
-  // If slot is empty, open hero picker modal immediately
+  // If slot has a role, sync role filter for list view
   const slot = team === 'allies' ? state.allies[index] : state.enemies[index];
-  if (!slot.id) {
+  if (team === 'allies' && slot && slot.role) {
+    state.currentRoleFilter = slot.role;
+    if (state.viewMode === 'list' && elements.roleFilterBar) {
+      elements.roleFilterBar.querySelectorAll('.role-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.role === slot.role);
+      });
+      loadDetailedRecs();
+    }
+  }
+
+  updateMatrixColumnFocus();
+}
+
+// Select a slot (backwards compatibility / general selector)
+function selectSlot(team, index, openPicker = false) {
+  if (openPicker) {
     openModalForSlot(team, index);
   } else {
-    // If slot has a role, sync role filter for list view
-    if (team === 'allies') {
-      state.currentRoleFilter = slot.role;
-      if (state.viewMode === 'list') {
-        elements.roleFilterBar.querySelectorAll('.role-pill').forEach(p => {
-          p.classList.toggle('active', p.dataset.role === slot.role);
-        });
-        loadDetailedRecs();
-      }
-    }
+    focusSlot(team, index);
   }
 }
 
@@ -599,6 +614,7 @@ window.removeBan = function (e, heroId) {
 // Open Hero Picker Modal
 function openModalForSlot(team, index) {
   state.activeSlot = { team, index };
+  renderSlots();
   const slotName = team === 'allies'
     ? (state.allies[index].friend ? `${state.allies[index].roleLabel} (${state.allies[index].friend})` : state.allies[index].roleLabel)
     : `Вражеский пик ${index + 1}`;
@@ -822,9 +838,12 @@ function renderTeamMatrix(matrix) {
     }
 
     const countLabel = state.recsSearchQuery ? `Найдено: ${recs.length}` : `Топ ${recs.length}`;
+    const isFocused = state.activeSlot &&
+      state.activeSlot.team === 'allies' &&
+      state.allies[state.activeSlot.index]?.role === r.key;
 
     return `
-      <div class="matrix-column">
+      <div class="matrix-column ${isFocused ? 'focused-pos' : ''}" data-role="${r.key}">
         <div class="matrix-col-header">
           <span class="matrix-col-title">${r.title}</span>
           <span class="matrix-col-count">${countLabel}</span>
@@ -835,6 +854,17 @@ function renderTeamMatrix(matrix) {
       </div>
     `;
   }).join('');
+}
+
+// Synchronize matrix column highlight with active ally slot
+function updateMatrixColumnFocus() {
+  if (!elements.teamMatrixContainer) return;
+  const activeRole = (state.activeSlot && state.activeSlot.team === 'allies')
+    ? state.allies[state.activeSlot.index]?.role
+    : null;
+  elements.teamMatrixContainer.querySelectorAll('.matrix-column').forEach(col => {
+    col.classList.toggle('focused-pos', col.dataset.role === activeRole);
+  });
 }
 
 function renderMatrixHeroCard(h, posKey) {

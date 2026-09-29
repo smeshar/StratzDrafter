@@ -60,13 +60,37 @@ class TestDrafterE2E:
         expect(footer).to_contain_text("@noootle")
         expect(footer).to_contain_text("smeshar/StratzDrafter")
 
-    def test_hero_search_russian_slang_and_select(self, page: Page, live_server_url: str):
-        """Click ally slot, search using Russian slang 'пудж', pick Pudge, verify slot updates."""
+    def test_slot_side_click_focuses_without_modal(self, page: Page, live_server_url: str):
+        """Clicking the side of a slot should focus it (active-slot class) without opening the picker modal."""
         self._wait_for_page(page, live_server_url)
 
-        # Click first ally slot (Pos 1 Carry)
+        second_ally = page.locator("#alliesSlots .draft-slot").nth(1)
+        modal = page.locator("#heroPickerModal")
+
+        # Click side info of 2nd ally slot
+        second_ally.locator(".slot-info").click()
+
+        # Slot should become active
+        expect(second_ally).to_have_class(re.compile(r"active-slot"))
+
+        # Modal must NOT open
+        expect(modal).to_be_hidden()
+
+        # Now click the plus icon on the 2nd slot -> modal should open!
+        second_ally.locator(".slot-portrait-wrapper").click()
+        expect(modal).to_be_visible()
+
+        # Close modal
+        page.locator("#closeModalBtn").click()
+        expect(modal).to_be_hidden()
+
+    def test_hero_search_russian_slang_and_select(self, page: Page, live_server_url: str):
+        """Click ally slot plus, search using Russian slang 'пудж', pick Pudge, verify slot updates."""
+        self._wait_for_page(page, live_server_url)
+
+        # Click plus icon on first ally slot (Pos 1 Carry)
         first_ally = page.locator("#alliesSlots .draft-slot").first
-        first_ally.click()
+        first_ally.locator(".slot-portrait-wrapper").click()
 
         # Modal should appear
         modal = page.locator("#heroPickerModal")
@@ -93,7 +117,7 @@ class TestDrafterE2E:
         self._wait_for_page(page, live_server_url)
 
         first_ally = page.locator("#alliesSlots .draft-slot").first
-        first_ally.click()
+        first_ally.locator(".slot-portrait-wrapper").click()
 
         modal = page.locator("#heroPickerModal")
         expect(modal).to_be_visible()
@@ -115,7 +139,7 @@ class TestDrafterE2E:
 
         # 1. Pick Ally: Crystal Maiden (using Russian slang 'цмка')
         first_ally = page.locator("#alliesSlots .draft-slot").first
-        first_ally.click()
+        first_ally.locator(".slot-portrait-wrapper").click()
         page.wait_for_timeout(200)
         page.locator("#heroSearchInput").fill("цмка")
         page.wait_for_timeout(200)
@@ -125,7 +149,7 @@ class TestDrafterE2E:
 
         # 2. Pick Enemy: Anti-Mage (using Russian slang 'ам')
         first_enemy = page.locator("#enemiesSlots .draft-slot").first
-        first_enemy.click()
+        first_enemy.locator(".slot-portrait-wrapper").click()
         page.wait_for_timeout(200)
         page.locator("#heroSearchInput").fill("ам")
         page.wait_for_timeout(200)
@@ -154,7 +178,7 @@ class TestDrafterE2E:
         self._wait_for_page(page, live_server_url)
 
         # Open modal
-        page.locator("#alliesSlots .draft-slot").first.click()
+        page.locator("#alliesSlots .draft-slot .slot-portrait-wrapper").first.click()
         modal = page.locator("#heroPickerModal")
         expect(modal).to_be_visible()
 
@@ -188,7 +212,7 @@ class TestDrafterE2E:
 
         # Pick ally
         first_ally = page.locator("#alliesSlots .draft-slot").first
-        first_ally.click()
+        first_ally.locator(".slot-portrait-wrapper").click()
         page.wait_for_timeout(200)
         page.locator("#heroSearchInput").fill("pudge")
         page.wait_for_timeout(200)
