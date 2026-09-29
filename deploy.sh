@@ -4,7 +4,7 @@
 # ==============================================================================
 set -e
 
-echo "=== [1/6] Обновление пакетов и установка зависимостей ==="
+echo "=== [1/5] Обновление пакетов и установка зависимостей ==="
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv nginx curl git
 
@@ -15,29 +15,19 @@ cd "$PROJECT_DIR"
 chmod o+x "$HOME" 2>/dev/null || true
 chmod -R o+r "$PROJECT_DIR/static" 2>/dev/null || true
 
-echo "=== [2/6] Создание виртуального окружения Python ==="
+echo "=== [2/5] Создание виртуального окружения Python ==="
 if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
-echo "=== [3/6] Установка библиотек (Flask, Gunicorn, etc.) ==="
+echo "=== [3/5] Установка библиотек (Flask, Gunicorn, etc.) ==="
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt gunicorn
-
-# Проверка .env файла
-if [ ! -f ".env" ]; then
-    echo "Создание файла .env..."
-    cat <<EOT > .env
-STRATZ_API=
-SECRET_KEY=$(openssl rand -hex 24)
-EOT
-    echo "Создан файл .env. При необходимости впишите токен STRATZ_API."
-fi
 
 # Обеспечиваем наличие папки data/
 mkdir -p data
 
-echo "=== [4/6] Настройка службы systemd (автозапуск 24/7) ==="
+echo "=== [4/5] Настройка службы systemd (автозапуск 24/7) ==="
 SERVICE_FILE="/etc/systemd/system/stratzdrafter.service"
 CURRENT_USER=$(whoami)
 
@@ -52,7 +42,6 @@ WorkingDirectory=$PROJECT_DIR
 ExecStart=$PROJECT_DIR/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 app:app
 Restart=always
 RestartSec=5
-EnvironmentFile=$PROJECT_DIR/.env
 
 [Install]
 WantedBy=multi-user.target
@@ -62,7 +51,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable stratzdrafter
 sudo systemctl restart stratzdrafter
 
-echo "=== [5/6] Настройка веб-сервера Nginx ==="
+echo "=== [5/5] Настройка веб-сервера Nginx ==="
 NGINX_CONF="/etc/nginx/sites-available/stratzdrafter"
 
 sudo bash -c "cat <<EOT > $NGINX_CONF
