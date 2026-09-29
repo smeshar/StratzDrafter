@@ -16,7 +16,7 @@ class TestFlaskAPI:
         html = response.get_data(as_text=True)
         assert "logo-title" in html
         assert "WINRATE" in html
-        assert "VS" in html
+        assert "matchup-meter-panel" in html
         assert "alliesSlots" in html
         assert "enemiesSlots" in html
         assert "teamMatrixContainer" in html

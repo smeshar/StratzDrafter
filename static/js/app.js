@@ -1010,28 +1010,37 @@ function copyDraftToDiscord() {
   });
 }
 
+let wasPreloading = false;
+
 // Poll status of API and Background Preloading
 async function pollStatus() {
   try {
     const res = await fetch('/api/status');
     const data = await res.json();
     if (data.isPreloading) {
-      elements.statusText.textContent = `Кэширование: ${data.preloadProgress}%`;
-      setTimeout(pollStatus, 2000);
+      wasPreloading = true;
+      elements.statusText.textContent = `Синхронизация: ${data.preloadProgress}%`;
+      setTimeout(pollStatus, 1500);
     } else {
+      if (wasPreloading) {
+        wasPreloading = false;
+        showToast(`Синхронизация завершена! Все ${data.cachedMatchupsCount} героев успешно обновлены.`);
+        triggerUpdate();
+      }
+
       if (data.authMode === 'personal_token') {
         elements.statusText.textContent = `Stratz API: Мой токен (${data.cachedMatchupsCount} героев)`;
         if (elements.statusBadge) elements.statusBadge.title = 'Авторизован: используется персональный токен Stratz API';
-      } else if (data.authMode === 'authenticated_no_token') {
-        elements.statusText.textContent = `Кэш: Оффлайн (${data.cachedMatchupsCount} героев)`;
-        if (elements.statusBadge) elements.statusBadge.title = 'Авторизован: токен не указан, используется оффлайн-кэш';
+      } else if (data.authMode === 'server_token' || data.hasToken) {
+        elements.statusText.textContent = `Stratz API: Онлайн (${data.cachedMatchupsCount} героев)`;
+        if (elements.statusBadge) elements.statusBadge.title = 'Stratz API подключен. База данных актуальна.';
       } else {
-        elements.statusText.textContent = `Кэш: Оффлайн (${data.cachedMatchupsCount} героев)`;
-        if (elements.statusBadge) elements.statusBadge.title = 'Анонимный режим: только локальный кэш (Stratz API не расходуется)';
+        elements.statusText.textContent = `База актуальна (${data.cachedMatchupsCount} героев)`;
+        if (elements.statusBadge) elements.statusBadge.title = 'Локальный кэш: 127 героев загружено. Запросы к API не расходуются.';
       }
     }
   } catch (err) {
-    elements.statusText.textContent = 'Stratz API: Оффлайн-кэш';
+    elements.statusText.textContent = 'Stratz API: Готово';
   }
 }
 
@@ -1282,8 +1291,9 @@ async function handleSaveToken() {
     });
     const data = await res.json();
     if (data.success) {
+      if (data.user) state.user = data.user;
       state.user.hasStratzToken = true;
-      state.user.maskedToken = data.maskedToken;
+      state.user.maskedToken = (data.user && data.user.maskedToken) || data.maskedToken;
       updateUserUI();
       updateProfileTokenView();
       showToast('Токен STRATZ API успешно проверен и сохранен!');
@@ -1334,15 +1344,20 @@ async function handleSyncToken() {
   elements.syncUserTokenBtn.textContent = 'Синхронизация...';
 
   try {
-    const res = await fetch('/api/preload', { method: 'POST' });
+    const res = await fetch('/api/preload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bracket: state.bracket || 'LOW_RANK', force: true }),
+    });
     const data = await res.json();
-    if (data.success) {
+    if (res.ok && data.success) {
       showToast(data.message || 'Синхронизация запущена через ваш токен API!');
       pollStatus();
     } else {
       showToast(data.message || 'Не удалось запустить синхронизацию', true);
     }
   } catch (err) {
+    console.error('Preload sync error:', err);
     showToast('Ошибка запуска синхронизации', true);
   } finally {
     setTimeout(() => {

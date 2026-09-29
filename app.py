@@ -247,6 +247,7 @@ def recommend():
     return jsonify({
         "success": True,
         "count": len(recommendations),
+        "role": role,
         "recommendations": recommendations,
         "analysis": analysis
     })
@@ -320,22 +321,36 @@ def status():
     """Returns status of preloader, cache, authentication, and token mode."""
     user = get_current_user()
     user_token = get_active_stratz_token()
+    env_token = os.getenv("STRATZ_API", "").strip() or client.api_token
     has_user_token = bool(user_token)
+    has_env_token = bool(env_token)
+    has_token = has_user_token or has_env_token
+
+    if has_user_token:
+        auth_mode = "personal_token"
+    elif has_env_token:
+        auth_mode = "server_token"
+    elif user:
+        auth_mode = "authenticated_no_token"
+    else:
+        auth_mode = "anonymous"
 
     return jsonify({
+        "status": "ready" if client.heroes and client.matchups else "initializing",
         "isAuthenticated": bool(user),
+        "authMode": auth_mode,
         "user": user,
         "hasUserToken": has_user_token,
+        "hasServerToken": has_env_token,
+        "hasToken": has_token,
         "isAnonymous": not bool(user),
-        "mode": "live_user_token" if has_user_token else "offline_cache",
-        "hasToken": has_user_token or bool(client.api_token),
+        "mode": "live_user_token" if has_user_token else ("live_server_token" if has_env_token else "offline_cache"),
         "heroesCount": len(client.heroes),
         "cachedMatchupsCount": len(client.matchups),
         "isPreloading": client.is_preloading,
         "preloadProgress": client.preload_progress,
         "currentBracket": client.current_bracket,
-        "availableBrackets": list(BRACKET_CONFIGS.keys()),
-        "googleClientId": os.getenv("GOOGLE_CLIENT_ID", "")
+        "availableBrackets": list(BRACKET_CONFIGS.keys())
     })
 
 
@@ -344,29 +359,36 @@ def trigger_preload():
     """
     Triggers background preloading of matchups.
     Anonymous mode restricts live requests to prevent quota burning.
-    Authenticated users with custom token use their own API key.
+    Authenticated users with custom token or server .env token use their own API key.
     """
-    user = get_current_user()
-    user_token = get_active_stratz_token()
+    try:
+        user_token = get_active_stratz_token()
+        env_token = os.getenv("STRATZ_API", "").strip() or client.api_token
+        is_test = bool(os.environ.get("PYTEST_CURRENT_TEST"))
+        token_to_use = user_token or env_token or (client.api_token if is_test else None)
 
-    # In automated test mode or when user has token
-    is_test = bool(os.environ.get("PYTEST_CURRENT_TEST"))
-    token_to_use = user_token or (client.api_token if is_test or client.api_token else None)
+        if not token_to_use and not is_test:
+            return jsonify({
+                "success": False,
+                "isAnonymous": True,
+                "message": "В анонимном режиме используются только кэшированные данные. Войдите в личный кабинет и укажите свой STRATZ API токен для обновления базы."
+            }), 400
 
-    if not user_token and not is_test:
+        data = request.get_json(silent=True) or {}
+        bracket = data.get("bracket", "LOW_RANK")
+        force_refresh = data.get("force", True)
+
+        client.preload_all_matchups_async(bracket_key=bracket, custom_token=token_to_use, force_refresh=force_refresh)
+        return jsonify({
+            "success": True,
+            "message": "Синхронизация запущена с использованием вашего STRATZ API токена."
+        })
+    except Exception as e:
+        print(f"Error starting preload: {e}")
         return jsonify({
             "success": False,
-            "isAnonymous": True,
-            "message": "В анонимном режиме используются только кэшированные данные. Войдите в личный кабинет и укажите свой STRATZ API токен для живого обновления базы."
-        })
-
-    data = request.get_json() or {}
-    bracket = data.get("bracket", "LOW_RANK")
-    client.preload_all_matchups_async(bracket_key=bracket, custom_token=token_to_use)
-    return jsonify({
-        "success": True,
-        "message": "Синхронизация запущена с использованием вашего личного STRATZ API токена."
-    })
+            "message": f"Ошибка запуска синхронизации: {e}"
+        }), 500
 
 
 def open_browser():

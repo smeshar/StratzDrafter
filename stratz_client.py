@@ -354,21 +354,23 @@ class StratzClient:
             print(f"Fetching matchups for missing heroes: {missing}")
             self.fetch_matchups_batch(missing, bracket_key=bracket_key, custom_token=custom_token)
 
-    def preload_all_matchups_async(self, bracket_key: str = "LOW_RANK", custom_token: str = None):
+    def preload_all_matchups_async(self, bracket_key: str = "LOW_RANK", custom_token: str = None, force_refresh: bool = False):
         """Background worker to download the entire Dota 2 matchup matrix in batches of 25 heroes."""
         if self.is_preloading:
             return
 
         def _worker():
             self.is_preloading = True
+            if not self.heroes:
+                self.fetch_heroes()
             all_hero_ids = list(self.heroes.keys())
             total = len(all_hero_ids)
             batch_size = 25
-            print(f"[Preloader] Starting preloading {total} heroes in background...")
+            print(f"[Preloader] Starting preloading {total} heroes in background (force_refresh={force_refresh})...")
 
             for i in range(0, total, batch_size):
                 batch = all_hero_ids[i:i + batch_size]
-                needed = [h_id for h_id in batch if h_id not in self.matchups]
+                needed = batch if force_refresh else [h_id for h_id in batch if h_id not in self.matchups]
                 if needed:
                     self.fetch_matchups_batch(needed, bracket_key=bracket_key, custom_token=custom_token)
                 self.preload_progress = min(100, int((i + len(batch)) / total * 100))
