@@ -31,7 +31,7 @@ echo "=== [4/5] Настройка службы systemd (автозапуск 24
 SERVICE_FILE="/etc/systemd/system/stratzdrafter.service"
 CURRENT_USER=$(whoami)
 
-sudo bash -c "cat <<EOT > $SERVICE_FILE
+sudo tee "$SERVICE_FILE" > /dev/null <<EOT
 [Unit]
 Description=StratzDrafter Web Service
 After=network.target
@@ -45,7 +45,7 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-EOT"
+EOT
 
 sudo systemctl daemon-reload
 sudo systemctl enable stratzdrafter
@@ -54,7 +54,7 @@ sudo systemctl restart stratzdrafter
 echo "=== [5/5] Настройка веб-сервера Nginx ==="
 NGINX_CONF="/etc/nginx/sites-available/stratzdrafter"
 
-sudo bash -c "cat <<EOT > $NGINX_CONF
+sudo tee "$NGINX_CONF" > /dev/null <<EOT
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -74,10 +74,10 @@ server {
     location /static/ {
         alias $PROJECT_DIR/static/;
         expires 7d;
-        add_header Cache-Control \"public, max-age=604800\";
+        add_header Cache-Control "public, max-age=604800";
     }
 }
-EOT"
+EOT
 
 # Отключаем дефолтный сайт и активируем stratzdrafter
 sudo rm -f /etc/nginx/sites-enabled/default
