@@ -176,9 +176,9 @@ async function fetchSiteStats() {
 
 // Init Application
 document.addEventListener('DOMContentLoaded', async () => {
-  setupEventListeners();
   renderSlots();
   renderBans();
+  setupEventListeners();
   fetchSiteStats();
   await initAuth();
   await loadHeroes();
@@ -190,62 +190,76 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Setup Events
 function setupEventListeners() {
   // Sliders
-  elements.counterWeight.addEventListener('input', (e) => {
-    state.weights.counter = parseInt(e.target.value, 10);
-    elements.counterVal.textContent = `${state.weights.counter}%`;
-    debouncedUpdate();
-  });
+  if (elements.counterWeight) {
+    elements.counterWeight.addEventListener('input', (e) => {
+      state.weights.counter = parseInt(e.target.value, 10);
+      if (elements.counterVal) elements.counterVal.textContent = `${state.weights.counter}%`;
+      debouncedUpdate();
+    });
+  }
 
-  elements.synergyWeight.addEventListener('input', (e) => {
-    state.weights.synergy = parseInt(e.target.value, 10);
-    elements.synergyVal.textContent = `${state.weights.synergy}%`;
-    debouncedUpdate();
-  });
+  if (elements.synergyWeight) {
+    elements.synergyWeight.addEventListener('input', (e) => {
+      state.weights.synergy = parseInt(e.target.value, 10);
+      if (elements.synergyVal) elements.synergyVal.textContent = `${state.weights.synergy}%`;
+      debouncedUpdate();
+    });
+  }
 
-  elements.metaWeight.addEventListener('input', (e) => {
-    state.weights.meta = parseInt(e.target.value, 10);
-    elements.metaVal.textContent = `${state.weights.meta}%`;
-    debouncedUpdate();
-  });
+  if (elements.metaWeight) {
+    elements.metaWeight.addEventListener('input', (e) => {
+      state.weights.meta = parseInt(e.target.value, 10);
+      if (elements.metaVal) elements.metaVal.textContent = `${state.weights.meta}%`;
+      debouncedUpdate();
+    });
+  }
 
   // Off-meta toggle
-  elements.offMetaToggle.addEventListener('change', (e) => {
-    state.allowOffMeta = e.target.checked;
-    showToast(state.allowOffMeta ? 'Офф-мета пики разрешены' : 'Только метовые герои');
-    debouncedUpdate();
-  });
+  if (elements.offMetaToggle) {
+    elements.offMetaToggle.addEventListener('change', (e) => {
+      state.allowOffMeta = e.target.checked;
+      showToast(state.allowOffMeta ? 'Офф-мета пики разрешены' : 'Только метовые герои');
+      debouncedUpdate();
+    });
+  }
 
   // Bracket select
-  elements.bracketSelect.addEventListener('change', (e) => {
-    state.bracket = e.target.value;
-    showToast(`Выбран ранг: ${elements.bracketSelect.options[elements.bracketSelect.selectedIndex].text}`);
-    debouncedUpdate();
-  });
+  if (elements.bracketSelect) {
+    elements.bracketSelect.addEventListener('change', (e) => {
+      state.bracket = e.target.value;
+      showToast(`Выбран ранг: ${elements.bracketSelect.options[elements.bracketSelect.selectedIndex].text}`);
+      debouncedUpdate();
+    });
+  }
 
   // Reset Draft
-  elements.resetDraftBtn.addEventListener('click', () => {
-    state.allies.forEach(s => s.id = null);
-    state.enemies.forEach(s => s.id = null);
-    state.bans = [];
-    state.activeSlot = { team: 'allies', index: 0 };
-    renderSlots();
-    renderBans();
-    elements.alliesWinBar.style.width = '50%';
-    elements.enemiesWinBar.style.width = '50%';
-    elements.alliesAdvScore.textContent = '50.0% Наша';
-    elements.enemiesAdvScore.textContent = '50.0% Враг';
-    if (elements.alliesSynergy) {
-      elements.alliesSynergy.textContent = 'Синергия: 0.0%';
-      elements.alliesSynergy.className = 'team-synergy-badge neutral';
-    }
-    if (elements.enemiesSynergy) {
-      elements.enemiesSynergy.textContent = 'Синергия: 0.0%';
-      elements.enemiesSynergy.className = 'team-synergy-badge neutral';
-    }
-    elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
-    debouncedUpdate();
-    showToast('Драфт сброшен');
-  });
+  if (elements.resetDraftBtn) {
+    elements.resetDraftBtn.addEventListener('click', () => {
+      state.allies.forEach(s => s.id = null);
+      state.enemies.forEach(s => s.id = null);
+      state.bans = [];
+      state.activeSlot = { team: 'allies', index: 0 };
+      renderSlots();
+      renderBans();
+      if (elements.alliesWinBar) elements.alliesWinBar.style.width = '50%';
+      if (elements.enemiesWinBar) elements.enemiesWinBar.style.width = '50%';
+      if (elements.alliesAdvScore) elements.alliesAdvScore.textContent = '50.0% Наша';
+      if (elements.enemiesAdvScore) elements.enemiesAdvScore.textContent = '50.0% Враг';
+      if (elements.alliesSynergy) {
+        elements.alliesSynergy.textContent = 'Синергия: 0.0%';
+        elements.alliesSynergy.className = 'team-synergy-badge neutral';
+      }
+      if (elements.enemiesSynergy) {
+        elements.enemiesSynergy.textContent = 'Синергия: 0.0%';
+        elements.enemiesSynergy.className = 'team-synergy-badge neutral';
+      }
+      if (elements.draftInsight) {
+        elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
+      }
+      debouncedUpdate();
+      showToast('Драфт сброшен');
+    });
+  }
 
   // Clear Bans
   elements.clearBansBtn.addEventListener('click', () => {
