@@ -74,6 +74,8 @@ const elements = {
   recsHeroSearchInput: document.getElementById('recsHeroSearchInput'),
   clearRecsSearchBtn: document.getElementById('clearRecsSearchBtn'),
   heroPickerModal: document.getElementById('heroPickerModal'),
+  heroPickerPopover: document.getElementById('heroPickerPopover'),
+  popoverArrow: document.getElementById('popoverArrow'),
   modalBackdrop: document.getElementById('modalBackdrop'),
   closeModalBtn: document.getElementById('closeModalBtn'),
   modalTargetTitle: document.getElementById('modalTargetTitle'),
@@ -513,6 +515,18 @@ function setupEventListeners() {
       }
     }
   });
+
+  window.addEventListener('resize', () => {
+    if (elements.heroPickerModal && elements.heroPickerModal.style.display !== 'none' && state.activeSlot) {
+      positionPopoverForSlot(state.activeSlot.team, state.activeSlot.index);
+    }
+  });
+
+  window.addEventListener('scroll', () => {
+    if (elements.heroPickerModal && elements.heroPickerModal.style.display !== 'none' && state.activeSlot) {
+      positionPopoverForSlot(state.activeSlot.team, state.activeSlot.index);
+    }
+  }, { passive: true });
 }
 
 // Set View Mode
@@ -707,28 +721,79 @@ window.removeBan = function (e, heroId) {
   debouncedUpdate();
 };
 
-// Open Hero Picker Modal
+// Position popover relative to focused slot
+function positionPopoverForSlot(team, index) {
+  const slotEl = document.querySelector(`.draft-slot[data-team="${team}"][data-index="${index}"]`);
+  const popover = elements.heroPickerPopover || document.getElementById('heroPickerPopover');
+  const arrow = elements.popoverArrow || document.getElementById('popoverArrow');
+  if (!slotEl || !popover) return;
+
+  const rect = slotEl.getBoundingClientRect();
+  const popoverWidth = Math.min(380, window.innerWidth - 20);
+  const popoverHeight = 360;
+  const margin = 8;
+
+  // Horizontal position
+  let left;
+  let arrowLeft;
+  if (team === 'allies') {
+    left = Math.max(margin, Math.min(rect.left, window.innerWidth - popoverWidth - margin));
+    arrowLeft = Math.max(16, Math.min(rect.left + 40 - left, popoverWidth - 24));
+  } else {
+    left = Math.max(margin, Math.min(rect.right - popoverWidth, window.innerWidth - popoverWidth - margin));
+    arrowLeft = Math.max(16, Math.min(rect.left + 40 - left, popoverWidth - 24));
+  }
+
+  // Vertical position (check if enough space below slot, else place above)
+  const spaceBelow = window.innerHeight - rect.bottom;
+  let top;
+  let isTopArrow = true;
+
+  if (spaceBelow >= popoverHeight + margin || rect.top < popoverHeight + margin) {
+    // Open below slot
+    top = rect.bottom + 8;
+    isTopArrow = true;
+  } else {
+    // Open above slot
+    top = Math.max(margin, rect.top - popoverHeight - 8);
+    isTopArrow = false;
+  }
+
+  popover.style.top = `${top}px`;
+  popover.style.left = `${left}px`;
+  popover.style.width = `${popoverWidth}px`;
+  popover.classList.toggle('arrow-top', isTopArrow);
+  popover.classList.toggle('arrow-bottom', !isTopArrow);
+
+  if (arrow) {
+    arrow.style.left = `${arrowLeft}px`;
+  }
+}
+
+// Open Hero Picker Modal / Popover
 function openModalForSlot(team, index, initialQuery = '') {
   state.activeSlot = { team, index };
   renderSlots();
   const slotName = team === 'allies'
     ? (state.allies[index].friend ? `${state.allies[index].roleLabel} (${state.allies[index].friend})` : state.allies[index].roleLabel)
     : `Вражеский пик ${index + 1}`;
-  elements.modalTargetTitle.textContent = `Выбор героя для: ${slotName}`;
-  elements.heroPickerModal.style.display = 'flex';
+  elements.modalTargetTitle.textContent = `Выбор: ${slotName}`;
+  elements.heroPickerModal.style.display = 'block';
+  positionPopoverForSlot(team, index);
   elements.heroSearchInput.value = initialQuery;
   state.searchQuery = initialQuery.trim().toLowerCase();
   elements.clearSearchBtn.style.display = initialQuery ? 'block' : 'none';
   filterAndRenderHeroesGrid();
   setTimeout(() => {
+    positionPopoverForSlot(team, index);
     elements.heroSearchInput.focus();
     if (initialQuery) {
       elements.heroSearchInput.setSelectionRange(initialQuery.length, initialQuery.length);
     }
-  }, 50);
+  }, 30);
 }
 
-// Close Modal
+// Close Modal / Popover
 function closeModal() {
   elements.heroPickerModal.style.display = 'none';
 }
