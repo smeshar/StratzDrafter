@@ -199,8 +199,10 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </span>
-            <input type="text" id="recsHeroSearchInput" placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..."
-              autocomplete="off">
+            <input type="search" id="recsHeroSearchInput" name="recs_search_query"
+              placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..." autocomplete="off"
+              autocorrect="off" autocapitalize="off" spellcheck="false"
+              data-form-type="other" data-lpignore="true">
             <button class="recs-clear-btn" id="clearRecsSearchBtn" style="display:none;"
               title="Очистить поиск">✕</button>
           </div>
@@ -286,8 +288,10 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </span>
-            <input type="text" id="heroSearchInput"
-              placeholder="Поиск (фура, ам, папич, axe)..." autocomplete="off">
+            <input type="search" id="heroSearchInput" name="hero_search_query"
+              placeholder="Поиск (фура, ам, папич, axe)..." autocomplete="off"
+              autocorrect="off" autocapitalize="off" spellcheck="false"
+              data-form-type="other" data-lpignore="true">
             <button class="search-clear-btn" id="clearSearchBtn" style="display:none;">✕</button>
           </div>
 

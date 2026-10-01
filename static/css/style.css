@@ -990,6 +990,14 @@ body {
   background: rgba(15, 22, 35, 0.95);
 }
 
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+
 .recs-clear-btn {
   position: absolute;
   right: 10px;
