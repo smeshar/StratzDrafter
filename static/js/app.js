@@ -323,13 +323,35 @@ function setupEventListeners() {
     filterAndRenderHeroesGrid();
   });
 
-  // Pressing Enter picks the first available hero
+  // Pressing Enter picks the first available hero, Arrow keys navigate heroes
   elements.heroSearchInput.addEventListener('keydown', (e) => {
+    const activeCells = Array.from(elements.heroesGrid.querySelectorAll('.hero-cell:not(.disabled-hero)'));
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (!activeCells.length) return;
+      let currentIndex = activeCells.findIndex(c => c.classList.contains('hero-cell-selected'));
+      if (currentIndex === -1) currentIndex = 0;
+      else currentIndex = (currentIndex + 1) % activeCells.length;
+      activeCells.forEach((c, idx) => c.classList.toggle('hero-cell-selected', idx === currentIndex));
+      activeCells[currentIndex]?.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (!activeCells.length) return;
+      let currentIndex = activeCells.findIndex(c => c.classList.contains('hero-cell-selected'));
+      if (currentIndex === -1) currentIndex = 0;
+      else currentIndex = (currentIndex - 1 + activeCells.length) % activeCells.length;
+      activeCells.forEach((c, idx) => c.classList.toggle('hero-cell-selected', idx === currentIndex));
+      activeCells[currentIndex]?.scrollIntoView({ block: 'nearest' });
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
-      const firstAvailableHeroCell = elements.heroesGrid.querySelector('.hero-cell:not(.disabled-hero)');
-      if (firstAvailableHeroCell) {
-        const heroId = parseInt(firstAvailableHeroCell.dataset.id, 10);
+      const selectedCell = elements.heroesGrid.querySelector('.hero-cell.hero-cell-selected:not(.disabled-hero)') ||
+                           elements.heroesGrid.querySelector('.hero-cell:not(.disabled-hero)');
+      if (selectedCell) {
+        const heroId = parseInt(selectedCell.dataset.id, 10);
         if (heroId) {
           onHeroCellClick(heroId);
         }
@@ -405,7 +427,7 @@ function setupEventListeners() {
     elements.logoutBtn.addEventListener('click', handleLogout);
   }
 
-  // Keyboard shortcut: Escape to close modals
+  // Keyboard shortcut: Escape, Arrow navigation between slots, and Quick-type to open hero picker
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (elements.heroPickerModal && elements.heroPickerModal.style.display !== 'none') {
@@ -414,6 +436,80 @@ function setupEventListeners() {
         closeAuthModal();
       } else if (elements.profileModal && elements.profileModal.style.display !== 'none') {
         closeProfileModal();
+      }
+      return;
+    }
+
+    // Do not intercept if user is typing in an active input or textarea
+    const activeEl = document.activeElement;
+    const isInputActive = activeEl && (
+      activeEl.tagName === 'INPUT' ||
+      activeEl.tagName === 'TEXTAREA' ||
+      activeEl.isContentEditable
+    );
+    if (isInputActive) {
+      return;
+    }
+
+    // Ignore if modal like Auth or Profile is currently open
+    if (elements.authModal && elements.authModal.style.display !== 'none') return;
+    if (elements.profileModal && elements.profileModal.style.display !== 'none') return;
+
+    // Ignore modifier combinations (Ctrl, Alt, Meta)
+    if (e.ctrlKey || e.altKey || e.metaKey) {
+      return;
+    }
+
+    // If hero picker is already open, do not re-open
+    if (elements.heroPickerModal && elements.heroPickerModal.style.display !== 'none') {
+      return;
+    }
+
+    // Arrow keys to navigate between slots when picker is closed
+    if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      if (state.activeSlot) {
+        e.preventDefault();
+        let { team, index } = state.activeSlot;
+        if (e.key === 'ArrowDown') {
+          index = (index + 1) % 5;
+        } else if (e.key === 'ArrowUp') {
+          index = (index - 1 + 5) % 5;
+        } else if (e.key === 'ArrowRight' && team === 'allies') {
+          team = 'enemies';
+        } else if (e.key === 'ArrowLeft' && team === 'enemies') {
+          team = 'allies';
+        }
+        focusSlot(team, index);
+        return;
+      }
+    }
+
+    // Enter key when a slot is focused: open hero picker
+    if (e.key === 'Enter') {
+      if (state.activeSlot) {
+        e.preventDefault();
+        openModalForSlot(state.activeSlot.team, state.activeSlot.index);
+        return;
+      }
+    }
+
+    // Backspace / Delete: clear focused slot
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (state.activeSlot) {
+        const slot = state.activeSlot.team === 'allies' ? state.allies[state.activeSlot.index] : state.enemies[state.activeSlot.index];
+        if (slot && slot.id) {
+          e.preventDefault();
+          clearSlot(e, state.activeSlot.team, state.activeSlot.index);
+          return;
+        }
+      }
+    }
+
+    // If typing any printable character (Russian, English, numbers) and a slot is focused:
+    if (e.key && e.key.length === 1 && !e.key.match(/[\x00-\x1F]/)) {
+      if (state.activeSlot && state.activeSlot.team !== undefined && state.activeSlot.index !== undefined) {
+        e.preventDefault();
+        openModalForSlot(state.activeSlot.team, state.activeSlot.index, e.key);
       }
     }
   });
@@ -612,7 +708,7 @@ window.removeBan = function (e, heroId) {
 };
 
 // Open Hero Picker Modal
-function openModalForSlot(team, index) {
+function openModalForSlot(team, index, initialQuery = '') {
   state.activeSlot = { team, index };
   renderSlots();
   const slotName = team === 'allies'
@@ -620,11 +716,16 @@ function openModalForSlot(team, index) {
     : `Вражеский пик ${index + 1}`;
   elements.modalTargetTitle.textContent = `Выбор героя для: ${slotName}`;
   elements.heroPickerModal.style.display = 'flex';
-  elements.heroSearchInput.value = '';
-  state.searchQuery = '';
-  elements.clearSearchBtn.style.display = 'none';
+  elements.heroSearchInput.value = initialQuery;
+  state.searchQuery = initialQuery.trim().toLowerCase();
+  elements.clearSearchBtn.style.display = initialQuery ? 'block' : 'none';
   filterAndRenderHeroesGrid();
-  setTimeout(() => elements.heroSearchInput.focus(), 50);
+  setTimeout(() => {
+    elements.heroSearchInput.focus();
+    if (initialQuery) {
+      elements.heroSearchInput.setSelectionRange(initialQuery.length, initialQuery.length);
+    }
+  }, 50);
 }
 
 // Close Modal
@@ -662,10 +763,13 @@ function filterAndRenderHeroesGrid() {
     return true;
   });
 
-  elements.heroesGrid.innerHTML = filtered.map(h => {
+  const firstAvailableIdx = filtered.findIndex(h => !pickedIds.has(h.id));
+
+  elements.heroesGrid.innerHTML = filtered.map((h, idx) => {
     const isPicked = pickedIds.has(h.id);
+    const isSelected = !isPicked && idx === firstAvailableIdx;
     return `
-      <div class="hero-cell ${isPicked ? 'disabled-hero' : ''}" 
+      <div class="hero-cell ${isPicked ? 'disabled-hero' : ''} ${isSelected ? 'hero-cell-selected' : ''}" 
            data-id="${h.id}" 
            onclick="onHeroCellClick(${h.id})" 
            oncontextmenu="onHeroCellRightClick(event, ${h.id})"

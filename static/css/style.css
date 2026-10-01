@@ -1588,8 +1588,10 @@ body {
   transform: translateY(-2px);
 }
 
-.hero-cell.selected-hero {
-  border-color: var(--radiant-green);
+.hero-cell.selected-hero,
+.hero-cell.hero-cell-selected {
+  border-color: var(--gold-accent);
+  background: rgba(246, 196, 69, 0.14);
   box-shadow: none;
 }
 
