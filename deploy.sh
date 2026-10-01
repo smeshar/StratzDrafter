@@ -4,7 +4,21 @@
 # ==============================================================================
 set -e
 
-echo "=== [1/5] Обновление пакетов и установка зависимостей ==="
+echo "=== [1/5] Проверка памяти (SWAP) и установка зависимостей ==="
+
+# Создаем swap-файл 2GB, если swap отсутствует (защита от Out of Memory на бюджетных VPS)
+if [ $(swapon --show | wc -l) -le 1 ]; then
+    echo "Создание swap-файла 2GB..."
+    sudo fallocate -l 2G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    if ! grep -q '/swapfile' /etc/fstab; then
+        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    fi
+    echo "Swap-файл успешно подключен!"
+fi
+
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv nginx curl git
 
@@ -31,6 +45,8 @@ echo "=== [4/5] Настройка службы systemd (автозапуск 24
 SERVICE_FILE="/etc/systemd/system/stratzdrafter.service"
 CURRENT_USER=$(whoami)
 
+# Используем 1 worker с 4 потоками (threads) для экономии RAM:
+# матрица героев загружается в память всего 1 раз вместо 3.
 sudo tee "$SERVICE_FILE" > /dev/null <<EOT
 [Unit]
 Description=StratzDrafter Web Service
@@ -39,7 +55,7 @@ After=network.target
 [Service]
 User=$CURRENT_USER
 WorkingDirectory=$PROJECT_DIR
-ExecStart=$PROJECT_DIR/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 app:app
+ExecStart=$PROJECT_DIR/venv/bin/gunicorn --workers 1 --threads 4 --bind 127.0.0.1:5000 app:app
 Restart=always
 RestartSec=5
 
