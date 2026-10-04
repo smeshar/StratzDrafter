@@ -592,9 +592,19 @@ class StratzClient:
             if counter_advantages:
                 weighted_sum = sum(w * adv for w, adv in zip(counter_weights, counter_advantages))
                 total_w = sum(counter_weights)
-                counter_score = (weighted_sum / total_w) if total_w > 0 else 0.0
+                avg_advantage = (weighted_sum / total_w) if total_w > 0 else 0.0
+                min_advantage = min(counter_advantages)
+
+                # Combined:
+                # Role-weighted average incorporates lane priorities and cores,
+                # while worst-case penalty ensures critical counterpicks are not masked.
+                if min_advantage < 0:
+                    counter_score = 0.70 * avg_advantage + 0.30 * min_advantage
+                else:
+                    counter_score = 0.85 * avg_advantage + 0.15 * min_advantage
             else:
                 counter_score = 0.0
+                min_advantage = 0.0
 
             # 2. Synergy Score Calculation
             synergy_values = []
@@ -657,6 +667,7 @@ class StratzClient:
                 "baseWinRate": base_wr,
                 "posMatches": pos_matches,
                 "counterScore": round(counter_score, 2),
+                "worstAdvantage": round(min_advantage, 2) if counter_advantages else 0.0,
                 "synergyScore": round(synergy_score, 2),
                 "metaScore": round(meta_score, 2),
                 "totalScore": round(total_score, 2),
