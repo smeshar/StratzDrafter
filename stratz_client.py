@@ -204,23 +204,27 @@ class StratzClient:
                 print(f"Failed to read matchups cache: {e}")
 
     def _save_disk_cache(self):
-        """Saves current state to local JSON cache files."""
+        """Saves current state to local JSON cache files safely."""
         try:
-            with open(HEROES_CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump(self.heroes, f, ensure_ascii=False, indent=2)
+            if self.heroes:
+                with open(HEROES_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(self.heroes, f, ensure_ascii=False, indent=2)
 
-            pos_formatted = {f"{k[0]}:{k[1]}": v for k, v in self.position_stats.items()}
-            with open(STATS_CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump({"totals": self.hero_totals, "positions": pos_formatted}, f, ensure_ascii=False, indent=2)
+            if self.position_stats or self.hero_totals:
+                pos_formatted = {f"{k[0]}:{k[1]}": v for k, v in self.position_stats.items()}
+                with open(STATS_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump({"totals": self.hero_totals, "positions": pos_formatted}, f, ensure_ascii=False, indent=2)
 
-            matchups_serializable = {}
-            for h_id, data in self.matchups.items():
-                matchups_serializable[str(h_id)] = {
-                    "vs": {str(k): v for k, v in data["vs"].items()},
-                    "with": {str(k): v for k, v in data["with"].items()}
-                }
-            with open(MATCHUPS_CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump(matchups_serializable, f, ensure_ascii=False)
+            # Safeguard: never overwrite a full 127-hero matchup cache with an empty or partial dictionary
+            if self.matchups and len(self.matchups) >= 50:
+                matchups_serializable = {}
+                for h_id, data in self.matchups.items():
+                    matchups_serializable[str(h_id)] = {
+                        "vs": {str(k): v for k, v in data["vs"].items()},
+                        "with": {str(k): v for k, v in data["with"].items()}
+                    }
+                with open(MATCHUPS_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(matchups_serializable, f, ensure_ascii=False)
 
             print("Disk cache successfully saved.")
         except Exception as e:
