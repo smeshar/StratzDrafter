@@ -2410,6 +2410,41 @@ input[type="search"]::-webkit-search-results-decoration {
   color: var(--radiant-green);
 }
 
+.profile-weights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.profile-weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-weight-item .pref-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-weight-item .pref-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.profile-weight-item .pref-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  font-family: monospace;
+}
+
 .sync-actions-card {
   display: flex;
   justify-content: space-between;

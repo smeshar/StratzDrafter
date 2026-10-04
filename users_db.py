@@ -4,6 +4,7 @@ Uses SQLite (embedded, zero-configuration) stored in data/users.db.
 """
 
 import os
+import json
 import sqlite3
 from typing import Optional, Dict, Any
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -30,6 +31,7 @@ def init_db():
                 google_id TEXT UNIQUE,
                 avatar_url TEXT,
                 stratz_token TEXT,
+                custom_weights TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -39,6 +41,12 @@ def init_db():
                 value INTEGER NOT NULL DEFAULT 0
             )
         """)
+        # Ensure custom_weights column exists for existing DBs
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(users)")
+        columns = [row["name"] for row in cursor.fetchall()]
+        if "custom_weights" not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN custom_weights TEXT")
         conn.commit()
 
 
@@ -89,7 +97,7 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, email, name, avatar_url, stratz_token, created_at 
+            SELECT id, email, name, avatar_url, stratz_token, custom_weights, created_at 
             FROM users WHERE id = ?
         """, (user_id,))
         row = cursor.fetchone()
@@ -100,7 +108,29 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         # Mask the token for safety: show only last 4 chars if present
         token = res.get("stratz_token") or ""
         res["maskedToken"] = f"...{token[-4:]}" if len(token) >= 8 else ("*****" if token else "")
+        # Parse custom default weights
+        raw_weights = res.get("custom_weights")
+        if raw_weights:
+            try:
+                res["customWeights"] = json.loads(raw_weights)
+            except Exception:
+                res["customWeights"] = {"counter": 100, "synergy": 50, "meta": 25}
+        else:
+            res["customWeights"] = {"counter": 100, "synergy": 50, "meta": 25}
         return res
+
+
+def update_user_custom_weights(user_id: int, weights: Dict[str, Any]) -> bool:
+    """Updates user's custom default weights for counter, synergy, and meta."""
+    clean_weights = {
+        "counter": max(0, min(100, int(weights.get("counter", 100)))),
+        "synergy": max(0, min(100, int(weights.get("synergy", 50)))),
+        "meta": max(0, min(100, int(weights.get("meta", 25)))),
+    }
+    with get_db_connection() as conn:
+        conn.execute("UPDATE users SET custom_weights = ? WHERE id = ?", (json.dumps(clean_weights), user_id))
+        conn.commit()
+        return True
 
 
 def update_user_stratz_token(user_id: int, token: Optional[str]) -> bool:
