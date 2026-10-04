@@ -242,6 +242,8 @@ def recommend():
     weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
     role = data.get("role", "all")
     allow_off_meta = bool(data.get("allowOffMeta", True))
+    use_role_weights = bool(data.get("useRoleWeights", True))
+    enemies_roles = data.get("enemiesRoles", [])
     bracket = data.get("bracket", "LOW_RANK")
 
     # If user has personalized token, ensure any missing matchups can be fetched
@@ -256,7 +258,9 @@ def recommend():
         weights=weights,
         role=role,
         allow_off_meta=allow_off_meta,
-        bracket_key=bracket
+        bracket_key=bracket,
+        enemies_roles=enemies_roles,
+        use_role_weights=use_role_weights
     )
 
     analysis = client.calculate_draft_analysis(
@@ -290,6 +294,8 @@ def team_matrix():
 
     weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
     allow_off_meta = bool(data.get("allowOffMeta", True))
+    use_role_weights = bool(data.get("useRoleWeights", True))
+    enemies_roles = data.get("enemiesRoles", [])
     bracket = data.get("bracket", "LOW_RANK")
 
     user_token = get_active_stratz_token()
@@ -302,7 +308,9 @@ def team_matrix():
         bans=bans,
         weights=weights,
         allow_off_meta=allow_off_meta,
-        bracket_key=bracket
+        bracket_key=bracket,
+        enemies_roles=enemies_roles,
+        use_role_weights=use_role_weights
     )
 
     analysis = client.calculate_draft_analysis(

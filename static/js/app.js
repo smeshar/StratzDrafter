@@ -28,6 +28,7 @@ const state = {
   },
   bracket: 'LOW_RANK',
   allowOffMeta: true,
+  useRoleWeights: true,
   viewMode: 'matrix', // 'matrix' or 'list'
   currentRoleFilter: 'all',
   heroes: [],
@@ -51,6 +52,7 @@ const elements = {
   synergyVal: document.getElementById('synergyVal'),
   metaVal: document.getElementById('metaVal'),
   offMetaToggle: document.getElementById('offMetaToggle'),
+  roleWeightsToggle: document.getElementById('roleWeightsToggle'),
   bracketSelect: document.getElementById('bracketSelect'),
   statusBadge: document.getElementById('statusBadge'),
   statusText: document.getElementById('statusText'),
@@ -221,6 +223,15 @@ function setupEventListeners() {
     elements.offMetaToggle.addEventListener('change', (e) => {
       state.allowOffMeta = e.target.checked;
       showToast(state.allowOffMeta ? 'Офф-мета пики разрешены' : 'Только метовые герои');
+      debouncedUpdate();
+    });
+  }
+
+  // Role weights toggle (Core vs Support & Lane Priority)
+  if (elements.roleWeightsToggle) {
+    elements.roleWeightsToggle.addEventListener('change', (e) => {
+      state.useRoleWeights = e.target.checked;
+      showToast(state.useRoleWeights ? 'Ролевой вес врагов включен' : 'Равный вес всех врагов');
       debouncedUpdate();
     });
   }
@@ -929,13 +940,20 @@ async function triggerUpdate() {
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
   const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
+  const enemyRoleKeys = ['pos1', 'pos2', 'pos3', 'pos4', 'pos5'];
+  const enemiesRoles = state.enemies
+    .map((s, idx) => ({ id: s.id, role: s.role || enemyRoleKeys[idx] }))
+    .filter(s => s.id !== null);
+
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
     alliesRoles: alliesRoles,
+    enemiesRoles: enemiesRoles,
     bans: state.bans,
     weights: state.weights,
     allowOffMeta: state.allowOffMeta,
+    useRoleWeights: state.useRoleWeights,
     bracket: state.bracket
   };
 
@@ -1083,14 +1101,21 @@ async function loadDetailedRecs() {
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
   const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
+  const enemyRoleKeys = ['pos1', 'pos2', 'pos3', 'pos4', 'pos5'];
+  const enemiesRoles = state.enemies
+    .map((s, idx) => ({ id: s.id, role: s.role || enemyRoleKeys[idx] }))
+    .filter(s => s.id !== null);
+
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
     alliesRoles: alliesRoles,
+    enemiesRoles: enemiesRoles,
     bans: state.bans,
     weights: state.weights,
     role: state.currentRoleFilter,
     allowOffMeta: state.allowOffMeta,
+    useRoleWeights: state.useRoleWeights,
     bracket: state.bracket
   };
 

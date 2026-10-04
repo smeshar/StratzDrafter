@@ -45,6 +45,58 @@ POSITION_LABELS = {
     "pos5": "Позиция 5 (Фулл-саппорт)"
 }
 
+# Strategic matchup weights based on lane alignment and Core vs Support priority (Variant 3)
+ROLE_MATCHUP_WEIGHTS = {
+    # Safe lane Carry: Highest danger from enemy offlaner (pos3) and lane support (pos4), then mid (pos2)
+    "pos1": {
+        "pos3": 1.6,  # Enemy offlaner (direct laning opponent)
+        "pos4": 1.3,  # Enemy soft support (lane harasser)
+        "pos2": 1.3,  # Enemy midlaner (early ganks / midgame tempo)
+        "pos1": 1.2,  # Enemy carry (late game scaling counterpart)
+        "pos5": 0.7,  # Enemy hard support (opposite lane)
+    },
+    # Midlaner: Extreme 1v1 lane priority (pos2) and roamers (pos4)
+    "pos2": {
+        "pos2": 1.8,  # Enemy mid (direct 1v1 matchup)
+        "pos4": 1.3,  # Enemy roamer / 4 (mid ganks)
+        "pos1": 1.2,  # Enemy carry (target/rival)
+        "pos3": 1.1,  # Enemy offlaner
+        "pos5": 0.7,  # Enemy hard support
+    },
+    # Offlaner: Highest priority is shutting down enemy carry (pos1) and trading with 5 (pos5)
+    "pos3": {
+        "pos1": 1.6,  # Enemy carry (direct lane opponent)
+        "pos5": 1.3,  # Enemy hard support (lane protector)
+        "pos2": 1.2,  # Enemy mid
+        "pos3": 1.1,  # Enemy offlaner
+        "pos4": 0.8,  # Enemy soft support
+    },
+    # Soft Support (pos4): Assists offlane against enemy carry & trades with 5
+    "pos4": {
+        "pos1": 1.5,  # Enemy carry
+        "pos5": 1.3,  # Enemy hard support
+        "pos2": 1.2,  # Enemy mid (rune control/ganks)
+        "pos3": 1.0,  # Enemy offlaner
+        "pos4": 1.0,  # Enemy soft support
+    },
+    # Hard Support (pos5): Protects carry from enemy offlaner (pos3) and trades with pos4
+    "pos5": {
+        "pos3": 1.6,  # Enemy offlaner
+        "pos4": 1.4,  # Enemy soft support (lane trading)
+        "pos2": 1.1,  # Enemy mid (midgame saves)
+        "pos1": 1.0,  # Enemy carry
+        "pos5": 0.8,  # Enemy hard support
+    },
+    # General / role "all": Cores prioritized over supports
+    "all": {
+        "pos1": 1.3,
+        "pos2": 1.3,
+        "pos3": 1.2,
+        "pos4": 0.8,
+        "pos5": 0.7,
+    }
+}
+
 
 class StratzClient:
     def __init__(self):
@@ -420,6 +472,17 @@ class StratzClient:
         else:
             return False, True, share_pct
 
+    def get_hero_primary_position(self, hero_id: int) -> str:
+        """Returns the most played position key ('pos1'..'pos5') for a hero based on cached stats."""
+        best_pos = "pos1"
+        max_matches = -1
+        for pos_key, pos_str in POSITION_MAP.items():
+            stat = self.position_stats.get((hero_id, pos_str))
+            if stat and stat.get("matchCount", 0) > max_matches:
+                max_matches = stat["matchCount"]
+                best_pos = pos_key
+        return best_pos
+
     def calculate_recommendations(
         self,
         allies: list[int],
@@ -428,13 +491,16 @@ class StratzClient:
         weights: dict = None,
         role: str = "all",
         allow_off_meta: bool = True,
-        bracket_key: str = "LOW_RANK"
+        bracket_key: str = "LOW_RANK",
+        enemies_roles: list[dict] = None,
+        use_role_weights: bool = True
     ) -> list[dict]:
         """
         Calculates draft recommendations based on custom weights:
         - counter_weight (default 70%)
         - synergy_weight (default 20%)
         - meta_weight (default 10%)
+        - enemies_roles and use_role_weights (Variant 3: prioritize lane opponents and core matchups)
         """
         if weights is None:
             weights = {"counter": 70, "synergy": 20, "meta": 10}
@@ -463,6 +529,15 @@ class StratzClient:
         else:
             norm_wc, norm_ws, norm_wm = 0.7, 0.2, 0.1
 
+        # Map of enemy_id -> role_key ('pos1'..'pos5')
+        enemy_roles_dict = {}
+        if enemies_roles and isinstance(enemies_roles, list):
+            for er in enemies_roles:
+                if isinstance(er, dict) and "id" in er and "role" in er:
+                    enemy_roles_dict[er["id"]] = er["role"]
+
+        weights_table = ROLE_MATCHUP_WEIGHTS.get(role, ROLE_MATCHUP_WEIGHTS["all"])
+
         candidates = []
 
         for h_id, hero in self.heroes.items():
@@ -474,8 +549,9 @@ class StratzClient:
             if not allowed:
                 continue
 
-            # 1. Counter Score Calculation
+            # 1. Counter Score Calculation (Variant 3: Role-weighted matchup calculation)
             counter_advantages = []
+            counter_weights = []
             counter_breakdown = []
 
             for enemy_id in enemies:
@@ -494,16 +570,27 @@ class StratzClient:
                     h_advantage = 0.0
                     h_wr = 50.0
 
+                enemy_pos = enemy_roles_dict.get(enemy_id) or self.get_hero_primary_position(enemy_id)
+                w_enemy = weights_table.get(enemy_pos, 1.0) if use_role_weights else 1.0
+
                 counter_advantages.append(h_advantage)
+                counter_weights.append(w_enemy)
                 counter_breakdown.append({
                     "enemyId": enemy_id,
                     "enemyName": self.heroes.get(enemy_id, {}).get("displayName", f"Hero {enemy_id}"),
                     "enemyShortName": self.heroes.get(enemy_id, {}).get("shortName", ""),
                     "advantage": round(h_advantage, 2),
-                    "winRate": h_wr
+                    "winRate": h_wr,
+                    "enemyRole": enemy_pos,
+                    "roleWeight": w_enemy
                 })
 
-            counter_score = (sum(counter_advantages) / len(counter_advantages)) if counter_advantages else 0.0
+            if counter_advantages:
+                weighted_sum = sum(w * adv for w, adv in zip(counter_weights, counter_advantages))
+                total_w = sum(counter_weights)
+                counter_score = (weighted_sum / total_w) if total_w > 0 else 0.0
+            else:
+                counter_score = 0.0
 
             # 2. Synergy Score Calculation
             synergy_values = []
@@ -584,7 +671,9 @@ class StratzClient:
         bans: list[int],
         weights: dict = None,
         allow_off_meta: bool = True,
-        bracket_key: str = "LOW_RANK"
+        bracket_key: str = "LOW_RANK",
+        enemies_roles: list[dict] = None,
+        use_role_weights: bool = True
     ) -> dict:
         """
         Returns top picks for ALL 5 positions simultaneously,
@@ -599,7 +688,9 @@ class StratzClient:
                 weights=weights,
                 role=role_key,
                 allow_off_meta=allow_off_meta,
-                bracket_key=bracket_key
+                bracket_key=bracket_key,
+                enemies_roles=enemies_roles,
+                use_role_weights=use_role_weights
             )
             matrix[role_key] = recs[:50]  # Return top 50 so client can search across all viable picks
         return matrix

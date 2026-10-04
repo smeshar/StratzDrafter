@@ -329,8 +329,8 @@ body {
    ========================================================================== */
 .preferences-panel {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 1.2fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr) 1.05fr 1.05fr;
+  gap: 14px;
 }
 
 .pref-card {
