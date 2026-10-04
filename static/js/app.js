@@ -1040,8 +1040,17 @@ function renderMatrixHeroCard(h, posKey) {
   const scoreClass = h.totalScore > 1 ? 'badge-positive' : (h.totalScore < -1 ? 'badge-negative' : 'badge-neutral');
   const scoreSign = h.totalScore > 0 ? '+' : '';
 
-  // Top 2 counters against enemy
-  const topCounters = (h.counterBreakdown || []).slice(0, 2);
+  // Top counters against enemy: if a severe counter exists, show best and worst for full clarity
+  let displayedChips = [];
+  if (h.counterBreakdown && h.counterBreakdown.length > 0) {
+    const bestCounter = h.counterBreakdown[0];
+    const worstCounter = h.counterBreakdown[h.counterBreakdown.length - 1];
+    if (worstCounter && worstCounter.advantage <= -2.0 && worstCounter.enemyId !== bestCounter.enemyId) {
+      displayedChips = [bestCounter, worstCounter];
+    } else {
+      displayedChips = h.counterBreakdown.slice(0, 2);
+    }
+  }
 
   return `
     <div class="matrix-hero-card">
@@ -1057,7 +1066,7 @@ function renderMatrixHeroCard(h, posKey) {
       </div>
 
       <div class="matrix-chips-row">
-        ${topCounters.length > 0 ? topCounters.map(c => `
+        ${displayedChips.length > 0 ? displayedChips.map(c => `
           <div class="mini-chip">
             <span class="mini-chip-counter">vs ${c.enemyName}</span>
             <strong style="color: ${c.advantage >= 0 ? '#6ee7b7' : '#ff99b0'}">${c.advantage >= 0 ? '+' : ''}${c.advantage}%</strong>
@@ -1155,6 +1164,7 @@ function renderDetailedRecs(recs) {
           </div>
           <div class="card-scores-row">
             <span class="score-item">Контр: <strong>${h.counterScore > 0 ? '+' : ''}${h.counterScore}%</strong></span>
+            ${(h.worstAdvantage !== undefined && h.worstAdvantage <= -2.0) ? `<span class="score-item" style="color: #ff99b0;" title="Опасный контрпик врага (учитывается формулой)">Худший: <strong>${h.worstAdvantage}%</strong></span>` : ''}
             <span class="score-item">Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
             <span class="score-item">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей)</span>
           </div>

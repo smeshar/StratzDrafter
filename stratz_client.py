@@ -503,7 +503,20 @@ class StratzClient:
                     "winRate": h_wr
                 })
 
-            counter_score = (sum(counter_advantages) / len(counter_advantages)) if counter_advantages else 0.0
+            # 1. Counter Score Calculation (Variant 2: Worst-Case / Liebig's Barrel Regularization)
+            if counter_advantages:
+                avg_advantage = sum(counter_advantages) / len(counter_advantages)
+                min_advantage = min(counter_advantages)
+                # If a hero has a negative matchup against any enemy (enemy hard-counter),
+                # apply a 30% weight penalty to the worst matchup so it prevents masking hard counters.
+                # If all matchups are positive, apply slight worst-case moderation (15%).
+                if min_advantage < 0:
+                    counter_score = 0.70 * avg_advantage + 0.30 * min_advantage
+                else:
+                    counter_score = 0.85 * avg_advantage + 0.15 * min_advantage
+            else:
+                counter_score = 0.0
+                min_advantage = 0.0
 
             # 2. Synergy Score Calculation
             synergy_values = []
@@ -566,6 +579,7 @@ class StratzClient:
                 "baseWinRate": base_wr,
                 "posMatches": pos_matches,
                 "counterScore": round(counter_score, 2),
+                "worstAdvantage": round(min_advantage, 2) if counter_advantages else 0.0,
                 "synergyScore": round(synergy_score, 2),
                 "metaScore": round(meta_score, 2),
                 "totalScore": round(total_score, 2),
