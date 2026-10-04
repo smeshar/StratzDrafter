@@ -22,9 +22,9 @@ const state = {
   bans: [],
   activeSlot: { team: 'allies', index: 0 },
   weights: {
-    counter: 70,
-    synergy: 20,
-    meta: 10,
+    counter: 100,
+    synergy: 50,
+    meta: 25,
   },
   bracket: 'LOW_RANK',
   allowOffMeta: true,
@@ -139,6 +139,16 @@ const elements = {
   tokenStatusBannerText: document.getElementById('tokenStatusBannerText'),
   syncUserTokenBtn: document.getElementById('syncUserTokenBtn'),
   logoutBtn: document.getElementById('logoutBtn'),
+
+  profileCounterWeight: document.getElementById('profileCounterWeight'),
+  profileCounterVal: document.getElementById('profileCounterVal'),
+  profileSynergyWeight: document.getElementById('profileSynergyWeight'),
+  profileSynergyVal: document.getElementById('profileSynergyVal'),
+  profileMetaWeight: document.getElementById('profileMetaWeight'),
+  profileMetaVal: document.getElementById('profileMetaVal'),
+  saveProfileWeightsBtn: document.getElementById('saveProfileWeightsBtn'),
+  copyMainWeightsBtn: document.getElementById('copyMainWeightsBtn'),
+  resetProfileWeightsBtn: document.getElementById('resetProfileWeightsBtn'),
 };
 
 // Visitor ID and Stats Management
@@ -438,6 +448,48 @@ function setupEventListeners() {
   }
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  // Profile Custom Weights Listeners
+  if (elements.profileCounterWeight) {
+    elements.profileCounterWeight.addEventListener('input', (e) => {
+      if (elements.profileCounterVal) elements.profileCounterVal.textContent = `${e.target.value}%`;
+    });
+  }
+  if (elements.profileSynergyWeight) {
+    elements.profileSynergyWeight.addEventListener('input', (e) => {
+      if (elements.profileSynergyVal) elements.profileSynergyVal.textContent = `${e.target.value}%`;
+    });
+  }
+  if (elements.profileMetaWeight) {
+    elements.profileMetaWeight.addEventListener('input', (e) => {
+      if (elements.profileMetaVal) elements.profileMetaVal.textContent = `${e.target.value}%`;
+    });
+  }
+  if (elements.saveProfileWeightsBtn) {
+    elements.saveProfileWeightsBtn.addEventListener('click', handleSaveProfileWeights);
+  }
+  if (elements.copyMainWeightsBtn) {
+    elements.copyMainWeightsBtn.addEventListener('click', () => {
+      if (elements.profileCounterWeight) elements.profileCounterWeight.value = state.weights.counter;
+      if (elements.profileCounterVal) elements.profileCounterVal.textContent = `${state.weights.counter}%`;
+      if (elements.profileSynergyWeight) elements.profileSynergyWeight.value = state.weights.synergy;
+      if (elements.profileSynergyVal) elements.profileSynergyVal.textContent = `${state.weights.synergy}%`;
+      if (elements.profileMetaWeight) elements.profileMetaWeight.value = state.weights.meta;
+      if (elements.profileMetaVal) elements.profileMetaVal.textContent = `${state.weights.meta}%`;
+      showToast('Текущие значения с главной скопированы в форму');
+    });
+  }
+  if (elements.resetProfileWeightsBtn) {
+    elements.resetProfileWeightsBtn.addEventListener('click', () => {
+      if (elements.profileCounterWeight) elements.profileCounterWeight.value = 100;
+      if (elements.profileCounterVal) elements.profileCounterVal.textContent = '100%';
+      if (elements.profileSynergyWeight) elements.profileSynergyWeight.value = 50;
+      if (elements.profileSynergyVal) elements.profileSynergyVal.textContent = '50%';
+      if (elements.profileMetaWeight) elements.profileMetaWeight.value = 25;
+      if (elements.profileMetaVal) elements.profileMetaVal.textContent = '25%';
+      showToast('Сброшено на дефолтные значения (100 / 50 / 25)');
+    });
   }
 
   // Keyboard shortcut: Escape, Arrow navigation between slots, and Quick-type to open hero picker
@@ -1405,12 +1457,34 @@ function showToast(msg, isError = false) {
 // USER AUTHENTICATION & STRATZ TOKEN CABINET
 // ==========================================
 
+function applyWeights(weights, updateInputs = true) {
+  if (!weights) return;
+  state.weights.counter = parseInt(weights.counter ?? 100, 10);
+  state.weights.synergy = parseInt(weights.synergy ?? 50, 10);
+  state.weights.meta = parseInt(weights.meta ?? 25, 10);
+
+  if (updateInputs) {
+    if (elements.counterWeight) elements.counterWeight.value = state.weights.counter;
+    if (elements.counterVal) elements.counterVal.textContent = `${state.weights.counter}%`;
+
+    if (elements.synergyWeight) elements.synergyWeight.value = state.weights.synergy;
+    if (elements.synergyVal) elements.synergyVal.textContent = `${state.weights.synergy}%`;
+
+    if (elements.metaWeight) elements.metaWeight.value = state.weights.meta;
+    if (elements.metaVal) elements.metaVal.textContent = `${state.weights.meta}%`;
+  }
+}
+
 async function initAuth() {
   try {
     const res = await fetch('/api/auth/me');
     const data = await res.json();
     if (data.authenticated && data.user) {
       state.user = data.user;
+      if (data.user.customWeights) {
+        applyWeights(data.user.customWeights, true);
+        debouncedUpdate();
+      }
     } else {
       state.user = null;
     }
@@ -1504,6 +1578,10 @@ async function handleLogin(e) {
     const data = await res.json();
     if (data.success && data.user) {
       state.user = data.user;
+      if (data.user.customWeights) {
+        applyWeights(data.user.customWeights, true);
+        debouncedUpdate();
+      }
       updateUserUI();
       closeAuthModal();
       showToast(`Добро пожаловать, ${data.user.name || 'друг'}!`);
@@ -1576,11 +1654,68 @@ function openProfileModal() {
   }
 
   updateProfileTokenView();
+  updateProfileWeightsView();
   if (elements.profileModal) elements.profileModal.style.display = 'flex';
 }
 
 function closeProfileModal() {
   if (elements.profileModal) elements.profileModal.style.display = 'none';
+}
+
+function updateProfileWeightsView() {
+  const current = (state.user && state.user.customWeights) ? state.user.customWeights : state.weights;
+  const c = current.counter ?? 100;
+  const s = current.synergy ?? 50;
+  const m = current.meta ?? 25;
+
+  if (elements.profileCounterWeight) elements.profileCounterWeight.value = c;
+  if (elements.profileCounterVal) elements.profileCounterVal.textContent = `${c}%`;
+
+  if (elements.profileSynergyWeight) elements.profileSynergyWeight.value = s;
+  if (elements.profileSynergyVal) elements.profileSynergyVal.textContent = `${s}%`;
+
+  if (elements.profileMetaWeight) elements.profileMetaWeight.value = m;
+  if (elements.profileMetaVal) elements.profileMetaVal.textContent = `${m}%`;
+}
+
+async function handleSaveProfileWeights() {
+  if (!state.user) {
+    showToast('Для сохранения весов необходимо войти в аккаунт', true);
+    return;
+  }
+  const c = parseInt(elements.profileCounterWeight?.value ?? 100, 10);
+  const s = parseInt(elements.profileSynergyWeight?.value ?? 50, 10);
+  const m = parseInt(elements.profileMetaWeight?.value ?? 25, 10);
+  const weights = { counter: c, synergy: s, meta: m };
+
+  if (elements.saveProfileWeightsBtn) {
+    elements.saveProfileWeightsBtn.disabled = true;
+    elements.saveProfileWeightsBtn.textContent = 'Сохранение...';
+  }
+
+  try {
+    const res = await fetch('/api/auth/weights', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weights })
+    });
+    const data = await res.json();
+    if (data.success && data.user) {
+      state.user = data.user;
+      applyWeights(weights, true);
+      debouncedUpdate();
+      showToast('Персональные веса успешно сохранены в профиле!');
+    } else {
+      showToast(data.message || 'Ошибка сохранения весов', true);
+    }
+  } catch (err) {
+    showToast('Ошибка соединения с сервером', true);
+  } finally {
+    if (elements.saveProfileWeightsBtn) {
+      elements.saveProfileWeightsBtn.disabled = false;
+      elements.saveProfileWeightsBtn.textContent = 'Сохранить веса в профиль';
+    }
+  }
 }
 
 function updateProfileTokenView() {

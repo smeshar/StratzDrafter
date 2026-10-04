@@ -13,6 +13,7 @@ from users_db import (
     authenticate_user,
     get_user_by_id,
     update_user_stratz_token,
+    update_user_custom_weights,
     get_raw_stratz_token_for_user,
     increment_stat,
     get_stat,
@@ -200,6 +201,27 @@ def auth_validate_token():
     })
 
 
+@app.route("/api/auth/weights", methods=["POST"])
+def auth_save_weights():
+    """Saves personalized default draft weights for logged in user."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"success": False, "message": "Необходима авторизация"}), 401
+
+    data = request.get_json() or {}
+    weights = data.get("weights", {})
+    if not isinstance(weights, dict):
+        return jsonify({"success": False, "message": "Некорректный формат весов"}), 400
+
+    update_user_custom_weights(user["id"], weights)
+    updated_user = get_user_by_id(user["id"])
+    return jsonify({
+        "success": True,
+        "message": "Настройки весов успешно сохранены в профиле!",
+        "user": updated_user
+    })
+
+
 # ==============================================================================
 # DRAFT RECOMMENDATIONS & HEROES API
 # ==============================================================================
@@ -239,7 +261,7 @@ def recommend():
     enemies = [int(x) for x in data.get("enemies", []) if x is not None]
     bans = [int(x) for x in data.get("bans", []) if x is not None]
 
-    weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
+    weights = data.get("weights", {"counter": 100, "synergy": 50, "meta": 25})
     role = data.get("role", "all")
     allow_off_meta = bool(data.get("allowOffMeta", True))
     use_role_weights = bool(data.get("useRoleWeights", True))
@@ -293,7 +315,7 @@ def team_matrix():
     enemies = [int(x) for x in data.get("enemies", []) if x is not None]
     bans = [int(x) for x in data.get("bans", []) if x is not None]
 
-    weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
+    weights = data.get("weights", {"counter": 100, "synergy": 50, "meta": 25})
     allow_off_meta = bool(data.get("allowOffMeta", True))
     use_role_weights = bool(data.get("useRoleWeights", True))
     enemies_roles = data.get("enemiesRoles", [])

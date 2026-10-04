@@ -81,27 +81,27 @@
       <div class="pref-card">
         <div class="pref-label-row">
           <span class="pref-title">Контрпики врагов</span>
-          <span class="pref-value" id="counterVal">70%</span>
+          <span class="pref-value" id="counterVal">100%</span>
         </div>
-        <input type="range" id="counterWeight" class="range-slider slider-counter" min="0" max="100" value="70">
+        <input type="range" id="counterWeight" class="range-slider slider-counter" min="0" max="100" value="100">
         <span class="pref-hint">Приоритет наказания пиков врага</span>
       </div>
 
       <div class="pref-card">
         <div class="pref-label-row">
           <span class="pref-title">Синергия команды</span>
-          <span class="pref-value" id="synergyVal">20%</span>
+          <span class="pref-value" id="synergyVal">50%</span>
         </div>
-        <input type="range" id="synergyWeight" class="range-slider slider-synergy" min="0" max="100" value="20">
+        <input type="range" id="synergyWeight" class="range-slider slider-synergy" min="0" max="100" value="50">
         <span class="pref-hint">Связки и комбо с союзниками</span>
       </div>
 
       <div class="pref-card">
         <div class="pref-label-row">
           <span class="pref-title">Мета (Общий винрейт)</span>
-          <span class="pref-value" id="metaVal">10%</span>
+          <span class="pref-value" id="metaVal">25%</span>
         </div>
-        <input type="range" id="metaWeight" class="range-slider slider-meta" min="0" max="100" value="10">
+        <input type="range" id="metaWeight" class="range-slider slider-meta" min="0" max="100" value="25">
         <span class="pref-hint">Влияние общего % побед в патче</span>
       </div>
 
@@ -454,6 +454,56 @@
 
             <div id="tokenStatusBanner" class="token-status-banner neutral">
               <span id="tokenStatusBannerText">Токен не установлен. Приложение использует оффлайн-кэш.</span>
+            </div>
+          </div>
+
+          <!-- Custom Weights Settings -->
+          <div class="token-settings-card profile-weights-card">
+            <div class="token-card-header">
+              <div class="token-card-title-group">
+                <h4 class="token-card-title">Персональные веса формулы драфта</h4>
+                <p class="token-card-desc">
+                  Настройте и сохраните дефолтные веса формулы под свой стиль игры. Они будут автоматически применяться при входе в аккаунт.
+                </p>
+              </div>
+            </div>
+
+            <div class="profile-weights-grid">
+              <div class="profile-weight-item">
+                <div class="pref-label-row">
+                  <span class="pref-title">Контрпики</span>
+                  <span class="pref-value" id="profileCounterVal">100%</span>
+                </div>
+                <input type="range" id="profileCounterWeight" class="range-slider slider-counter" min="0" max="100" value="100">
+              </div>
+
+              <div class="profile-weight-item">
+                <div class="pref-label-row">
+                  <span class="pref-title">Синергия</span>
+                  <span class="pref-value" id="profileSynergyVal">50%</span>
+                </div>
+                <input type="range" id="profileSynergyWeight" class="range-slider slider-synergy" min="0" max="100" value="50">
+              </div>
+
+              <div class="profile-weight-item">
+                <div class="pref-label-row">
+                  <span class="pref-title">Мета</span>
+                  <span class="pref-value" id="profileMetaVal">25%</span>
+                </div>
+                <input type="range" id="profileMetaWeight" class="range-slider slider-meta" min="0" max="100" value="25">
+              </div>
+            </div>
+
+            <div class="token-actions-row" style="margin-top: 6px; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="saveProfileWeightsBtn" class="btn btn-primary btn-sm">
+                Сохранить веса в профиль
+              </button>
+              <button type="button" id="copyMainWeightsBtn" class="btn btn-secondary btn-sm" title="Скопировать значения ползунков с главной страницы">
+                Взять с главной
+              </button>
+              <button type="button" id="resetProfileWeightsBtn" class="btn btn-secondary btn-sm" title="Сбросить на 100 / 50 / 25">
+                Сброс (100 / 50 / 25)
+              </button>
             </div>
           </div>
 

@@ -543,11 +543,11 @@ class StratzClient:
         - allies_roles & lane_score: early-game laning advantage against lane opponents and synergy with lane partner
         """
         if weights is None:
-            weights = {"counter": 70, "synergy": 20, "meta": 10}
+            weights = {"counter": 100, "synergy": 50, "meta": 25}
 
-        w_c = max(0.0, float(weights.get("counter", 70)))
-        w_s = max(0.0, float(weights.get("synergy", 20)))
-        w_m = max(0.0, float(weights.get("meta", 10)))
+        w_c = max(0.0, float(weights.get("counter", 100)))
+        w_s = max(0.0, float(weights.get("synergy", 50)))
+        w_m = max(0.0, float(weights.get("meta", 25)))
 
         # Ensure matchups for all drafted heroes are in cache
         needed_heroes = set(allies + enemies)
@@ -855,11 +855,11 @@ class StratzClient:
         based on head-to-head counters, team synergies, and meta win rates.
         """
         if weights is None:
-            weights = {"counter": 70, "synergy": 20, "meta": 10}
+            weights = {"counter": 100, "synergy": 50, "meta": 25}
 
-        w_c = max(0.0, float(weights.get("counter", 70)))
-        w_s = max(0.0, float(weights.get("synergy", 20)))
-        w_m = max(0.0, float(weights.get("meta", 10)))
+        w_c = max(0.0, float(weights.get("counter", 100)))
+        w_s = max(0.0, float(weights.get("synergy", 50)))
+        w_m = max(0.0, float(weights.get("meta", 25)))
 
         allies = [int(x) for x in allies if x is not None]
         enemies = [int(x) for x in enemies if x is not None]
