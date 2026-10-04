@@ -97,6 +97,40 @@ ROLE_MATCHUP_WEIGHTS = {
     }
 }
 
+# Lane alignment and matchups for Laning stage analysis
+LANE_CONFIG = {
+    # Safe lane Carry: faces enemy Offlaner (pos3) & Soft Support (pos4). Partner: Hard Support (pos5).
+    "pos1": {
+        "opponents": {"pos3": 0.65, "pos4": 0.35},
+        "partner": "pos5",
+        "name": "Легкая линия"
+    },
+    # Midlaner: 1v1 against enemy Mid (pos2). Solo lane.
+    "pos2": {
+        "opponents": {"pos2": 1.0},
+        "partner": None,
+        "name": "Мид 1v1"
+    },
+    # Offlaner: faces enemy Carry (pos1) & Hard Support (pos5). Partner: Soft Support (pos4).
+    "pos3": {
+        "opponents": {"pos1": 0.65, "pos5": 0.35},
+        "partner": "pos4",
+        "name": "Сложная линия"
+    },
+    # Soft Support: lanes with Offlaner (pos3) vs enemy Carry (pos1) & Hard Support (pos5).
+    "pos4": {
+        "opponents": {"pos1": 0.65, "pos5": 0.35},
+        "partner": "pos3",
+        "name": "Сложная линия"
+    },
+    # Hard Support: lanes with Carry (pos1) vs enemy Offlaner (pos3) & Soft Support (pos4).
+    "pos5": {
+        "opponents": {"pos3": 0.65, "pos4": 0.35},
+        "partner": "pos1",
+        "name": "Легкая линия"
+    }
+}
+
 
 class StratzClient:
     def __init__(self):
@@ -497,7 +531,8 @@ class StratzClient:
         allow_off_meta: bool = True,
         bracket_key: str = "LOW_RANK",
         enemies_roles: list[dict] = None,
-        use_role_weights: bool = True
+        use_role_weights: bool = True,
+        allies_roles: list[dict] = None
     ) -> list[dict]:
         """
         Calculates draft recommendations based on custom weights:
@@ -505,6 +540,7 @@ class StratzClient:
         - synergy_weight (default 20%)
         - meta_weight (default 10%)
         - enemies_roles and use_role_weights (Variant 3: prioritize lane opponents and core matchups)
+        - allies_roles & lane_score: early-game laning advantage against lane opponents and synergy with lane partner
         """
         if weights is None:
             weights = {"counter": 70, "synergy": 20, "meta": 10}
@@ -539,6 +575,19 @@ class StratzClient:
             for er in enemies_roles:
                 if isinstance(er, dict) and "id" in er and "role" in er:
                     enemy_roles_dict[er["id"]] = er["role"]
+        for e_id in enemies:
+            if e_id not in enemy_roles_dict:
+                enemy_roles_dict[e_id] = self.get_hero_primary_position(e_id)
+
+        # Map of ally_id -> role_key ('pos1'..'pos5')
+        ally_roles_dict = {}
+        if allies_roles and isinstance(allies_roles, list):
+            for ar in allies_roles:
+                if isinstance(ar, dict) and "id" in ar and "role" in ar:
+                    ally_roles_dict[ar["id"]] = ar["role"]
+        for a_id in allies:
+            if a_id not in ally_roles_dict:
+                ally_roles_dict[a_id] = self.get_hero_primary_position(a_id)
 
         weights_table = ROLE_MATCHUP_WEIGHTS.get(role, ROLE_MATCHUP_WEIGHTS["all"])
 
@@ -647,7 +696,86 @@ class StratzClient:
             # Meta score is winrate relative to 50%
             meta_score = (base_wr - 50.0)
 
-            # 4. Final Weighted Score
+            # 4. Lane Advantage Calculation (Линия)
+            effective_lane_role = role if role != "all" else self.get_hero_primary_position(h_id)
+            lane_cfg = LANE_CONFIG.get(effective_lane_role)
+            lane_score = None
+            lane_breakdown = None
+
+            if lane_cfg:
+                target_opponents = lane_cfg.get("opponents", {})
+                target_partner = lane_cfg.get("partner")
+
+                # Opponents on this lane
+                lane_opponents = []
+                for enemy_id in enemies:
+                    e_pos = enemy_roles_dict.get(enemy_id) or self.get_hero_primary_position(enemy_id)
+                    if e_pos in target_opponents:
+                        base_w = target_opponents[e_pos]
+                        enemy_matchup = self.matchups.get(enemy_id, {}).get("vs", {})
+                        entry = enemy_matchup.get(h_id)
+                        h_adv = -entry["synergy"] if entry else 0.0
+                        m_count = entry.get("matchCount", 0) if entry else 0
+                        w_count = entry.get("winCount", 0) if entry else 0
+                        h_wr = round((1.0 - (w_count / m_count)) * 100, 1) if m_count > 0 else 50.0
+
+                        lane_opponents.append({
+                            "enemyId": enemy_id,
+                            "enemyName": self.heroes.get(enemy_id, {}).get("displayName", f"Hero {enemy_id}"),
+                            "role": e_pos,
+                            "advantage": round(h_adv, 2),
+                            "winRate": h_wr,
+                            "weight": base_w
+                        })
+
+                # Partner on this lane
+                lane_partner = None
+                if target_partner:
+                    for ally_id in allies:
+                        a_pos = ally_roles_dict.get(ally_id) or self.get_hero_primary_position(ally_id)
+                        if a_pos == target_partner:
+                            ally_matchup = self.matchups.get(ally_id, {}).get("with", {})
+                            entry = ally_matchup.get(h_id)
+                            h_syn = entry["synergy"] if entry else 0.0
+                            m_count = entry.get("matchCount", 0) if entry else 0
+                            w_count = entry.get("winCount", 0) if entry else 0
+                            h_wr = round((w_count / m_count) * 100, 1) if m_count > 0 else 50.0
+
+                            lane_partner = {
+                                "allyId": ally_id,
+                                "allyName": self.heroes.get(ally_id, {}).get("displayName", f"Hero {ally_id}"),
+                                "role": a_pos,
+                                "synergy": round(h_syn, 2),
+                                "winRate": h_wr
+                            }
+                            break
+
+                opp_avg = None
+                if lane_opponents:
+                    lane_opponents.sort(key=lambda x: x["weight"], reverse=True)
+                    tot_w = sum(op["weight"] for op in lane_opponents)
+                    opp_avg = sum(op["weight"] * op["advantage"] for op in lane_opponents) / tot_w if tot_w > 0 else 0.0
+
+                partner_syn = lane_partner["synergy"] if lane_partner else None
+
+                if opp_avg is not None and partner_syn is not None:
+                    lane_score = round(0.70 * opp_avg + 0.30 * partner_syn, 2)
+                elif opp_avg is not None:
+                    lane_score = round(opp_avg, 2)
+                elif partner_syn is not None:
+                    lane_score = round(partner_syn, 2)
+                else:
+                    lane_score = None
+
+                if lane_score is not None or lane_opponents or lane_partner:
+                    lane_breakdown = {
+                        "role": effective_lane_role,
+                        "laneName": lane_cfg.get("name", "Линия"),
+                        "opponents": lane_opponents,
+                        "partner": lane_partner
+                    }
+
+            # 5. Final Weighted Score
             total_score = (norm_wc * counter_score) + (norm_ws * synergy_score) + (norm_wm * meta_score)
 
             # Sort breakdowns for nice presentation (best counter first)
@@ -669,6 +797,8 @@ class StratzClient:
                 "counterScore": round(counter_score, 2),
                 "worstAdvantage": round(min_advantage, 2) if counter_advantages else 0.0,
                 "synergyScore": round(synergy_score, 2),
+                "laneScore": lane_score,
+                "laneBreakdown": lane_breakdown,
                 "metaScore": round(meta_score, 2),
                 "totalScore": round(total_score, 2),
                 "counterBreakdown": counter_breakdown,
@@ -688,7 +818,8 @@ class StratzClient:
         allow_off_meta: bool = True,
         bracket_key: str = "LOW_RANK",
         enemies_roles: list[dict] = None,
-        use_role_weights: bool = True
+        use_role_weights: bool = True,
+        allies_roles: list[dict] = None
     ) -> dict:
         """
         Returns top picks for ALL 5 positions simultaneously,
@@ -705,7 +836,8 @@ class StratzClient:
                 allow_off_meta=allow_off_meta,
                 bracket_key=bracket_key,
                 enemies_roles=enemies_roles,
-                use_role_weights=use_role_weights
+                use_role_weights=use_role_weights,
+                allies_roles=allies_roles
             )
             matrix[role_key] = recs[:50]  # Return top 50 so client can search across all viable picks
         return matrix

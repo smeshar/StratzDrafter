@@ -1319,12 +1319,18 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .card-scores-row {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
   font-size: 12px;
 }
 
 .score-item {
   color: var(--text-secondary);
+}
+
+.score-item[title] {
+  cursor: help;
 }
 
 .score-item strong {

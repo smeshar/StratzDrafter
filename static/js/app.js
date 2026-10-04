@@ -1178,6 +1178,35 @@ function renderDetailedRecs(recs) {
     const scoreClass = h.totalScore > 1 ? 'badge-positive' : (h.totalScore < -1 ? 'badge-negative' : 'badge-neutral');
     const scoreSign = h.totalScore > 0 ? '+' : '';
 
+    // Lane score display and tooltip
+    let laneDisplay = '—';
+    let laneColor = 'var(--text-muted)';
+    let laneTooltip = 'Герои на эту линию еще не выбраны';
+
+    if (h.laneScore !== null && h.laneScore !== undefined) {
+      const laneSign = h.laneScore > 0 ? '+' : '';
+      laneDisplay = `${laneSign}${h.laneScore}%`;
+      laneColor = h.laneScore > 0 ? '#6ee7b7' : (h.laneScore < 0 ? '#ff99b0' : 'var(--text-main)');
+
+      const details = [];
+      const laneName = h.laneBreakdown?.laneName || 'Линия';
+      if (h.laneBreakdown?.opponents && h.laneBreakdown.opponents.length > 0) {
+        const oppsStr = h.laneBreakdown.opponents
+          .map(o => `vs ${o.enemyName}: ${o.advantage > 0 ? '+' : ''}${o.advantage}%`)
+          .join(', ');
+        details.push(oppsStr);
+      }
+      if (h.laneBreakdown?.partner) {
+        const p = h.laneBreakdown.partner;
+        details.push(`с ${p.allyName}: ${p.synergy > 0 ? '+' : ''}${p.synergy}%`);
+      }
+      if (details.length > 0) {
+        laneTooltip = `${laneName}: ${details.join(' | ')}`;
+      } else {
+        laneTooltip = `${laneName}: ${laneDisplay}`;
+      }
+    }
+
     return `
       <div class="rec-detail-card">
         <img class="card-portrait-large" src="${h.iconUrl}" alt="${h.displayName}">
@@ -1191,6 +1220,7 @@ function renderDetailedRecs(recs) {
             <span class="score-item">Контр: <strong>${h.counterScore > 0 ? '+' : ''}${h.counterScore}%</strong></span>
             ${(h.worstAdvantage !== undefined && h.worstAdvantage <= -2.0) ? `<span class="score-item" style="color: #ff99b0;" title="Опасный контрпик врага (учитывается формулой)">Худший: <strong>${h.worstAdvantage}%</strong></span>` : ''}
             <span class="score-item">Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
+            <span class="score-item" title="${laneTooltip}">Линия: <strong style="color: ${laneColor};">${laneDisplay}</strong></span>
             <span class="score-item">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей)</span>
           </div>
         </div>

@@ -260,7 +260,8 @@ def recommend():
         allow_off_meta=allow_off_meta,
         bracket_key=bracket,
         enemies_roles=enemies_roles,
-        use_role_weights=use_role_weights
+        use_role_weights=use_role_weights,
+        allies_roles=data.get("alliesRoles")
     )
 
     analysis = client.calculate_draft_analysis(
@@ -310,7 +311,8 @@ def team_matrix():
         allow_off_meta=allow_off_meta,
         bracket_key=bracket,
         enemies_roles=enemies_roles,
-        use_role_weights=use_role_weights
+        use_role_weights=use_role_weights,
+        allies_roles=data.get("alliesRoles")
     )
 
     analysis = client.calculate_draft_analysis(
