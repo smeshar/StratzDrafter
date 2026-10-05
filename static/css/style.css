@@ -469,6 +469,460 @@ body {
 }
 
 /* ==========================================================================
+   ADVANTAGE TIMELINE GRAPH (0 - 60 MIN)
+   ========================================================================== */
+.advantage-timeline-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px 12px;
+  box-shadow: var(--shadow-main);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease;
+  position: relative;
+}
+
+.advantage-timeline-panel:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* Header */
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.timeline-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--radiant-green);
+}
+
+.timeline-main-title {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.timeline-sub-title {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Meta Badges */
+.timeline-meta-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 20, 32, 0.75);
+  border: 1px solid var(--glass-border);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.timeline-badge .badge-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.timeline-badge .badge-val {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.timeline-badge-peak .badge-val {
+  color: var(--gold-accent);
+}
+
+.timeline-badge-laning .badge-val.positive,
+.timeline-badge-late .badge-val.positive {
+  color: var(--radiant-green);
+}
+
+.timeline-badge-laning .badge-val.negative,
+.timeline-badge-late .badge-val.negative {
+  color: var(--dire-red);
+}
+
+.timeline-advice-pill {
+  background: rgba(246, 196, 69, 0.08);
+  border: 1px solid rgba(246, 196, 69, 0.25);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold-accent);
+  max-width: 480px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chart Canvas Wrapper */
+.timeline-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 145px;
+  background: rgba(8, 12, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  padding: 4px 0 0;
+  overflow: hidden;
+}
+
+.timeline-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Stage Background Bands */
+.stage-bg-rect {
+  fill: transparent;
+  transition: fill 0.2s ease;
+}
+
+.stage-bg-rect:hover,
+.stage-bg-rect.active-hover {
+  fill: rgba(255, 255, 255, 0.035);
+}
+
+.stage-div-line {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* Horizontal Grid Lines */
+.grid-line.grid-subtle {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.grid-line.grid-center {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+}
+
+.grid-label {
+  fill: var(--text-muted);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-anchor: end;
+}
+
+.grid-label-center {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+.grid-label-right {
+  fill: var(--text-muted);
+  text-anchor: start;
+}
+
+/* Axis Labels */
+.axis-time-label {
+  fill: var(--text-muted);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Curves & Area Fills */
+.timeline-area {
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.radiant-area {
+  fill: url(#radiantAreaGrad);
+}
+
+.dire-area {
+  fill: url(#direAreaGrad);
+}
+
+.timeline-curve-line {
+  fill: none;
+  stroke: var(--radiant-green);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: stroke 0.3s ease;
+}
+
+.timeline-curve-line.curve-dire {
+  stroke: var(--dire-red);
+}
+
+.timeline-curve-line.curve-neutral {
+  stroke: rgba(255, 255, 255, 0.35);
+}
+
+/* Milestone Dots */
+.timeline-dots-group circle {
+  fill: #0b101a;
+  stroke: var(--radiant-green);
+  stroke-width: 2;
+  r: 3.5;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.timeline-dots-group circle.dot-dire {
+  stroke: var(--dire-red);
+}
+
+.timeline-dots-group circle.dot-neutral {
+  stroke: rgba(255, 255, 255, 0.4);
+}
+
+.timeline-dots-group circle:hover {
+  r: 5.5;
+  fill: #ffffff;
+}
+
+/* Peak Marker */
+.peak-dot {
+  fill: var(--gold-accent);
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.peak-label {
+  fill: var(--gold-accent);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+/* Hover Elements */
+.hover-cursor-line {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 2;
+  pointer-events: none;
+}
+
+.hover-cursor-dot {
+  fill: #ffffff;
+  stroke: var(--gold-accent);
+  stroke-width: 2.2;
+  pointer-events: none;
+}
+
+/* Tooltip */
+.timeline-tooltip {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  transform: translate(-50%, -100%);
+  background: rgba(12, 17, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  pointer-events: none;
+  z-index: 40;
+  min-width: 180px;
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.tooltip-time-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-adv-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tooltip-adv-row.positive .tooltip-adv-sign,
+.tooltip-adv-row.positive .tooltip-adv-val {
+  color: var(--radiant-green);
+}
+
+.tooltip-adv-row.negative .tooltip-adv-sign,
+.tooltip-adv-row.negative .tooltip-adv-val {
+  color: var(--dire-red);
+}
+
+.tooltip-adv-team {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.tooltip-wr-row {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.tooltip-wr-row span {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.tooltip-stage-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 4px;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* Empty State Hint */
+.timeline-empty-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(14, 20, 32, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+/* Phase Cards Bar */
+.timeline-phases-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.phase-card {
+  background: rgba(14, 20, 32, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.phase-card:hover {
+  background: rgba(22, 30, 48, 0.85);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.phase-card.active-stage {
+  border-color: var(--gold-accent);
+}
+
+.phase-time {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.phase-name {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.4px;
+}
+
+.phase-score {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.phase-score.positive {
+  color: var(--radiant-green);
+}
+
+.phase-score.negative {
+  color: var(--dire-red);
+}
+
+.phase-score.neutral {
+  color: var(--text-muted);
+}
+
+/* Responsiveness for Timeline */
+@media (max-width: 1200px) {
+  .timeline-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .timeline-advice-pill {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .timeline-phases-bar {
+    grid-template-columns: repeat(2, 1fr) 1fr;
+  }
+}
+
+/* ==========================================================================
    MAIN DRAFT ARENA (ALLIES VS ENEMIES)
    ========================================================================== */
 .draft-arena {

@@ -291,7 +291,8 @@ def recommend():
         enemies=enemies,
         weights=weights,
         bracket_key=bracket,
-        allies_roles=data.get("alliesRoles")
+        allies_roles=data.get("alliesRoles"),
+        enemies_roles=enemies_roles
     )
 
     total_drafts = increment_stat("total_drafts", 1)
@@ -342,7 +343,8 @@ def team_matrix():
         enemies=enemies,
         weights=weights,
         bracket_key=bracket,
-        allies_roles=data.get("alliesRoles")
+        allies_roles=data.get("alliesRoles"),
+        enemies_roles=enemies_roles
     )
 
     total_drafts = increment_stat("total_drafts", 1)
@@ -370,7 +372,8 @@ def draft_analysis():
         enemies=enemies,
         weights=weights,
         bracket_key=bracket,
-        allies_roles=data.get("alliesRoles")
+        allies_roles=data.get("alliesRoles"),
+        enemies_roles=data.get("enemiesRoles")
     )
 
     return jsonify({

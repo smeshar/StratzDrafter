@@ -41,6 +41,7 @@ const state = {
   fetchTimeout: null,
   user: null,
   activeAuthTab: 'login',
+  timelineData: null,
 };
 
 // DOM Elements
@@ -67,6 +68,40 @@ const elements = {
   alliesSynergy: document.getElementById('alliesSynergy'),
   enemiesSynergy: document.getElementById('enemiesSynergy'),
   draftInsight: document.getElementById('draftInsight'),
+
+  // Advantage Timeline Elements
+  advantageTimelineSection: document.getElementById('advantageTimelineSection'),
+  timelinePeakVal: document.getElementById('timelinePeakVal'),
+  timelineLaningVal: document.getElementById('timelineLaningVal'),
+  timelineLateVal: document.getElementById('timelineLateVal'),
+  timelineAdviceText: document.getElementById('timelineAdviceText'),
+  timelineChartWrapper: document.getElementById('timelineChartWrapper'),
+  timelineSvg: document.getElementById('timelineSvg'),
+  timelineCurvePath: document.getElementById('timelineCurvePath'),
+  radiantAreaPath: document.getElementById('radiantAreaPath'),
+  direAreaPath: document.getElementById('direAreaPath'),
+  timelineHoverGroup: document.getElementById('timelineHoverGroup'),
+  timelineHoverLine: document.getElementById('timelineHoverLine'),
+  timelineHoverDot: document.getElementById('timelineHoverDot'),
+  timelineDotsGroup: document.getElementById('timelineDotsGroup'),
+  timelinePeakGroup: document.getElementById('timelinePeakGroup'),
+  timelinePeakDot: document.getElementById('timelinePeakDot'),
+  timelinePeakLabel: document.getElementById('timelinePeakLabel'),
+  timelineTooltip: document.getElementById('timelineTooltip'),
+  tooltipTimeBadge: document.getElementById('tooltipTimeBadge'),
+  tooltipAdvRow: document.getElementById('tooltipAdvRow'),
+  tooltipAdvSign: document.getElementById('tooltipAdvSign'),
+  tooltipAdvVal: document.getElementById('tooltipAdvVal'),
+  tooltipAdvTeam: document.getElementById('tooltipAdvTeam'),
+  tooltipWrVal: document.getElementById('tooltipWrVal'),
+  tooltipStageDesc: document.getElementById('tooltipStageDesc'),
+  timelineEmptyState: document.getElementById('timelineEmptyState'),
+  phaseScoreLaning: document.getElementById('phaseScoreLaning'),
+  phaseScoreTimings: document.getElementById('phaseScoreTimings'),
+  phaseScoreMidgame: document.getElementById('phaseScoreMidgame'),
+  phaseScoreLate: document.getElementById('phaseScoreLate'),
+  phaseScoreUltra: document.getElementById('phaseScoreUltra'),
+
   bansList: document.getElementById('bansList'),
   clearBansBtn: document.getElementById('clearBansBtn'),
   teamMatrixContainer: document.getElementById('teamMatrixContainer'),
@@ -279,6 +314,7 @@ function setupEventListeners() {
       if (elements.draftInsight) {
         elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
       }
+      updateTimelineGraph(null);
       debouncedUpdate();
       showToast('Драфт сброшен');
     });
@@ -590,6 +626,9 @@ function setupEventListeners() {
       positionPopoverForSlot(state.activeSlot.team, state.activeSlot.index);
     }
   }, { passive: true });
+
+  // Initialize Advantage Timeline Interactions
+  initTimelineInteractions();
 }
 
 // Set View Mode
@@ -1312,6 +1351,283 @@ function renderDetailedRecs(recs) {
   }).join('');
 }
 
+// Stage descriptions for tooltips
+const STAGE_DESCRIPTIONS = {
+  laning: 'Фаза линий: крипстат, размен ресурсами и первые убийства.',
+  timings: 'Ранний мидгейм: появление ключевых артефактов (Blink, Orchid, Mek) и первые ганки.',
+  midgame: 'Мидгейм: 5v5 тимфайты, контроль карты, Рошан и пуш Т2 вышек.',
+  lategame: 'Поздняя игра: 4–6 слотов у коров, осада хайграунда и драки за байбеки.',
+  ultralate: 'Ультра-лейт: 30 уровень, Тир-5 нейтральные предметы, Рапиры и цена одной ошибки.',
+};
+
+function getCatmullRomBezierPath(pts) {
+  if (!pts || pts.length === 0) return '';
+  if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = i > 0 ? pts[i - 1] : pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = i < pts.length - 2 ? pts[i + 2] : p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+// Update 0-60 min Advantage Timeline Graph
+function updateTimelineGraph(timeline) {
+  state.timelineData = timeline;
+  const alliesFilled = state.allies.filter(s => s.id !== null);
+  const enemiesFilled = state.enemies.filter(s => s.id !== null);
+  const hasPicks = alliesFilled.length > 0 || enemiesFilled.length > 0;
+
+  if (!hasPicks || !timeline || !timeline.points || timeline.points.length === 0) {
+    if (elements.timelineEmptyState) elements.timelineEmptyState.style.display = 'block';
+    if (elements.timelineCurvePath) {
+      elements.timelineCurvePath.setAttribute('d', 'M 50 65 L 950 65');
+      elements.timelineCurvePath.className = 'timeline-curve-line curve-neutral';
+    }
+    if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', '');
+    if (elements.direAreaPath) elements.direAreaPath.setAttribute('d', '');
+    if (elements.timelineDotsGroup) elements.timelineDotsGroup.innerHTML = '';
+    if (elements.timelinePeakGroup) elements.timelinePeakGroup.style.display = 'none';
+
+    if (elements.timelinePeakVal) elements.timelinePeakVal.textContent = '—';
+    if (elements.timelineLaningVal) {
+      elements.timelineLaningVal.textContent = '—';
+      elements.timelineLaningVal.className = 'badge-val';
+    }
+    if (elements.timelineLateVal) {
+      elements.timelineLateVal.textContent = '—';
+      elements.timelineLateVal.className = 'badge-val';
+    }
+    if (elements.timelineAdviceText) {
+      elements.timelineAdviceText.textContent = 'Выберите героев союзников и врагов для расчета таймингов';
+    }
+
+    const resetScore = (el) => {
+      if (el) {
+        el.textContent = '0.0%';
+        el.className = 'phase-score neutral';
+      }
+    };
+    resetScore(elements.phaseScoreLaning);
+    resetScore(elements.phaseScoreTimings);
+    resetScore(elements.phaseScoreMidgame);
+    resetScore(elements.phaseScoreLate);
+    resetScore(elements.phaseScoreUltra);
+    return;
+  }
+
+  // Active state: Hide empty hint
+  if (elements.timelineEmptyState) elements.timelineEmptyState.style.display = 'none';
+
+  // 1. Header Badges
+  if (elements.timelinePeakVal && timeline.peakAlly) {
+    const pSign = timeline.peakAlly.advantage > 0 ? '+' : '';
+    elements.timelinePeakVal.textContent = `${timeline.peakAlly.minute} мин (${pSign}${timeline.peakAlly.advantage}%)`;
+  }
+
+  const setBadgeVal = (el, val) => {
+    if (!el) return;
+    const num = Number(val ?? 0);
+    const sign = num > 0 ? '+' : '';
+    el.textContent = `${sign}${num.toFixed(1)}%`;
+    el.className = 'badge-val ' + (num > 0.3 ? 'positive' : (num < -0.3 ? 'negative' : ''));
+  };
+
+  setBadgeVal(elements.timelineLaningVal, timeline.laningAdvantage);
+  setBadgeVal(elements.timelineLateVal, timeline.lateGameAdvantage);
+
+  if (elements.timelineAdviceText && timeline.timingAdvice) {
+    elements.timelineAdviceText.textContent = timeline.timingAdvice;
+  }
+
+  // 2. Phase Cards Scores
+  const setPhaseScore = (el, val) => {
+    if (!el) return;
+    const num = Number(val ?? 0);
+    const sign = num > 0 ? '+' : '';
+    el.textContent = `${sign}${num.toFixed(1)}%`;
+    el.className = 'phase-score ' + (num > 0.3 ? 'positive' : (num < -0.3 ? 'negative' : 'neutral'));
+  };
+
+  const timingPoints = timeline.points.filter(p => p.minute >= 10 && p.minute <= 20);
+  const timingAdv = timingPoints.length > 0
+    ? (timingPoints.reduce((acc, p) => acc + p.alliesAdvantage, 0) / timingPoints.length)
+    : 0.0;
+
+  setPhaseScore(elements.phaseScoreLaning, timeline.laningAdvantage);
+  setPhaseScore(elements.phaseScoreTimings, timingAdv);
+  setPhaseScore(elements.phaseScoreMidgame, timeline.midgameAdvantage);
+  setPhaseScore(elements.phaseScoreLate, timeline.lateGameAdvantage);
+  setPhaseScore(elements.phaseScoreUltra, timeline.ultraLateAdvantage);
+
+  // 3. SVG Coordinates Mapping
+  const maxAbs = Math.max(12.0, ...timeline.points.map(p => Math.abs(p.alliesAdvantage)));
+  const pts = timeline.points.map(p => {
+    const x = 50 + (p.minute / 60) * 900;
+    const clampedAdv = Math.max(-maxAbs, Math.min(maxAbs, p.alliesAdvantage));
+    const y = 65 - (clampedAdv / maxAbs) * 48;
+    return { x, y, ...p };
+  });
+
+  // 4. Generate Smooth Cubic Curve
+  const curveD = getCatmullRomBezierPath(pts);
+  if (elements.timelineCurvePath) {
+    elements.timelineCurvePath.setAttribute('d', curveD);
+    const avgAdv = pts.reduce((acc, p) => acc + p.alliesAdvantage, 0) / pts.length;
+    elements.timelineCurvePath.className = 'timeline-curve-line ' + (avgAdv > 0.3 ? '' : (avgAdv < -0.3 ? 'curve-dire' : 'curve-neutral'));
+  }
+
+  // 5. Area Fills
+  const areaD = `${curveD} L 950 65 L 50 65 Z`;
+  if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', areaD);
+  if (elements.direAreaPath) elements.direAreaPath.setAttribute('d', areaD);
+
+  // 6. Milestone Dots
+  if (elements.timelineDotsGroup) {
+    const milestoneMinutes = [0, 10, 20, 35, 50, 60];
+    const milestonePts = pts.filter(p => milestoneMinutes.includes(p.minute));
+    elements.timelineDotsGroup.innerHTML = milestonePts.map(p => {
+      const dotClass = p.alliesAdvantage > 0.3 ? '' : (p.alliesAdvantage < -0.3 ? 'dot-dire' : 'dot-neutral');
+      return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" class="${dotClass}" data-minute="${p.minute}"></circle>`;
+    }).join('');
+  }
+
+  // 7. Peak Marker
+  if (elements.timelinePeakGroup) {
+    const peakPt = pts.reduce((max, p) => (p.alliesAdvantage > max.alliesAdvantage ? p : max), pts[0]);
+    if (peakPt && peakPt.alliesAdvantage > 1.5) {
+      elements.timelinePeakGroup.style.display = 'block';
+      if (elements.timelinePeakDot) {
+        elements.timelinePeakDot.setAttribute('cx', peakPt.x.toFixed(1));
+        elements.timelinePeakDot.setAttribute('cy', peakPt.y.toFixed(1));
+      }
+      if (elements.timelinePeakLabel) {
+        elements.timelinePeakLabel.setAttribute('x', peakPt.x.toFixed(1));
+        const labelY = peakPt.y < 35 ? (peakPt.y + 16) : (peakPt.y - 8);
+        elements.timelinePeakLabel.setAttribute('y', labelY.toFixed(1));
+      }
+    } else {
+      elements.timelinePeakGroup.style.display = 'none';
+    }
+  }
+}
+
+// Timeline Interactive Tooltip and Stage Hovering
+function initTimelineInteractions() {
+  if (!elements.timelineChartWrapper || !elements.timelineSvg) return;
+
+  const handlePointerMove = (e) => {
+    if (!state.timelineData || !state.timelineData.points || state.timelineData.points.length === 0) return;
+    const alliesFilled = state.allies.filter(s => s.id !== null);
+    const enemiesFilled = state.enemies.filter(s => s.id !== null);
+    if (alliesFilled.length === 0 && enemiesFilled.length === 0) return;
+
+    const rect = elements.timelineSvg.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+    if (clientX === null) return;
+
+    const relX = clientX - rect.left;
+    const svgX = (relX / rect.width) * 1000;
+    const clampedX = Math.max(50, Math.min(950, svgX));
+    const minute = Math.round(((clampedX - 50) / 900) * 60);
+
+    const pts = state.timelineData.points;
+    let closest = pts[0];
+    let minDiff = 999;
+    for (const p of pts) {
+      const diff = Math.abs(p.minute - minute);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = p;
+      }
+    }
+
+    const maxAbs = Math.max(12.0, ...pts.map(p => Math.abs(p.alliesAdvantage)));
+    const targetY = 65 - (Math.max(-maxAbs, Math.min(maxAbs, closest.alliesAdvantage)) / maxAbs) * 48;
+    const targetX = 50 + (closest.minute / 60) * 900;
+
+    if (elements.timelineHoverGroup) {
+      elements.timelineHoverGroup.style.display = 'block';
+      if (elements.timelineHoverLine) {
+        elements.timelineHoverLine.setAttribute('x1', targetX.toFixed(1));
+        elements.timelineHoverLine.setAttribute('x2', targetX.toFixed(1));
+      }
+      if (elements.timelineHoverDot) {
+        elements.timelineHoverDot.setAttribute('cx', targetX.toFixed(1));
+        elements.timelineHoverDot.setAttribute('cy', targetY.toFixed(1));
+      }
+    }
+
+    if (elements.timelineTooltip) {
+      elements.timelineTooltip.style.display = 'flex';
+      const pctX = (targetX / 1000) * 100;
+      elements.timelineTooltip.style.left = `${pctX.toFixed(1)}%`;
+
+      if (targetY < 55) {
+        elements.timelineTooltip.style.transform = 'translate(-50%, 15px)';
+        elements.timelineTooltip.style.top = `${targetY}px`;
+      } else {
+        elements.timelineTooltip.style.transform = 'translate(-50%, -100%)';
+        elements.timelineTooltip.style.top = `${targetY - 10}px`;
+      }
+
+      if (elements.tooltipTimeBadge) {
+        elements.tooltipTimeBadge.textContent = `${closest.minute} мин • ${closest.stage}`;
+      }
+      const isPositive = closest.alliesAdvantage >= 0;
+      if (elements.tooltipAdvRow) {
+        elements.tooltipAdvRow.className = 'tooltip-adv-row ' + (isPositive ? 'positive' : 'negative');
+      }
+      if (elements.tooltipAdvSign) {
+        elements.tooltipAdvSign.textContent = isPositive ? '+' : '-';
+      }
+      if (elements.tooltipAdvVal) {
+        elements.tooltipAdvVal.textContent = `${Math.abs(closest.alliesAdvantage).toFixed(1)}%`;
+      }
+      if (elements.tooltipAdvTeam) {
+        elements.tooltipAdvTeam.textContent = isPositive ? 'Наша команда' : 'Команда врага';
+      }
+      if (elements.tooltipWrVal) {
+        elements.tooltipWrVal.textContent = `${closest.alliesWinRate.toFixed(1)}%`;
+      }
+      if (elements.tooltipStageDesc) {
+        elements.tooltipStageDesc.textContent = STAGE_DESCRIPTIONS[closest.stageKey] || 'Оценка распределения силы драфтов';
+      }
+    }
+  };
+
+  const handlePointerLeave = () => {
+    if (elements.timelineHoverGroup) elements.timelineHoverGroup.style.display = 'none';
+    if (elements.timelineTooltip) elements.timelineTooltip.style.display = 'none';
+  };
+
+  elements.timelineChartWrapper.addEventListener('mousemove', handlePointerMove);
+  elements.timelineChartWrapper.addEventListener('mouseleave', handlePointerLeave);
+  elements.timelineChartWrapper.addEventListener('touchmove', handlePointerMove, { passive: true });
+  elements.timelineChartWrapper.addEventListener('touchend', handlePointerLeave);
+
+  const phaseCards = [
+    { card: document.getElementById('phaseCardLaning'), rect: document.querySelector('.stage-laning') },
+    { card: document.getElementById('phaseCardTimings'), rect: document.querySelector('.stage-timings') },
+    { card: document.getElementById('phaseCardMidgame'), rect: document.querySelector('.stage-midgame') },
+    { card: document.getElementById('phaseCardLate'), rect: document.querySelector('.stage-late') },
+    { card: document.getElementById('phaseCardUltra'), rect: document.querySelector('.stage-ultra') },
+  ];
+
+  phaseCards.forEach(({ card, rect }) => {
+    if (!card || !rect) return;
+    card.addEventListener('mouseenter', () => rect.classList.add('active-hover'));
+    card.addEventListener('mouseleave', () => rect.classList.remove('active-hover'));
+  });
+}
+
 // Update Draft Win Meter from analytical model
 function updateDraftMeter(analysis) {
   const alliesFilled = state.allies.filter(s => s.id !== null);
@@ -1339,10 +1655,14 @@ function updateDraftMeter(analysis) {
     elements.enemiesAdvScore.textContent = '50.0% Враг';
     elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
     updateSynergyBadges(0, 0);
+    updateTimelineGraph(null);
     return;
   }
 
-  if (!analysis) return;
+  if (!analysis) {
+    updateTimelineGraph(null);
+    return;
+  }
 
   updateSynergyBadges(analysis.alliesSynergy, analysis.enemiesSynergy);
 
@@ -1356,6 +1676,10 @@ function updateDraftMeter(analysis) {
 
   if (analysis.insight) {
     elements.draftInsight.textContent = analysis.insight;
+  }
+
+  if (analysis.timeline) {
+    updateTimelineGraph(analysis.timeline);
   }
 }
 

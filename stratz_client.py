@@ -131,6 +131,35 @@ LANE_CONFIG = {
     }
 }
 
+# Base role power curves across match milestones: [0m, 10m, 20m, 35m, 50m, 60m]
+ROLE_TIMING_BASE = {
+    "pos1": [0.60, 0.70, 1.00, 1.35, 1.65, 1.80],
+    "pos2": [0.95, 1.15, 1.30, 1.15, 1.00, 0.90],
+    "pos3": [1.10, 1.25, 1.25, 1.05, 0.90, 0.85],
+    "pos4": [1.20, 1.25, 1.05, 0.85, 0.70, 0.65],
+    "pos5": [1.30, 1.20, 0.90, 0.70, 0.55, 0.50]
+}
+
+# Iconic hero timing curves and power spikes in Dota 2
+HERO_TIMING_OVERRIDES = {
+    67:  [-0.30, -0.25, -0.10, +0.30, +0.65, +0.75],  # Spectre (ultra late raid boss)
+    94:  [-0.25, -0.20, -0.05, +0.35, +0.70, +0.80],  # Medusa (hyper late scaling)
+    41:  [-0.20, -0.15, +0.05, +0.30, +0.60, +0.70],  # Faceless Void (Chrono + Refresher)
+    1:   [-0.25, -0.20, +0.10, +0.35, +0.50, +0.55],  # Anti-Mage (splitpush & mana burn)
+    109: [-0.20, -0.10, +0.15, +0.35, +0.55, +0.60],  # Terrorblade (metamorphosis & illusions)
+    44:  [-0.20, -0.15, +0.05, +0.30, +0.50, +0.55],  # Phantom Assassin (huge late crits)
+    113: [-0.20, -0.10, +0.10, +0.35, +0.60, +0.70],  # Arc Warden (double tempest scaling)
+    35:  [-0.15, -0.10, +0.05, +0.25, +0.45, +0.50],  # Sniper (extreme late range)
+    85:  [+0.50, +0.45, +0.10, -0.25, -0.45, -0.50],  # Undying (early decay monster)
+    59:  [+0.35, +0.35, +0.25, -0.15, -0.40, -0.45],  # Huskar (early/mid tempo snowaller)
+    47:  [+0.30, +0.30, +0.15, -0.10, -0.30, -0.35],  # Viper (lane dominator)
+    82:  [+0.10, +0.30, +0.50, +0.10, -0.35, -0.45],  # Meepo (fast midgame snowball)
+    73:  [-0.20, +0.10, +0.55, +0.30, -0.20, -0.30],  # Alchemist (peaks at 20-30m 6 slots)
+    61:  [+0.10, +0.35, +0.40, -0.10, -0.35, -0.40],  # Broodmother (early web map pressure)
+    66:  [+0.40, +0.35, +0.15, -0.20, -0.40, -0.45],  # Chen (early creep tempo)
+    83:  [+0.35, +0.25, +0.05, -0.15, -0.30, -0.35],  # Treant Protector (early living armor/damage)
+}
+
 
 class StratzClient:
     def __init__(self):
@@ -842,17 +871,302 @@ class StratzClient:
             matrix[role_key] = recs[:50]  # Return top 50 so client can search across all viable picks
         return matrix
 
+    def _get_empty_timeline(self) -> dict:
+        """Returns balanced empty timeline (0 to 60 min) when no heroes are drafted."""
+        points = []
+        for m in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            if m <= 10:
+                stage = "Линии"
+                stage_key = "laning"
+            elif m <= 20:
+                stage = "Тайминги"
+                stage_key = "timings"
+            elif m <= 35:
+                stage = "Мидгейм"
+                stage_key = "midgame"
+            elif m <= 50:
+                stage = "Лейтгейм"
+                stage_key = "lategame"
+            else:
+                stage = "Ультра-лейт"
+                stage_key = "ultralate"
+
+            points.append({
+                "minute": m,
+                "alliesAdvantage": 0.0,
+                "alliesWinRate": 50.0,
+                "enemiesWinRate": 50.0,
+                "stage": stage,
+                "stageKey": stage_key
+            })
+
+        return {
+            "points": points,
+            "peakAlly": {"minute": 30, "advantage": 0.0, "winRate": 50.0, "stage": "Мидгейм"},
+            "peakEnemy": {"minute": 30, "advantage": 0.0, "winRate": 50.0, "stage": "Мидгейм"},
+            "peakSide": "equal",
+            "laningAdvantage": 0.0,
+            "midgameAdvantage": 0.0,
+            "lateGameAdvantage": 0.0,
+            "ultraLateAdvantage": 0.0,
+            "timingAdvice": "Выберите героев союзников и врагов, чтобы увидеть прогноз преимущества по минутам."
+        }
+
+    def get_hero_timing_profile(self, hero_id: int, role: str = None) -> list[float]:
+        """Returns power curve profile at milestones [0m, 10m, 20m, 35m, 50m, 60m]."""
+        hero = self.heroes.get(hero_id, {})
+        eff_role = role if (role and role != "all") else self.get_hero_primary_position(hero_id)
+        curve = list(ROLE_TIMING_BASE.get(eff_role, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+        roles = set(hero.get("roles", []))
+        attr = hero.get("attribute", "str")
+
+        if "CARRY" in roles:
+            curve[0] -= 0.10
+            curve[1] -= 0.05
+            curve[3] += 0.15
+            curve[4] += 0.25
+            curve[5] += 0.30
+        if "PUSHER" in roles:
+            curve[1] += 0.15
+            curve[2] += 0.25
+            curve[4] -= 0.10
+            curve[5] -= 0.15
+        if "NUKER" in roles:
+            curve[0] += 0.10
+            curve[1] += 0.15
+            curve[3] -= 0.10
+            curve[4] -= 0.20
+            curve[5] -= 0.20
+        if "INITIATOR" in roles:
+            curve[2] += 0.20
+            curve[3] += 0.10
+        if "SUPPORT" in roles:
+            curve[0] += 0.15
+            curve[1] += 0.10
+            curve[4] -= 0.15
+            curve[5] -= 0.20
+
+        if attr == "agi":
+            curve[3] += 0.10
+            curve[4] += 0.20
+            curve[5] += 0.25
+        elif attr == "all":
+            curve[4] += 0.15
+            curve[5] += 0.20
+        elif attr == "int":
+            curve[0] += 0.10
+            curve[1] += 0.10
+            curve[4] -= 0.10
+            curve[5] -= 0.15
+
+        if hero_id in HERO_TIMING_OVERRIDES:
+            for idx, offset in enumerate(HERO_TIMING_OVERRIDES[hero_id]):
+                curve[idx] += offset
+
+        return [max(0.2, c) for c in curve]
+
+    def calculate_timeline_advantage(
+        self,
+        allies: list[int],
+        enemies: list[int],
+        allies_roles: list[dict] = None,
+        enemies_roles: list[dict] = None,
+        net_adv: float = 0.0,
+        avg_counter_adv: float = 0.0,
+        synergy_adv: float = 0.0
+    ) -> dict:
+        """
+        Calculates expected team advantage progression from minute 0 to 60.
+        Models laning matchups, midgame power spikes, late core scaling, and ultra-late items.
+        """
+        allies = [int(x) for x in allies if x is not None]
+        enemies = [int(x) for x in enemies if x is not None]
+
+        if not allies and not enemies:
+            return self._get_empty_timeline()
+
+        # Map roles
+        ally_roles_dict = {}
+        if allies_roles and isinstance(allies_roles, list):
+            for ar in allies_roles:
+                if isinstance(ar, dict) and "id" in ar and "role" in ar:
+                    ally_roles_dict[ar["id"]] = ar["role"]
+
+        enemy_roles_dict = {}
+        if enemies_roles and isinstance(enemies_roles, list):
+            for er in enemies_roles:
+                if isinstance(er, dict) and "id" in er and "role" in er:
+                    enemy_roles_dict[er["id"]] = er["role"]
+
+        ally_curves = [self.get_hero_timing_profile(a, ally_roles_dict.get(a)) for a in allies]
+        enemy_curves = [self.get_hero_timing_profile(e, enemy_roles_dict.get(e)) for e in enemies]
+
+        milestones = [0, 10, 20, 35, 50, 60]
+
+        def team_power_at_m(curves, idx):
+            if not curves:
+                return 1.0
+            # 5-hero team normalization: unpicked slots contribute 1.0 baseline
+            s = sum(c[idx] for c in curves)
+            return (s + (5 - len(curves)) * 1.0) / 5.0
+
+        power_diff_milestones = []
+        for i in range(len(milestones)):
+            p_a = team_power_at_m(ally_curves, i) if allies else 1.0
+            p_e = team_power_at_m(enemy_curves, i) if enemies else 1.0
+            if allies and not enemies:
+                diff = (p_a - 1.0)
+            elif enemies and not allies:
+                diff = -(p_e - 1.0)
+            else:
+                diff = (p_a - p_e)
+            power_diff_milestones.append(diff)
+
+        # Laning matchup advantage (Safe, Mid, Offlane)
+        lane_adv = 0.0
+        if allies and enemies:
+            lane_scores = []
+            for lane_role, weight in [("pos1", 0.35), ("pos2", 0.35), ("pos3", 0.30)]:
+                cfg = LANE_CONFIG.get(lane_role, {})
+                ally_hero = next((a for a in allies if ally_roles_dict.get(a) == lane_role or self.get_hero_primary_position(a) == lane_role), None)
+                if ally_hero:
+                    opps = cfg.get("opponents", {})
+                    for enemy_hero in enemies:
+                        e_role = enemy_roles_dict.get(enemy_hero) or self.get_hero_primary_position(enemy_hero)
+                        if e_role in opps:
+                            w = opps[e_role]
+                            matchup = self.matchups.get(ally_hero, {}).get("vs", {}).get(enemy_hero)
+                            if matchup:
+                                lane_scores.append(matchup.get("synergy", 0.0) * weight * w)
+            if lane_scores:
+                lane_adv = sum(lane_scores) / len(lane_scores)
+
+        # Hermite / smoothstep interpolation
+        def interpolate_diff(t):
+            if t <= 0:
+                return power_diff_milestones[0]
+            if t >= 60:
+                return power_diff_milestones[-1]
+            for i in range(len(milestones) - 1):
+                t0, t1 = milestones[i], milestones[i+1]
+                if t0 <= t <= t1:
+                    prog = (t - t0) / (t1 - t0)
+                    smooth_prog = prog * prog * (3 - 2 * prog)
+                    return power_diff_milestones[i] + smooth_prog * (power_diff_milestones[i+1] - power_diff_milestones[i])
+            return 0.0
+
+        points = []
+        sample_minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+
+        for m in sample_minutes:
+            p_diff = interpolate_diff(m)
+            power_adv = p_diff * 8.0
+
+            if m <= 10:
+                lane_fade = 1.0 - 0.2 * (m / 10.0)
+            elif m <= 15:
+                lane_fade = 0.8 * (15.0 - m) / 5.0
+            else:
+                lane_fade = 0.0
+            lane_contribution = lane_adv * lane_fade * 1.5
+
+            base_weight = 0.4 + 0.6 * min(1.0, m / 25.0)
+            total_adv = (net_adv * base_weight) + power_adv + lane_contribution
+            allies_wr = max(15.0, min(85.0, 50.0 + total_adv))
+            enemies_wr = 100.0 - allies_wr
+
+            if m <= 10:
+                stage = "Линии"
+                stage_key = "laning"
+            elif m <= 20:
+                stage = "Тайминги"
+                stage_key = "timings"
+            elif m <= 35:
+                stage = "Мидгейм"
+                stage_key = "midgame"
+            elif m <= 50:
+                stage = "Лейтгейм"
+                stage_key = "lategame"
+            else:
+                stage = "Ультра-лейт"
+                stage_key = "ultralate"
+
+            points.append({
+                "minute": m,
+                "alliesAdvantage": round(total_adv, 1),
+                "alliesWinRate": round(allies_wr, 1),
+                "enemiesWinRate": round(enemies_wr, 1),
+                "stage": stage,
+                "stageKey": stage_key
+            })
+
+        best_ally_pt = max(points, key=lambda x: x["alliesAdvantage"])
+        worst_ally_pt = min(points, key=lambda x: x["alliesAdvantage"])
+
+        peak_ally = {
+            "minute": best_ally_pt["minute"],
+            "advantage": best_ally_pt["alliesAdvantage"],
+            "winRate": best_ally_pt["alliesWinRate"],
+            "stage": best_ally_pt["stage"]
+        }
+        peak_enemy = {
+            "minute": worst_ally_pt["minute"],
+            "advantage": round(-worst_ally_pt["alliesAdvantage"], 1),
+            "winRate": worst_ally_pt["enemiesWinRate"],
+            "stage": worst_ally_pt["stage"]
+        }
+
+        laning_pts = [p["alliesAdvantage"] for p in points if p["minute"] <= 10]
+        mid_pts = [p["alliesAdvantage"] for p in points if 15 <= p["minute"] <= 35]
+        late_pts = [p["alliesAdvantage"] for p in points if 40 <= p["minute"] <= 50]
+        ultra_pts = [p["alliesAdvantage"] for p in points if p["minute"] >= 55]
+
+        laning_adv = round(sum(laning_pts) / len(laning_pts), 1) if laning_pts else 0.0
+        mid_adv = round(sum(mid_pts) / len(mid_pts), 1) if mid_pts else 0.0
+        late_adv = round(sum(late_pts) / len(late_pts), 1) if late_pts else 0.0
+        ultra_adv = round(sum(ultra_pts) / len(ultra_pts), 1) if ultra_pts else 0.0
+
+        if best_ally_pt["alliesAdvantage"] >= worst_ally_pt["alliesAdvantage"] + 3.0:
+            if best_ally_pt["minute"] <= 20:
+                advice = f"Пик силы нашей команды: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Закрывайте игру до 30-35 минуты!"
+            elif best_ally_pt["minute"] <= 35:
+                advice = f"Пик силы: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Оптимальное окно для Рошана и осады базы."
+            else:
+                advice = f"Доминация в поздней игре: пик силы на {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Затягивайте в лейт!"
+        elif worst_ally_pt["alliesAdvantage"] <= -3.0:
+            if worst_ally_pt["minute"] <= 20:
+                advice = f"Опасная ранняя игра (враг +{-worst_ally_pt['alliesAdvantage']}% на {worst_ally_pt['minute']} мин). Фармите и избегайте стычек!"
+            else:
+                advice = f"Враг имеет перевес в лейте (на {worst_ally_pt['minute']} мин +{-worst_ally_pt['alliesAdvantage']}%). Забирайте объекты раньше!"
+        else:
+            advice = "Ровный баланс сил на всех стадиях (~50%). Исход решат тимфайты и ключевые тайминги артефактов."
+
+        peak_side = "allies" if best_ally_pt["alliesAdvantage"] > 2.0 else ("enemies" if worst_ally_pt["alliesAdvantage"] < -2.0 else "equal")
+
+        return {
+            "points": points,
+            "peakAlly": peak_ally,
+            "peakEnemy": peak_enemy,
+            "peakSide": peak_side,
+            "laningAdvantage": laning_adv,
+            "midgameAdvantage": mid_adv,
+            "lateGameAdvantage": late_adv,
+            "ultraLateAdvantage": ultra_adv,
+            "timingAdvice": advice
+        }
+
     def calculate_draft_analysis(
         self,
         allies: list[int],
         enemies: list[int],
         weights: dict = None,
         bracket_key: str = "LOW_RANK",
-        allies_roles: list[dict] = None
+        allies_roles: list[dict] = None,
+        enemies_roles: list[dict] = None
     ) -> dict:
         """
-        Calculates realistic draft win rate prediction and analytical breakdown
-        based on head-to-head counters, team synergies, and meta win rates.
+        Calculates realistic draft win rate prediction, analytical breakdown,
+        and 0-60 min expected advantage timeline.
         """
         if weights is None:
             weights = {"counter": 100, "synergy": 50, "meta": 25}
@@ -873,7 +1187,8 @@ class StratzClient:
                 "metaAdvantage": 0.0,
                 "bestCounters": [],
                 "biggestThreats": [],
-                "insight": "Выберите героев врага или союзников для получения умных рекомендаций."
+                "insight": "Выберите героев врага или союзников для получения умных рекомендаций.",
+                "timeline": self._get_empty_timeline()
             }
 
         needed_heroes = set(allies + enemies)
@@ -1043,6 +1358,16 @@ class StratzClient:
         else:
             insight = f"Драфт врагов: средний винрейт героев {avg_enemy_wr:.1f}%. Подберите контрпики из рекомендаций ниже."
 
+        timeline = self.calculate_timeline_advantage(
+            allies=allies,
+            enemies=enemies,
+            allies_roles=allies_roles,
+            enemies_roles=enemies_roles,
+            net_adv=net_adv,
+            avg_counter_adv=avg_counter_adv,
+            synergy_adv=synergy_adv
+        )
+
         return {
             "alliesWinRate": round(allies_wr, 1),
             "enemiesWinRate": round(enemies_wr, 1),
@@ -1053,5 +1378,6 @@ class StratzClient:
             "metaAdvantage": round(meta_adv, 2),
             "bestCounters": best_counters[:3],
             "biggestThreats": biggest_threats[:3],
-            "insight": insight
+            "insight": insight,
+            "timeline": timeline
         }
