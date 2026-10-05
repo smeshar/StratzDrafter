@@ -518,6 +518,12 @@ body {
   color: var(--radiant-green);
 }
 
+.timeline-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .timeline-main-title {
   font-family: 'Segoe UI', sans-serif;
   font-size: 13px;
@@ -525,6 +531,23 @@ body {
   letter-spacing: 0.8px;
   color: var(--text-main);
   text-transform: uppercase;
+}
+
+.timeline-badge-beta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 210, 255, 0.16);
+  border: 1px solid rgba(0, 210, 255, 0.4);
+  color: #00d2ff;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
+  user-select: none;
 }
 
 .timeline-sub-title {
