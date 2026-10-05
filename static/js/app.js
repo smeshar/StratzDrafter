@@ -97,7 +97,6 @@ const elements = {
   tooltipStageDesc: document.getElementById('tooltipStageDesc'),
   timelineEmptyState: document.getElementById('timelineEmptyState'),
   phaseScoreLaning: document.getElementById('phaseScoreLaning'),
-  phaseScoreTimings: document.getElementById('phaseScoreTimings'),
   phaseScoreMidgame: document.getElementById('phaseScoreMidgame'),
   phaseScoreLate: document.getElementById('phaseScoreLate'),
   phaseScoreUltra: document.getElementById('phaseScoreUltra'),
@@ -1354,8 +1353,7 @@ function renderDetailedRecs(recs) {
 // Stage descriptions for tooltips
 const STAGE_DESCRIPTIONS = {
   laning: 'Фаза линий: крипстат, размен ресурсами и первые убийства.',
-  timings: 'Ранний мидгейм: появление ключевых артефактов (Blink, Orchid, Mek) и первые ганки.',
-  midgame: 'Мидгейм: 5v5 тимфайты, контроль карты, Рошан и пуш Т2 вышек.',
+  midgame: 'Мидгейм: ключевые артефакты, тимфайты 5v5, контроль карты, Рошан и пуш вышек.',
   lategame: 'Поздняя игра: 4–6 слотов у коров, осада хайграунда и драки за байбеки.',
   ultralate: 'Ультра-лейт: 30 уровень, Тир-5 нейтральные предметы, Рапиры и цена одной ошибки.',
 };
@@ -1416,7 +1414,6 @@ function updateTimelineGraph(timeline) {
       }
     };
     resetScore(elements.phaseScoreLaning);
-    resetScore(elements.phaseScoreTimings);
     resetScore(elements.phaseScoreMidgame);
     resetScore(elements.phaseScoreLate);
     resetScore(elements.phaseScoreUltra);
@@ -1456,23 +1453,16 @@ function updateTimelineGraph(timeline) {
     el.className = 'phase-score ' + (num > 0.3 ? 'positive' : (num < -0.3 ? 'negative' : 'neutral'));
   };
 
-  const timingPoints = timeline.points.filter(p => p.minute >= 10 && p.minute <= 20);
-  const timingAdv = timingPoints.length > 0
-    ? (timingPoints.reduce((acc, p) => acc + p.alliesAdvantage, 0) / timingPoints.length)
-    : 0.0;
-
   setPhaseScore(elements.phaseScoreLaning, timeline.laningAdvantage);
-  setPhaseScore(elements.phaseScoreTimings, timingAdv);
   setPhaseScore(elements.phaseScoreMidgame, timeline.midgameAdvantage);
   setPhaseScore(elements.phaseScoreLate, timeline.lateGameAdvantage);
   setPhaseScore(elements.phaseScoreUltra, timeline.ultraLateAdvantage);
 
-  // 3. SVG Coordinates Mapping
-  const maxAbs = Math.max(7.0, ...timeline.points.map(p => Math.abs(p.alliesAdvantage)));
+  // 3. SVG Coordinates Mapping (0% at Y=100, +5% at Y=60, +10% at Y=20, -5% at Y=140, -10% at Y=180)
   const pts = timeline.points.map(p => {
     const x = 50 + (p.minute / 60) * 900;
-    const clampedAdv = Math.max(-maxAbs, Math.min(maxAbs, p.alliesAdvantage));
-    const y = 105 - (clampedAdv / maxAbs) * 75;
+    const clampedAdv = Math.max(-11.5, Math.min(11.5, p.alliesAdvantage));
+    const y = 100 - clampedAdv * 8.0;
     return { x, y, ...p };
   });
 
@@ -1485,7 +1475,7 @@ function updateTimelineGraph(timeline) {
   }
 
   // 5. Area Fills
-  const areaD = `${curveD} L 950 105 L 50 105 Z`;
+  const areaD = `${curveD} L 950 100 L 50 100 Z`;
   if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', areaD);
   if (elements.direAreaPath) elements.direAreaPath.setAttribute('d', areaD);
 
@@ -1549,8 +1539,8 @@ function initTimelineInteractions() {
       }
     }
 
-    const maxAbs = Math.max(7.0, ...pts.map(p => Math.abs(p.alliesAdvantage)));
-    const targetY = 105 - (Math.max(-maxAbs, Math.min(maxAbs, closest.alliesAdvantage)) / maxAbs) * 75;
+    const clampedAdv = Math.max(-11.5, Math.min(11.5, closest.alliesAdvantage));
+    const targetY = 100 - clampedAdv * 8.0;
     const targetX = 50 + (closest.minute / 60) * 900;
 
     if (elements.timelineHoverGroup) {
@@ -1568,7 +1558,8 @@ function initTimelineInteractions() {
     if (elements.timelineTooltip) {
       elements.timelineTooltip.style.display = 'flex';
       const pctX = (targetX / 1000) * 100;
-      elements.timelineTooltip.style.left = `${pctX.toFixed(1)}%`;
+      const clampedPctX = Math.max(8, Math.min(92, pctX));
+      elements.timelineTooltip.style.left = `${clampedPctX.toFixed(1)}%`;
 
       if (targetY < 75) {
         elements.timelineTooltip.style.transform = 'translate(-50%, 15px)';
@@ -1615,7 +1606,6 @@ function initTimelineInteractions() {
 
   const phaseCards = [
     { card: document.getElementById('phaseCardLaning'), rect: document.querySelector('.stage-laning') },
-    { card: document.getElementById('phaseCardTimings'), rect: document.querySelector('.stage-timings') },
     { card: document.getElementById('phaseCardMidgame'), rect: document.querySelector('.stage-midgame') },
     { card: document.getElementById('phaseCardLate'), rect: document.querySelector('.stage-late') },
     { card: document.getElementById('phaseCardUltra'), rect: document.querySelector('.stage-ultra') },

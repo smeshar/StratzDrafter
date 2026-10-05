@@ -1130,9 +1130,6 @@ class StratzClient:
             if m <= 10:
                 stage = "Линии"
                 stage_key = "laning"
-            elif m <= 20:
-                stage = "Тайминги"
-                stage_key = "timings"
             elif m <= 35:
                 stage = "Мидгейм"
                 stage_key = "midgame"
@@ -1169,9 +1166,9 @@ class StratzClient:
         }
 
         laning_pts = [p["alliesAdvantage"] for p in points if p["minute"] <= 10]
-        mid_pts = [p["alliesAdvantage"] for p in points if 15 <= p["minute"] <= 35]
-        late_pts = [p["alliesAdvantage"] for p in points if 40 <= p["minute"] <= 50]
-        ultra_pts = [p["alliesAdvantage"] for p in points if p["minute"] >= 55]
+        mid_pts = [p["alliesAdvantage"] for p in points if 10 < p["minute"] <= 35]
+        late_pts = [p["alliesAdvantage"] for p in points if 35 < p["minute"] <= 50]
+        ultra_pts = [p["alliesAdvantage"] for p in points if p["minute"] > 50]
 
         laning_adv = round(sum(laning_pts) / len(laning_pts), 1) if laning_pts else 0.0
         mid_adv = round(sum(mid_pts) / len(mid_pts), 1) if mid_pts else 0.0

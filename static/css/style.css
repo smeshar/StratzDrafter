@@ -476,16 +476,13 @@ body {
   backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  padding: 16px 20px 14px;
+  padding: 14px 18px 12px;
   box-shadow: var(--shadow-main);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   transition: border-color 0.2s ease;
   position: relative;
-  max-width: 1320px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 .advantage-timeline-panel:hover {
@@ -848,7 +845,7 @@ body {
 /* Phase Cards Bar */
 .timeline-phases-bar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 

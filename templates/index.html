@@ -133,26 +133,29 @@
       <div class="timeline-header">
         <div class="timeline-title-group">
           <div class="timeline-icon-wrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
           </div>
           <div>
             <h2 class="timeline-main-title">ОЖИДАЕМОЕ ПРЕИМУЩЕСТВО ПО ВРЕМЕНИ</h2>
-            <p class="timeline-sub-title">Прогноз шансов на победу и пиков силы с 0 по 60 минуту матча</p>
           </div>
         </div>
 
         <div class="timeline-meta-group">
-          <div class="timeline-badge timeline-badge-peak" id="timelinePeakBadge" title="Время максимального преимущества вашей команды">
+          <div class="timeline-badge timeline-badge-peak" id="timelinePeakBadge"
+            title="Время максимального преимущества вашей команды">
             <span class="badge-label">Пик силы:</span>
             <span class="badge-val" id="timelinePeakVal">—</span>
           </div>
-          <div class="timeline-badge timeline-badge-laning" id="timelineLaningBadge" title="Ожидаемый исход стадии линий (0–10 мин)">
+          <div class="timeline-badge timeline-badge-laning" id="timelineLaningBadge"
+            title="Ожидаемый исход стадии линий (0–10 мин)">
             <span class="badge-label">Линии:</span>
             <span class="badge-val" id="timelineLaningVal">—</span>
           </div>
-          <div class="timeline-badge timeline-badge-late" id="timelineLateBadge" title="Сила драфта в поздней игре (35–60 мин)">
+          <div class="timeline-badge timeline-badge-late" id="timelineLateBadge"
+            title="Сила драфта в поздней игре (35–60 мин)">
             <span class="badge-label">Лейт:</span>
             <span class="badge-val" id="timelineLateVal">—</span>
           </div>
@@ -178,48 +181,46 @@
             </linearGradient>
             <!-- Clip Paths for Split Baseline Area Fill -->
             <clipPath id="radiantClip">
-              <rect x="50" y="0" width="900" height="105" />
+              <rect x="50" y="0" width="900" height="100" />
             </clipPath>
             <clipPath id="direClip">
-              <rect x="50" y="105" width="900" height="115" />
+              <rect x="50" y="100" width="900" height="120" />
             </clipPath>
           </defs>
 
           <!-- Stage Background Columns -->
           <g class="timeline-stages-bg">
-            <rect x="50" y="8" width="150" height="175" class="stage-bg-rect stage-laning" />
-            <rect x="200" y="8" width="150" height="175" class="stage-bg-rect stage-timings" />
-            <rect x="350" y="8" width="225" height="175" class="stage-bg-rect stage-midgame" />
-            <rect x="575" y="8" width="225" height="175" class="stage-bg-rect stage-late" />
-            <rect x="800" y="8" width="150" height="175" class="stage-bg-rect stage-ultra" />
+            <rect x="50" y="10" width="150" height="180" class="stage-bg-rect stage-laning" />
+            <rect x="200" y="10" width="375" height="180" class="stage-bg-rect stage-midgame" />
+            <rect x="575" y="10" width="225" height="180" class="stage-bg-rect stage-late" />
+            <rect x="800" y="10" width="150" height="180" class="stage-bg-rect stage-ultra" />
           </g>
 
           <!-- Stage Divider Lines -->
           <g class="timeline-grid-vertical">
-            <line x1="200" y1="8" x2="200" y2="183" class="stage-div-line" />
-            <line x1="350" y1="8" x2="350" y2="183" class="stage-div-line" />
-            <line x1="575" y1="8" x2="575" y2="183" class="stage-div-line" />
-            <line x1="800" y1="8" x2="800" y2="183" class="stage-div-line" />
+            <line x1="200" y1="10" x2="200" y2="190" class="stage-div-line" />
+            <line x1="575" y1="10" x2="575" y2="190" class="stage-div-line" />
+            <line x1="800" y1="10" x2="800" y2="190" class="stage-div-line" />
           </g>
 
           <!-- Horizontal Grid Lines (Percentage guides) -->
           <g class="timeline-grid-horizontal">
             <!-- +10% -->
-            <line x1="50" y1="55" x2="950" y2="55" class="grid-line grid-subtle" />
-            <text x="44" y="59" class="grid-label">+10%</text>
+            <line x1="50" y1="20" x2="950" y2="20" class="grid-line grid-subtle" />
+            <text x="44" y="24" class="grid-label">+10%</text>
             <!-- +5% -->
-            <line x1="50" y1="80" x2="950" y2="80" class="grid-line grid-subtle" />
-            <text x="44" y="84" class="grid-label">+5%</text>
+            <line x1="50" y1="60" x2="950" y2="60" class="grid-line grid-subtle" />
+            <text x="44" y="64" class="grid-label">+5%</text>
             <!-- 0% Baseline (Center = 50% Winrate) -->
-            <line x1="50" y1="105" x2="950" y2="105" class="grid-line grid-center" />
-            <text x="44" y="109" class="grid-label grid-label-center">0%</text>
-            <text x="956" y="109" class="grid-label grid-label-right">50%</text>
+            <line x1="50" y1="100" x2="950" y2="100" class="grid-line grid-center" />
+            <text x="44" y="104" class="grid-label grid-label-center">0%</text>
+            <text x="956" y="104" class="grid-label grid-label-right">50%</text>
             <!-- -5% -->
-            <line x1="50" y1="130" x2="950" y2="130" class="grid-line grid-subtle" />
-            <text x="44" y="134" class="grid-label">-5%</text>
+            <line x1="50" y1="140" x2="950" y2="140" class="grid-line grid-subtle" />
+            <text x="44" y="144" class="grid-label">-5%</text>
             <!-- -10% -->
-            <line x1="50" y1="155" x2="950" y2="155" class="grid-line grid-subtle" />
-            <text x="44" y="159" class="grid-label">-10%</text>
+            <line x1="50" y1="180" x2="950" y2="180" class="grid-line grid-subtle" />
+            <text x="44" y="184" class="grid-label">-10%</text>
           </g>
 
           <!-- Area Fills -->
@@ -227,11 +228,11 @@
           <path id="direAreaPath" class="timeline-area dire-area" clip-path="url(#direClip)" d="" />
 
           <!-- Main Advantage Curve Line -->
-          <path id="timelineCurvePath" class="timeline-curve-line" d="M 50 105 L 950 105" />
+          <path id="timelineCurvePath" class="timeline-curve-line" d="M 50 100 L 950 100" />
 
           <!-- Interactive Hover Line and Point -->
           <g id="timelineHoverGroup" class="timeline-hover-group" style="display: none;">
-            <line id="timelineHoverLine" x1="0" y1="8" x2="0" y2="183" class="hover-cursor-line" />
+            <line id="timelineHoverLine" x1="0" y1="10" x2="0" y2="190" class="hover-cursor-line" />
             <circle id="timelineHoverDot" cx="0" cy="0" r="5.5" class="hover-cursor-dot" />
           </g>
 
@@ -281,13 +282,8 @@
           <div class="phase-name">ЛИНИИ</div>
           <div class="phase-score neutral" id="phaseScoreLaning">0.0%</div>
         </div>
-        <div class="phase-card" id="phaseCardTimings" data-start="10" data-end="20">
-          <div class="phase-time">10 – 20 МИН</div>
-          <div class="phase-name">ТАЙМИНГИ</div>
-          <div class="phase-score neutral" id="phaseScoreTimings">0.0%</div>
-        </div>
-        <div class="phase-card" id="phaseCardMidgame" data-start="20" data-end="35">
-          <div class="phase-time">20 – 35 МИН</div>
+        <div class="phase-card" id="phaseCardMidgame" data-start="10" data-end="35">
+          <div class="phase-time">10 – 35 МИН</div>
           <div class="phase-name">МИДГЕЙМ</div>
           <div class="phase-score neutral" id="phaseScoreMidgame">0.0%</div>
         </div>
@@ -388,9 +384,8 @@
               </svg>
             </span>
             <input type="search" id="recsHeroSearchInput" name="recs_search_query"
-              placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..." autocomplete="off"
-              autocorrect="off" autocapitalize="off" spellcheck="false"
-              data-form-type="other" data-lpignore="true">
+              placeholder="Поиск в рекомендациях (фурион, снайпер, ам)..." autocomplete="off" autocorrect="off"
+              autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
             <button class="recs-clear-btn" id="clearRecsSearchBtn" style="display:none;"
               title="Очистить поиск">✕</button>
           </div>
@@ -477,9 +472,8 @@
               </svg>
             </span>
             <input type="search" id="heroSearchInput" name="hero_search_query"
-              placeholder="Поиск (фура, ам, папич, axe)..." autocomplete="off"
-              autocorrect="off" autocapitalize="off" spellcheck="false"
-              data-form-type="other" data-lpignore="true">
+              placeholder="Поиск (фура, ам, папич, axe)..." autocomplete="off" autocorrect="off" autocapitalize="off"
+              spellcheck="false" data-form-type="other" data-lpignore="true">
             <button class="search-clear-btn" id="clearSearchBtn" style="display:none;">✕</button>
           </div>
 
@@ -639,7 +633,8 @@
               <div class="token-card-title-group">
                 <h4 class="token-card-title">Персональные веса формулы драфта</h4>
                 <p class="token-card-desc">
-                  Настройте и сохраните дефолтные веса формулы под свой стиль игры. Они будут автоматически применяться при входе в аккаунт.
+                  Настройте и сохраните дефолтные веса формулы под свой стиль игры. Они будут автоматически применяться
+                  при входе в аккаунт.
                 </p>
               </div>
             </div>
@@ -650,7 +645,8 @@
                   <span class="pref-title">Контрпики</span>
                   <span class="pref-value" id="profileCounterVal">100%</span>
                 </div>
-                <input type="range" id="profileCounterWeight" class="range-slider slider-counter" min="0" max="100" value="100">
+                <input type="range" id="profileCounterWeight" class="range-slider slider-counter" min="0" max="100"
+                  value="100">
               </div>
 
               <div class="profile-weight-item">
@@ -658,7 +654,8 @@
                   <span class="pref-title">Синергия</span>
                   <span class="pref-value" id="profileSynergyVal">50%</span>
                 </div>
-                <input type="range" id="profileSynergyWeight" class="range-slider slider-synergy" min="0" max="100" value="50">
+                <input type="range" id="profileSynergyWeight" class="range-slider slider-synergy" min="0" max="100"
+                  value="50">
               </div>
 
               <div class="profile-weight-item">
@@ -666,7 +663,8 @@
                   <span class="pref-title">Мета</span>
                   <span class="pref-value" id="profileMetaVal">25%</span>
                 </div>
-                <input type="range" id="profileMetaWeight" class="range-slider slider-meta" min="0" max="100" value="25">
+                <input type="range" id="profileMetaWeight" class="range-slider slider-meta" min="0" max="100"
+                  value="25">
               </div>
             </div>
 
@@ -674,10 +672,12 @@
               <button type="button" id="saveProfileWeightsBtn" class="btn btn-primary btn-sm">
                 Сохранить веса в профиль
               </button>
-              <button type="button" id="copyMainWeightsBtn" class="btn btn-secondary btn-sm" title="Скопировать значения ползунков с главной страницы">
+              <button type="button" id="copyMainWeightsBtn" class="btn btn-secondary btn-sm"
+                title="Скопировать значения ползунков с главной страницы">
                 Взять с главной
               </button>
-              <button type="button" id="resetProfileWeightsBtn" class="btn btn-secondary btn-sm" title="Сбросить на 100 / 50 / 25">
+              <button type="button" id="resetProfileWeightsBtn" class="btn btn-secondary btn-sm"
+                title="Сбросить на 100 / 50 / 25">
                 Сброс (100 / 50 / 25)
               </button>
             </div>
