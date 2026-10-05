@@ -413,6 +413,7 @@ def status():
         "mode": "live_user_token" if has_user_token else ("live_server_token" if has_env_token else "offline_cache"),
         "heroesCount": len(client.heroes),
         "cachedMatchupsCount": len(client.matchups),
+        "cachedDurationsCount": len(client.hero_durations),
         "isPreloading": client.is_preloading,
         "preloadProgress": client.preload_progress,
         "currentBracket": client.current_bracket,

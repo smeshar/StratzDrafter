@@ -32,7 +32,8 @@ StratzDrafter/
 │   ├── users.db            # База данных SQLite для пользователей и персональных API-токенов
 │   ├── heroes_cache.json   # 127 героев Dota 2 (имена, иконки, атрибуты, роли)
 │   ├── stats_cache.json    # Статистика по позициям (matchCount, winCount, winRate)
-│   └── matchups_cache.json # Матрица 'vs' и 'with' для всех героев (synergy, winCount)
+│   ├── matchups_cache.json # Матрица 'vs' и 'with' для всех героев (synergy, winCount)
+│   └── durations_cache.json# Поминутная статистика и винрейты 0-60 мин для 127 героев из Stratz API
 ├── templates/
 │   └── index.html          # Главный HTML-шаблон интерфейса
 └── static/
@@ -48,8 +49,8 @@ StratzDrafter/
 
 ### 3.1. Клиент Stratz (`stratz_client.py`)
 1. **Кэширование на диск:**
-   * Метод `_load_disk_cache()` загружает `heroes_cache.json`, `stats_cache.json`, `matchups_cache.json`.
-   * При старте фоновый поток `preload_all_matchups_async()` проверяет и догружает недостающие матчапы пачками по 25 героев.
+   * Метод `_load_disk_cache()` загружает `heroes_cache.json`, `stats_cache.json`, `matchups_cache.json`, `durations_cache.json`.
+   * При старте фоновый поток `preload_all_matchups_async()` проверяет и догружает недостающие матчапы и временные кривые героев.
 2. **Фильтрация ролей (`is_hero_viable_for_position`):**
    * Стандартный пик: доля игр на роли $\ge 15\%$ или $\ge 2000$ игр.
    * Офф-мета: доля игр $\ge 4\%$ и $\ge 150$ игр (переключатель `allowOffMeta` в UI).
@@ -65,6 +66,11 @@ StratzDrafter/
      * **Мета:** Базовый винрейт героев в патче (с учетом роли из `position_stats`).
      * **Итог:** Шанс победы союзников нормируется в диапазоне от 15.0% до 85.0%, врагов — $100 - \text{AlliesWinRate}$.
      * **Подсказка (`insight`):** Генерирует читаемое описание на русском языке о ключевых контрпиках или угрозах драфта.
+5. **Поминутный График Преимущества 0-60 мин (`calculate_timeline_advantage`):**
+   * Вычисляется **на 100% по реальным данным Stratz API** (`heroStats.stats(groupByTime: true, minTime: 0, maxTime: 65)`).
+   * Без искусственных словарей/эвристик: для каждого героя в `durations_cache.json` хранятся реальные исходы матчей по минутам завершения, networth и heroDamage.
+   * Командный перевес на каждой минуте складывается из реальных винрейт-дельт пикнутых героев союзников и врагов с учетом влияния линий (`lane_adv`) и базового аналитического перевеса драфта.
+   * Динамический инсайт генерирует советы с указанием конкретных героев, имеющих пик силы в этот момент.
 
 ### 3.2. Бэкенд эндпоинты (`app.py`)
 * `GET /api/heroes?q=...&attr=...` — Список всех героев с поддержкой поиска по русскому сленгу.

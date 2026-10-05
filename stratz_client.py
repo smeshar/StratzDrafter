@@ -16,6 +16,7 @@ DATA_DIR.mkdir(exist_ok=True)
 HEROES_CACHE_FILE = DATA_DIR / "heroes_cache.json"
 STATS_CACHE_FILE = DATA_DIR / "stats_cache.json"
 MATCHUPS_CACHE_FILE = DATA_DIR / "matchups_cache.json"
+DURATIONS_CACHE_FILE = DATA_DIR / "durations_cache.json"
 
 STRATZ_GRAPHQL_URL = "https://api.stratz.com/graphql"
 
@@ -131,36 +132,6 @@ LANE_CONFIG = {
     }
 }
 
-# Base role power curves across match milestones: [0m, 10m, 20m, 35m, 50m, 60m]
-ROLE_TIMING_BASE = {
-    "pos1": [0.60, 0.70, 1.00, 1.35, 1.65, 1.80],
-    "pos2": [0.95, 1.15, 1.30, 1.15, 1.00, 0.90],
-    "pos3": [1.10, 1.25, 1.25, 1.05, 0.90, 0.85],
-    "pos4": [1.20, 1.25, 1.05, 0.85, 0.70, 0.65],
-    "pos5": [1.30, 1.20, 0.90, 0.70, 0.55, 0.50]
-}
-
-# Iconic hero timing curves and power spikes in Dota 2
-HERO_TIMING_OVERRIDES = {
-    67:  [-0.30, -0.25, -0.10, +0.30, +0.65, +0.75],  # Spectre (ultra late raid boss)
-    94:  [-0.25, -0.20, -0.05, +0.35, +0.70, +0.80],  # Medusa (hyper late scaling)
-    41:  [-0.20, -0.15, +0.05, +0.30, +0.60, +0.70],  # Faceless Void (Chrono + Refresher)
-    1:   [-0.25, -0.20, +0.10, +0.35, +0.50, +0.55],  # Anti-Mage (splitpush & mana burn)
-    109: [-0.20, -0.10, +0.15, +0.35, +0.55, +0.60],  # Terrorblade (metamorphosis & illusions)
-    44:  [-0.20, -0.15, +0.05, +0.30, +0.50, +0.55],  # Phantom Assassin (huge late crits)
-    113: [-0.20, -0.10, +0.10, +0.35, +0.60, +0.70],  # Arc Warden (double tempest scaling)
-    35:  [-0.15, -0.10, +0.05, +0.25, +0.45, +0.50],  # Sniper (extreme late range)
-    85:  [+0.50, +0.45, +0.10, -0.25, -0.45, -0.50],  # Undying (early decay monster)
-    59:  [+0.35, +0.35, +0.25, -0.15, -0.40, -0.45],  # Huskar (early/mid tempo snowaller)
-    47:  [+0.30, +0.30, +0.15, -0.10, -0.30, -0.35],  # Viper (lane dominator)
-    82:  [+0.10, +0.30, +0.50, +0.10, -0.35, -0.45],  # Meepo (fast midgame snowball)
-    73:  [-0.20, +0.10, +0.55, +0.30, -0.20, -0.30],  # Alchemist (peaks at 20-30m 6 slots)
-    61:  [+0.10, +0.35, +0.40, -0.10, -0.35, -0.40],  # Broodmother (early web map pressure)
-    66:  [+0.40, +0.35, +0.15, -0.20, -0.40, -0.45],  # Chen (early creep tempo)
-    83:  [+0.35, +0.25, +0.05, -0.15, -0.30, -0.35],  # Treant Protector (early living armor/damage)
-}
-
-
 class StratzClient:
     def __init__(self):
         self.api_token = os.getenv("STRATZ_API", "").strip()
@@ -178,6 +149,7 @@ class StratzClient:
         self.position_stats = {}  # (heroId, pos) -> { matchCount, winCount, winRate }
         self.hero_totals = {}     # heroId -> { matchCount, winCount, winRate }
         self.matchups = {}        # heroId -> { 'vs': {heroId2: {synergy, winCount, matchCount}}, 'with': {...} }
+        self.hero_durations = {}   # heroId -> { baseWinRate, totalMatches, peakMinute, peakDelta, points: [...] }
         self.is_preloading = False
         self.preload_progress = 0
         self.current_bracket = "LOW_RANK"
@@ -266,6 +238,15 @@ class StratzClient:
             except Exception as e:
                 print(f"Failed to read matchups cache: {e}")
 
+        if DURATIONS_CACHE_FILE.exists():
+            try:
+                with open(DURATIONS_CACHE_FILE, "r", encoding="utf-8") as f:
+                    raw_durations = json.load(f)
+                    self.hero_durations = {int(k): v for k, v in raw_durations.items()}
+                print(f"Loaded duration curves for {len(self.hero_durations)} heroes from cache.")
+            except Exception as e:
+                print(f"Failed to read durations cache: {e}")
+
     def _save_disk_cache(self):
         """Saves current state to local JSON cache files safely."""
         try:
@@ -288,6 +269,11 @@ class StratzClient:
                     }
                 with open(MATCHUPS_CACHE_FILE, "w", encoding="utf-8") as f:
                     json.dump(matchups_serializable, f, ensure_ascii=False)
+
+            if self.hero_durations:
+                durations_serializable = {str(k): v for k, v in self.hero_durations.items()}
+                with open(DURATIONS_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(durations_serializable, f, ensure_ascii=False, indent=2)
 
             print("Disk cache successfully saved.")
         except Exception as e:
@@ -473,6 +459,118 @@ class StratzClient:
             print(f"Fetching matchups for missing heroes: {missing}")
             self.fetch_matchups_batch(missing, bracket_key=bracket_key, custom_token=custom_token)
 
+    def fetch_durations(self, bracket_key: str = "LOW_RANK", custom_token: str = None, force_refresh: bool = False):
+        """Fetches minute-by-minute stats for all heroes from Stratz GraphQL API and computes power curves."""
+        if len(self.hero_durations) >= 120 and not force_refresh:
+            return
+
+        brackets = BRACKET_CONFIGS.get(bracket_key, BRACKET_CONFIGS["LOW_RANK"])
+        bracket_str = f"[{', '.join(brackets)}]"
+
+        query = f"""
+        query {{
+          heroStats {{
+            stats(bracketBasicIds: {bracket_str}, groupByTime: true, minTime: 0, maxTime: 65) {{
+              heroId
+              time
+              matchCount
+              winCount
+              networth
+              heroDamage
+              kills
+              deaths
+            }}
+          }}
+        }}
+        """
+        res = self._execute_query(query, custom_token=custom_token)
+        stats_list = res.get("data", {}).get("heroStats", {}).get("stats", [])
+        if not stats_list:
+            print("Failed to fetch hero duration stats from Stratz.")
+            return
+
+        # Group by heroId
+        hero_raw = {}
+        for item in stats_list:
+            hid = item["heroId"]
+            if hid not in hero_raw:
+                hero_raw[hid] = {}
+            hero_raw[hid][item["time"]] = item
+
+        # Global benchmarks per minute
+        global_avg_nw = {}
+        global_avg_dmg = {}
+        for m in range(0, 66):
+            nw_vals = [hero_raw[hid][m]["networth"] for hid in hero_raw if m in hero_raw[hid] and hero_raw[hid][m].get("networth")]
+            dmg_vals = [hero_raw[hid][m]["heroDamage"] for hid in hero_raw if m in hero_raw[hid] and hero_raw[hid][m].get("heroDamage")]
+            global_avg_nw[m] = sum(nw_vals) / len(nw_vals) if nw_vals else 1.0
+            global_avg_dmg[m] = sum(dmg_vals) / len(dmg_vals) if dmg_vals else 1.0
+
+        for hid, minute_map in hero_raw.items():
+            m0 = minute_map.get(0) or minute_map.get(min(minute_map.keys()))
+            base_matches = m0["matchCount"] if m0 else 0
+            base_wins = m0["winCount"] if m0 else 0
+            base_wr = (base_wins / base_matches * 100) if base_matches > 0 else 50.0
+
+            points = []
+            for m in range(0, 61):
+                cur = minute_map.get(m)
+                if not cur:
+                    closest_m = min(minute_map.keys(), key=lambda k: abs(k - m))
+                    cur = minute_map[closest_m]
+
+                cumul_matches = cur["matchCount"]
+                cumul_wins = cur["winCount"]
+                cumul_wr = (cumul_wins / cumul_matches * 100) if cumul_matches > 0 else base_wr
+
+                m_start = max(0, m - 2)
+                m_end = min(65, m + 2)
+                cur_start = minute_map.get(m_start, cur)
+                cur_end = minute_map.get(m_end, cur)
+
+                ended_matches = cur_start["matchCount"] - cur_end["matchCount"]
+                ended_wins = cur_start["winCount"] - cur_end["winCount"]
+
+                if ended_matches >= 80:
+                    finish_wr = (ended_wins / ended_matches * 100)
+                else:
+                    avg_nw = global_avg_nw.get(m, 1.0)
+                    avg_dmg = global_avg_dmg.get(m, 1.0)
+                    hero_nw = cur.get("networth", 0)
+                    hero_dmg = cur.get("heroDamage", 0)
+                    nw_ratio = (hero_nw / avg_nw) if avg_nw > 0 else 1.0
+                    dmg_ratio = (hero_dmg / avg_dmg) if avg_dmg > 0 else 1.0
+                    early_strength_bias = ((nw_ratio - 1.0) * 1.5 + (dmg_ratio - 1.0) * 1.5)
+                    weight = max(0.0, min(1.0, (20 - m) / 20))
+                    finish_wr = (base_wr + early_strength_bias) * weight + cumul_wr * (1 - weight)
+
+                delta_wr = round(finish_wr - base_wr, 2)
+                points.append({
+                    "minute": m,
+                    "cumulWinRate": round(cumul_wr, 2),
+                    "finishWinRate": round(finish_wr, 2),
+                    "deltaWinRate": delta_wr,
+                    "networth": round(cur.get("networth", 0), 1),
+                    "heroDamage": round(cur.get("heroDamage", 0), 1)
+                })
+
+            peak_pt = max(points, key=lambda p: p["deltaWinRate"])
+            trough_pt = min(points, key=lambda p: p["deltaWinRate"])
+
+            self.hero_durations[hid] = {
+                "heroId": hid,
+                "baseWinRate": round(base_wr, 2),
+                "totalMatches": base_matches,
+                "peakMinute": peak_pt["minute"],
+                "peakDelta": peak_pt["deltaWinRate"],
+                "troughMinute": trough_pt["minute"],
+                "troughDelta": trough_pt["deltaWinRate"],
+                "points": points
+            }
+
+        self._save_disk_cache()
+        print(f"[StratzClient] Successfully fetched and cached real duration curves for {len(self.hero_durations)} heroes.")
+
     def preload_all_matchups_async(self, bracket_key: str = "LOW_RANK", custom_token: str = None, force_refresh: bool = False):
         """Background worker to download the entire Dota 2 matchup matrix in batches of 25 heroes."""
         if self.is_preloading:
@@ -482,6 +580,15 @@ class StratzClient:
             self.is_preloading = True
             if not self.heroes:
                 self.fetch_heroes()
+
+            # Ensure duration curves from Stratz are present
+            if len(self.hero_durations) < 120 or force_refresh:
+                print("[Preloader] Updating hero duration curves from Stratz API...")
+                try:
+                    self.fetch_durations(bracket_key=bracket_key, custom_token=custom_token, force_refresh=force_refresh)
+                except Exception as ex:
+                    print(f"[Preloader] Error fetching duration curves: {ex}")
+
             all_hero_ids = list(self.heroes.keys())
             total = len(all_hero_ids)
             batch_size = 25
@@ -913,57 +1020,16 @@ class StratzClient:
         }
 
     def get_hero_timing_profile(self, hero_id: int, role: str = None) -> list[float]:
-        """Returns power curve profile at milestones [0m, 10m, 20m, 35m, 50m, 60m]."""
-        hero = self.heroes.get(hero_id, {})
-        eff_role = role if (role and role != "all") else self.get_hero_primary_position(hero_id)
-        curve = list(ROLE_TIMING_BASE.get(eff_role, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
-        roles = set(hero.get("roles", []))
-        attr = hero.get("attribute", "str")
-
-        if "CARRY" in roles:
-            curve[0] -= 0.10
-            curve[1] -= 0.05
-            curve[3] += 0.15
-            curve[4] += 0.25
-            curve[5] += 0.30
-        if "PUSHER" in roles:
-            curve[1] += 0.15
-            curve[2] += 0.25
-            curve[4] -= 0.10
-            curve[5] -= 0.15
-        if "NUKER" in roles:
-            curve[0] += 0.10
-            curve[1] += 0.15
-            curve[3] -= 0.10
-            curve[4] -= 0.20
-            curve[5] -= 0.20
-        if "INITIATOR" in roles:
-            curve[2] += 0.20
-            curve[3] += 0.10
-        if "SUPPORT" in roles:
-            curve[0] += 0.15
-            curve[1] += 0.10
-            curve[4] -= 0.15
-            curve[5] -= 0.20
-
-        if attr == "agi":
-            curve[3] += 0.10
-            curve[4] += 0.20
-            curve[5] += 0.25
-        elif attr == "all":
-            curve[4] += 0.15
-            curve[5] += 0.20
-        elif attr == "int":
-            curve[0] += 0.10
-            curve[1] += 0.10
-            curve[4] -= 0.10
-            curve[5] -= 0.15
-
-        if hero_id in HERO_TIMING_OVERRIDES:
-            for idx, offset in enumerate(HERO_TIMING_OVERRIDES[hero_id]):
-                curve[idx] += offset
-
-        return [max(0.2, c) for c in curve]
+        """Returns hero power profile at milestones [0m, 10m, 20m, 35m, 50m, 60m] from Stratz API."""
+        h_pts = self.hero_durations.get(hero_id, {}).get("points")
+        if not h_pts:
+            return [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        milestones = [0, 10, 20, 35, 50, 60]
+        base_wr = self.hero_durations.get(hero_id, {}).get("baseWinRate", 50.0) or 50.0
+        return [
+            round(1.0 + (h_pts[m]["deltaWinRate"] / base_wr), 3) if len(h_pts) > m else 1.0
+            for m in milestones
+        ]
 
     def calculate_timeline_advantage(
         self,
@@ -976,8 +1042,8 @@ class StratzClient:
         synergy_adv: float = 0.0
     ) -> dict:
         """
-        Calculates expected team advantage progression from minute 0 to 60.
-        Models laning matchups, midgame power spikes, late core scaling, and ultra-late items.
+        Calculates expected team advantage progression from minute 0 to 60
+        directly from real Stratz duration statistics and match winrates.
         """
         allies = [int(x) for x in allies if x is not None]
         enemies = [int(x) for x in enemies if x is not None]
@@ -998,31 +1064,7 @@ class StratzClient:
                 if isinstance(er, dict) and "id" in er and "role" in er:
                     enemy_roles_dict[er["id"]] = er["role"]
 
-        ally_curves = [self.get_hero_timing_profile(a, ally_roles_dict.get(a)) for a in allies]
-        enemy_curves = [self.get_hero_timing_profile(e, enemy_roles_dict.get(e)) for e in enemies]
-
-        milestones = [0, 10, 20, 35, 50, 60]
-
-        def team_power_at_m(curves, idx):
-            if not curves:
-                return 1.0
-            # 5-hero team normalization: unpicked slots contribute 1.0 baseline
-            s = sum(c[idx] for c in curves)
-            return (s + (5 - len(curves)) * 1.0) / 5.0
-
-        power_diff_milestones = []
-        for i in range(len(milestones)):
-            p_a = team_power_at_m(ally_curves, i) if allies else 1.0
-            p_e = team_power_at_m(enemy_curves, i) if enemies else 1.0
-            if allies and not enemies:
-                diff = (p_a - 1.0)
-            elif enemies and not allies:
-                diff = -(p_e - 1.0)
-            else:
-                diff = (p_a - p_e)
-            power_diff_milestones.append(diff)
-
-        # Laning matchup advantage (Safe, Mid, Offlane)
+        # Laning matchup advantage (Safe, Mid, Offlane) from direct counter matchups
         lane_adv = 0.0
         if allies and enemies:
             lane_scores = []
@@ -1041,37 +1083,47 @@ class StratzClient:
             if lane_scores:
                 lane_adv = sum(lane_scores) / len(lane_scores)
 
-        # Hermite / smoothstep interpolation
-        def interpolate_diff(t):
-            if t <= 0:
-                return power_diff_milestones[0]
-            if t >= 60:
-                return power_diff_milestones[-1]
-            for i in range(len(milestones) - 1):
-                t0, t1 = milestones[i], milestones[i+1]
-                if t0 <= t <= t1:
-                    prog = (t - t0) / (t1 - t0)
-                    smooth_prog = prog * prog * (3 - 2 * prog)
-                    return power_diff_milestones[i] + smooth_prog * (power_diff_milestones[i+1] - power_diff_milestones[i])
-            return 0.0
-
-        points = []
         sample_minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+        points = []
 
         for m in sample_minutes:
-            p_diff = interpolate_diff(m)
-            power_adv = p_diff * 8.0
+            # Real Stratz deltaWinRate for picked heroes at minute m
+            ally_deltas = []
+            for a in allies:
+                h_pts = self.hero_durations.get(a, {}).get("points")
+                if h_pts and len(h_pts) > m:
+                    ally_deltas.append(h_pts[m]["deltaWinRate"])
+                else:
+                    ally_deltas.append(0.0)
 
+            enemy_deltas = []
+            for e in enemies:
+                h_pts = self.hero_durations.get(e, {}).get("points")
+                if h_pts and len(h_pts) > m:
+                    enemy_deltas.append(h_pts[m]["deltaWinRate"])
+                else:
+                    enemy_deltas.append(0.0)
+
+            avg_a_delta = (sum(ally_deltas) / len(ally_deltas)) if ally_deltas else 0.0
+            avg_e_delta = (sum(enemy_deltas) / len(enemy_deltas)) if enemy_deltas else 0.0
+
+            if allies and enemies:
+                timing_diff = avg_a_delta - avg_e_delta
+            elif allies:
+                timing_diff = avg_a_delta
+            else:
+                timing_diff = -avg_e_delta
+
+            # Laning impact: strong in early minutes, smoothly transitions out by minute 15
             if m <= 10:
                 lane_fade = 1.0 - 0.2 * (m / 10.0)
             elif m <= 15:
                 lane_fade = 0.8 * (15.0 - m) / 5.0
             else:
                 lane_fade = 0.0
-            lane_contribution = lane_adv * lane_fade * 1.5
+            lane_contrib = lane_adv * lane_fade * 1.5
 
-            base_weight = 0.4 + 0.6 * min(1.0, m / 25.0)
-            total_adv = (net_adv * base_weight) + power_adv + lane_contribution
+            total_adv = net_adv + timing_diff + lane_contrib
             allies_wr = max(15.0, min(85.0, 50.0 + total_adv))
             enemies_wr = 100.0 - allies_wr
 
@@ -1126,18 +1178,37 @@ class StratzClient:
         late_adv = round(sum(late_pts) / len(late_pts), 1) if late_pts else 0.0
         ultra_adv = round(sum(ultra_pts) / len(ultra_pts), 1) if ultra_pts else 0.0
 
-        if best_ally_pt["alliesAdvantage"] >= worst_ally_pt["alliesAdvantage"] + 3.0:
+        # Smart timing insight with hero power spikes from real Stratz data
+        best_hero_name = None
+        if allies:
+            def ally_spike(a):
+                pts = self.hero_durations.get(a, {}).get("points")
+                return pts[best_ally_pt["minute"]]["deltaWinRate"] if (pts and len(pts) > best_ally_pt["minute"]) else 0.0
+            best_a = max(allies, key=ally_spike)
+            best_hero_name = self.heroes.get(best_a, {}).get("displayName")
+
+        worst_hero_name = None
+        if enemies:
+            def enemy_spike(e):
+                pts = self.hero_durations.get(e, {}).get("points")
+                return pts[worst_ally_pt["minute"]]["deltaWinRate"] if (pts and len(pts) > worst_ally_pt["minute"]) else 0.0
+            worst_e = max(enemies, key=enemy_spike)
+            worst_hero_name = self.heroes.get(worst_e, {}).get("displayName")
+
+        if best_ally_pt["alliesAdvantage"] >= worst_ally_pt["alliesAdvantage"] + 2.5:
+            hero_suffix = f" (пик силы: {best_hero_name})" if best_hero_name else ""
             if best_ally_pt["minute"] <= 20:
-                advice = f"Пик силы нашей команды: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Закрывайте игру до 30-35 минуты!"
+                advice = f"Пик силы нашей команды: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%){hero_suffix}. Закрывайте игру до 30-35 минуты!"
             elif best_ally_pt["minute"] <= 35:
-                advice = f"Пик силы: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Оптимальное окно для Рошана и осады базы."
+                advice = f"Пик силы: {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%){hero_suffix}. Оптимальное окно для Рошана и осады базы."
             else:
-                advice = f"Доминация в поздней игре: пик силы на {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%). Затягивайте в лейт!"
-        elif worst_ally_pt["alliesAdvantage"] <= -3.0:
+                advice = f"Доминация в поздней игре: пик силы на {best_ally_pt['minute']} мин (+{best_ally_pt['alliesAdvantage']}%){hero_suffix}. Затягивайте в лейт!"
+        elif worst_ally_pt["alliesAdvantage"] <= -2.5:
+            e_hero_suffix = f" (давление от {worst_hero_name})" if worst_hero_name else ""
             if worst_ally_pt["minute"] <= 20:
-                advice = f"Опасная ранняя игра (враг +{-worst_ally_pt['alliesAdvantage']}% на {worst_ally_pt['minute']} мин). Фармите и избегайте стычек!"
+                advice = f"Опасная ранняя игра (враг +{-worst_ally_pt['alliesAdvantage']}% на {worst_ally_pt['minute']} мин){e_hero_suffix}. Фармите и избегайте стычек!"
             else:
-                advice = f"Враг имеет перевес в лейте (на {worst_ally_pt['minute']} мин +{-worst_ally_pt['alliesAdvantage']}%). Забирайте объекты раньше!"
+                advice = f"Враг имеет перевес в лейте (на {worst_ally_pt['minute']} мин +{-worst_ally_pt['alliesAdvantage']}%){e_hero_suffix}. Забирайте объекты раньше!"
         else:
             advice = "Ровный баланс сил на всех стадиях (~50%). Исход решат тимфайты и ключевые тайминги артефактов."
 
