@@ -164,56 +164,62 @@
 
       <!-- Graph Canvas / SVG Container -->
       <div class="timeline-chart-wrapper" id="timelineChartWrapper">
-        <svg id="timelineSvg" class="timeline-svg" viewBox="0 0 1000 150" preserveAspectRatio="none">
+        <svg id="timelineSvg" class="timeline-svg" viewBox="0 0 1000 220" preserveAspectRatio="none">
           <defs>
             <!-- Radiant Area Gradient -->
             <linearGradient id="radiantAreaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#00e599" stop-opacity="0.28" />
+              <stop offset="0%" stop-color="#00e599" stop-opacity="0.32" />
               <stop offset="100%" stop-color="#00e599" stop-opacity="0.02" />
             </linearGradient>
             <!-- Dire Area Gradient -->
             <linearGradient id="direAreaGrad" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stop-color="#ff3366" stop-opacity="0.28" />
+              <stop offset="0%" stop-color="#ff3366" stop-opacity="0.32" />
               <stop offset="100%" stop-color="#ff3366" stop-opacity="0.02" />
             </linearGradient>
             <!-- Clip Paths for Split Baseline Area Fill -->
             <clipPath id="radiantClip">
-              <rect x="50" y="0" width="900" height="65" />
+              <rect x="50" y="0" width="900" height="105" />
             </clipPath>
             <clipPath id="direClip">
-              <rect x="50" y="65" width="900" height="85" />
+              <rect x="50" y="105" width="900" height="115" />
             </clipPath>
           </defs>
 
           <!-- Stage Background Columns -->
           <g class="timeline-stages-bg">
-            <rect x="50" y="8" width="150" height="114" class="stage-bg-rect stage-laning" />
-            <rect x="200" y="8" width="150" height="114" class="stage-bg-rect stage-timings" />
-            <rect x="350" y="8" width="225" height="114" class="stage-bg-rect stage-midgame" />
-            <rect x="575" y="8" width="225" height="114" class="stage-bg-rect stage-late" />
-            <rect x="800" y="8" width="150" height="114" class="stage-bg-rect stage-ultra" />
+            <rect x="50" y="8" width="150" height="175" class="stage-bg-rect stage-laning" />
+            <rect x="200" y="8" width="150" height="175" class="stage-bg-rect stage-timings" />
+            <rect x="350" y="8" width="225" height="175" class="stage-bg-rect stage-midgame" />
+            <rect x="575" y="8" width="225" height="175" class="stage-bg-rect stage-late" />
+            <rect x="800" y="8" width="150" height="175" class="stage-bg-rect stage-ultra" />
           </g>
 
           <!-- Stage Divider Lines -->
           <g class="timeline-grid-vertical">
-            <line x1="200" y1="8" x2="200" y2="122" class="stage-div-line" />
-            <line x1="350" y1="8" x2="350" y2="122" class="stage-div-line" />
-            <line x1="575" y1="8" x2="575" y2="122" class="stage-div-line" />
-            <line x1="800" y1="8" x2="800" y2="122" class="stage-div-line" />
+            <line x1="200" y1="8" x2="200" y2="183" class="stage-div-line" />
+            <line x1="350" y1="8" x2="350" y2="183" class="stage-div-line" />
+            <line x1="575" y1="8" x2="575" y2="183" class="stage-div-line" />
+            <line x1="800" y1="8" x2="800" y2="183" class="stage-div-line" />
           </g>
 
           <!-- Horizontal Grid Lines (Percentage guides) -->
           <g class="timeline-grid-horizontal">
             <!-- +10% -->
-            <line x1="50" y1="32" x2="950" y2="32" class="grid-line grid-subtle" />
-            <text x="44" y="36" class="grid-label">+10%</text>
+            <line x1="50" y1="55" x2="950" y2="55" class="grid-line grid-subtle" />
+            <text x="44" y="59" class="grid-label">+10%</text>
+            <!-- +5% -->
+            <line x1="50" y1="80" x2="950" y2="80" class="grid-line grid-subtle" />
+            <text x="44" y="84" class="grid-label">+5%</text>
             <!-- 0% Baseline (Center = 50% Winrate) -->
-            <line x1="50" y1="65" x2="950" y2="65" class="grid-line grid-center" />
-            <text x="44" y="69" class="grid-label grid-label-center">0%</text>
-            <text x="956" y="69" class="grid-label grid-label-right">50%</text>
+            <line x1="50" y1="105" x2="950" y2="105" class="grid-line grid-center" />
+            <text x="44" y="109" class="grid-label grid-label-center">0%</text>
+            <text x="956" y="109" class="grid-label grid-label-right">50%</text>
+            <!-- -5% -->
+            <line x1="50" y1="130" x2="950" y2="130" class="grid-line grid-subtle" />
+            <text x="44" y="134" class="grid-label">-5%</text>
             <!-- -10% -->
-            <line x1="50" y1="98" x2="950" y2="98" class="grid-line grid-subtle" />
-            <text x="44" y="102" class="grid-label">-10%</text>
+            <line x1="50" y1="155" x2="950" y2="155" class="grid-line grid-subtle" />
+            <text x="44" y="159" class="grid-label">-10%</text>
           </g>
 
           <!-- Area Fills -->
@@ -221,12 +227,12 @@
           <path id="direAreaPath" class="timeline-area dire-area" clip-path="url(#direClip)" d="" />
 
           <!-- Main Advantage Curve Line -->
-          <path id="timelineCurvePath" class="timeline-curve-line" d="M 50 65 L 950 65" />
+          <path id="timelineCurvePath" class="timeline-curve-line" d="M 50 105 L 950 105" />
 
           <!-- Interactive Hover Line and Point -->
           <g id="timelineHoverGroup" class="timeline-hover-group" style="display: none;">
-            <line id="timelineHoverLine" x1="0" y1="8" x2="0" y2="122" class="hover-cursor-line" />
-            <circle id="timelineHoverDot" cx="0" cy="0" r="5" class="hover-cursor-dot" />
+            <line id="timelineHoverLine" x1="0" y1="8" x2="0" y2="183" class="hover-cursor-line" />
+            <circle id="timelineHoverDot" cx="0" cy="0" r="5.5" class="hover-cursor-dot" />
           </g>
 
           <!-- Milestone Data Dots -->
@@ -234,19 +240,19 @@
 
           <!-- Peak Marker -->
           <g id="timelinePeakGroup" class="timeline-peak-group" style="display: none;">
-            <circle id="timelinePeakDot" cx="0" cy="0" r="6" class="peak-dot" />
+            <circle id="timelinePeakDot" cx="0" cy="0" r="6.5" class="peak-dot" />
             <text id="timelinePeakLabel" x="0" y="0" class="peak-label">ПИК</text>
           </g>
 
           <!-- X-Axis Minute Labels -->
           <g class="timeline-axis-labels">
-            <text x="50" y="140" text-anchor="middle" class="axis-time-label">0'</text>
-            <text x="200" y="140" text-anchor="middle" class="axis-time-label">10'</text>
-            <text x="350" y="140" text-anchor="middle" class="axis-time-label">20'</text>
-            <text x="500" y="140" text-anchor="middle" class="axis-time-label">30'</text>
-            <text x="650" y="140" text-anchor="middle" class="axis-time-label">40'</text>
-            <text x="800" y="140" text-anchor="middle" class="axis-time-label">50'</text>
-            <text x="950" y="140" text-anchor="middle" class="axis-time-label">60' мин</text>
+            <text x="50" y="206" text-anchor="middle" class="axis-time-label">0'</text>
+            <text x="200" y="206" text-anchor="middle" class="axis-time-label">10'</text>
+            <text x="350" y="206" text-anchor="middle" class="axis-time-label">20'</text>
+            <text x="500" y="206" text-anchor="middle" class="axis-time-label">30'</text>
+            <text x="650" y="206" text-anchor="middle" class="axis-time-label">40'</text>
+            <text x="800" y="206" text-anchor="middle" class="axis-time-label">50'</text>
+            <text x="950" y="206" text-anchor="middle" class="axis-time-label">60' мин</text>
           </g>
         </svg>
 

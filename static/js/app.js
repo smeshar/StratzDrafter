@@ -1388,7 +1388,7 @@ function updateTimelineGraph(timeline) {
   if (!hasPicks || !timeline || !timeline.points || timeline.points.length === 0) {
     if (elements.timelineEmptyState) elements.timelineEmptyState.style.display = 'block';
     if (elements.timelineCurvePath) {
-      elements.timelineCurvePath.setAttribute('d', 'M 50 65 L 950 65');
+      elements.timelineCurvePath.setAttribute('d', 'M 50 105 L 950 105');
       elements.timelineCurvePath.className = 'timeline-curve-line curve-neutral';
     }
     if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', '');
@@ -1468,11 +1468,11 @@ function updateTimelineGraph(timeline) {
   setPhaseScore(elements.phaseScoreUltra, timeline.ultraLateAdvantage);
 
   // 3. SVG Coordinates Mapping
-  const maxAbs = Math.max(12.0, ...timeline.points.map(p => Math.abs(p.alliesAdvantage)));
+  const maxAbs = Math.max(7.0, ...timeline.points.map(p => Math.abs(p.alliesAdvantage)));
   const pts = timeline.points.map(p => {
     const x = 50 + (p.minute / 60) * 900;
     const clampedAdv = Math.max(-maxAbs, Math.min(maxAbs, p.alliesAdvantage));
-    const y = 65 - (clampedAdv / maxAbs) * 48;
+    const y = 105 - (clampedAdv / maxAbs) * 75;
     return { x, y, ...p };
   });
 
@@ -1485,7 +1485,7 @@ function updateTimelineGraph(timeline) {
   }
 
   // 5. Area Fills
-  const areaD = `${curveD} L 950 65 L 50 65 Z`;
+  const areaD = `${curveD} L 950 105 L 50 105 Z`;
   if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', areaD);
   if (elements.direAreaPath) elements.direAreaPath.setAttribute('d', areaD);
 
@@ -1510,7 +1510,7 @@ function updateTimelineGraph(timeline) {
       }
       if (elements.timelinePeakLabel) {
         elements.timelinePeakLabel.setAttribute('x', peakPt.x.toFixed(1));
-        const labelY = peakPt.y < 35 ? (peakPt.y + 16) : (peakPt.y - 8);
+        const labelY = peakPt.y < 45 ? (peakPt.y + 16) : (peakPt.y - 8);
         elements.timelinePeakLabel.setAttribute('y', labelY.toFixed(1));
       }
     } else {
@@ -1549,8 +1549,8 @@ function initTimelineInteractions() {
       }
     }
 
-    const maxAbs = Math.max(12.0, ...pts.map(p => Math.abs(p.alliesAdvantage)));
-    const targetY = 65 - (Math.max(-maxAbs, Math.min(maxAbs, closest.alliesAdvantage)) / maxAbs) * 48;
+    const maxAbs = Math.max(7.0, ...pts.map(p => Math.abs(p.alliesAdvantage)));
+    const targetY = 105 - (Math.max(-maxAbs, Math.min(maxAbs, closest.alliesAdvantage)) / maxAbs) * 75;
     const targetX = 50 + (closest.minute / 60) * 900;
 
     if (elements.timelineHoverGroup) {
@@ -1570,12 +1570,12 @@ function initTimelineInteractions() {
       const pctX = (targetX / 1000) * 100;
       elements.timelineTooltip.style.left = `${pctX.toFixed(1)}%`;
 
-      if (targetY < 55) {
+      if (targetY < 75) {
         elements.timelineTooltip.style.transform = 'translate(-50%, 15px)';
-        elements.timelineTooltip.style.top = `${targetY}px`;
+        elements.timelineTooltip.style.top = `${((targetY / 220) * 100).toFixed(1)}%`;
       } else {
-        elements.timelineTooltip.style.transform = 'translate(-50%, -100%)';
-        elements.timelineTooltip.style.top = `${targetY - 10}px`;
+        elements.timelineTooltip.style.transform = 'translate(-50%, calc(-100% - 10px))';
+        elements.timelineTooltip.style.top = `${((targetY / 220) * 100).toFixed(1)}%`;
       }
 
       if (elements.tooltipTimeBadge) {
