@@ -367,23 +367,48 @@
         </div>
       </section>
 
-      <!-- DRAFT METER & MATCHUP OVERVIEW -->
-      <section class="matchup-meter-panel">
-        <div class="meter-vs-group">
-          <span class="meter-winrate-title">WINRATE</span>
-        </div>
-        <div class="meter-wrapper">
-          <div class="meter-bar-container">
-            <div class="meter-fill allies-fill" id="alliesWinBar" style="width: 50%;"></div>
-            <div class="meter-fill enemies-fill" id="enemiesWinBar" style="width: 50%;"></div>
-          </div>
-          <div class="meter-labels">
-            <span class="meter-score allies-score" id="alliesAdvScore">50.0% Наша</span>
-            <span class="meter-score enemies-score" id="enemiesAdvScore">50.0% Враг</span>
+      <!-- HERO PICK SCORES CENTER PANEL (100-POINT SCALE) -->
+      <section class="pick-scores-panel" id="pickScoresPanel">
+        <div class="scores-panel-header">
+          <div class="scores-title-wrap">
+            <h3 class="scores-panel-title">ОЦЕНКА ПИКОВ</h3>
+            <span class="scores-panel-scale">100-балльная шкала силы героев</span>
           </div>
         </div>
-        <p class="meter-summary-text" id="draftInsight">Выберите героев врага или союзников для получения умных
-          рекомендаций.</p>
+
+        <!-- 5 Position Rows: Ally Score Card VS Enemy Score Card -->
+        <div class="scores-rows-container" id="scoresRowsContainer">
+          <!-- Populated by JavaScript: 5 paired rectangles for pos1..pos5 -->
+        </div>
+
+        <!-- Team Averages & Status Bar -->
+        <div class="scores-summary-footer">
+          <div class="scores-team-averages">
+            <div class="score-avg-badge allies-avg-badge" id="alliesAvgBadge">
+              <span class="avg-label">Наша команда:</span>
+              <span class="avg-val" id="alliesAvgScore">—</span>
+            </div>
+            <span class="score-vs-divider">VS</span>
+            <div class="score-avg-badge enemies-avg-badge" id="enemiesAvgBadge">
+              <span class="avg-label">Враги:</span>
+              <span class="avg-val" id="enemiesAvgScore">—</span>
+            </div>
+          </div>
+
+          <!-- Compatibility mini-meter for tests and scripts -->
+          <div class="meter-wrapper mini-meter-wrapper" style="display: none;">
+            <div class="meter-bar-container">
+              <div class="meter-fill allies-fill" id="alliesWinBar" style="width: 50%;"></div>
+              <div class="meter-fill enemies-fill" id="enemiesWinBar" style="width: 50%;"></div>
+            </div>
+            <div class="meter-labels">
+              <span class="meter-score allies-score" id="alliesAdvScore">50.0% Наша</span>
+              <span class="meter-score enemies-score" id="enemiesAdvScore">50.0% Враг</span>
+            </div>
+          </div>
+
+          <p class="scores-insight-text" id="draftInsight">Выберите героев в слоты команд для расчета персональной силы пика.</p>
+        </div>
       </section>
 
       <!-- ENEMIES (THEIR TEAM) -->
@@ -411,6 +436,55 @@
         <span class="no-bans-hint">Кликните правой кнопкой на героя в списке или выберите слот чтобы забанить</span>
       </div>
       <button id="clearBansBtn" class="btn btn-xs btn-muted" style="display: none;">Очистить баны</button>
+    </section>
+
+    <!-- DETAILED MATCHUPS & SYNERGY BREAKDOWN TABLE -->
+    <section class="breakdown-table-panel" id="breakdownSection">
+      <div class="breakdown-header">
+        <div class="breakdown-title-group">
+          <div class="breakdown-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="3" y1="15" x2="21" y2="15"></line>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+              <line x1="15" y1="3" x2="15" y2="21"></line>
+            </svg>
+          </div>
+          <div>
+            <h2 class="breakdown-main-title">ДЕТАЛЬНАЯ ТАБЛИЦА СИНЕРГИЙ И КОНТРПИКОВ</h2>
+            <p class="breakdown-sub-title">Оценка каждого выбранного героя: синергия с напарниками и контрпик каждого врага по отдельности</p>
+          </div>
+        </div>
+        <div class="breakdown-filter-tabs" id="breakdownFilterTabs">
+          <button type="button" class="tab-btn active" data-filter="all">Все герои (<span id="breakdownCountAll">0</span>)</button>
+          <button type="button" class="tab-btn" data-filter="allies">Твоя команда (<span id="breakdownCountAllies">0</span>)</button>
+          <button type="button" class="tab-btn" data-filter="enemies">Враги (<span id="breakdownCountEnemies">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="breakdown-table-wrapper">
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th class="col-hero">Герой и Роль</th>
+              <th class="col-score">Оценка пика</th>
+              <th class="col-synergy">Синергия с напарниками</th>
+              <th class="col-counter">Контрпик каждого врага</th>
+              <th class="col-delta">Итог</th>
+            </tr>
+          </thead>
+          <tbody id="breakdownTableBody">
+            <tr class="empty-breakdown-row">
+              <td colspan="5">
+                <div class="empty-breakdown-hint">
+                  <span>⚔️ Выберите героев в слоты союзников или врагов, чтобы увидеть построчный анализ синергий и контрпиков</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- RECOMMENDATIONS SECTION -->

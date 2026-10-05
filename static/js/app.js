@@ -42,6 +42,8 @@ const state = {
   user: null,
   activeAuthTab: 'login',
   timelineData: null,
+  breakdownFilter: 'all',
+  lastHeroPickScores: null,
 };
 
 // DOM Elements
@@ -73,6 +75,20 @@ const elements = {
   alliesSynergy: document.getElementById('alliesSynergy'),
   enemiesSynergy: document.getElementById('enemiesSynergy'),
   draftInsight: document.getElementById('draftInsight'),
+
+  // Hero Pick Scores (100-Point Scale) & Breakdown Table
+  pickScoresPanel: document.getElementById('pickScoresPanel'),
+  scoresRowsContainer: document.getElementById('scoresRowsContainer'),
+  alliesAvgBadge: document.getElementById('alliesAvgBadge'),
+  alliesAvgScore: document.getElementById('alliesAvgScore'),
+  enemiesAvgBadge: document.getElementById('enemiesAvgBadge'),
+  enemiesAvgScore: document.getElementById('enemiesAvgScore'),
+  breakdownSection: document.getElementById('breakdownSection'),
+  breakdownFilterTabs: document.getElementById('breakdownFilterTabs'),
+  breakdownCountAll: document.getElementById('breakdownCountAll'),
+  breakdownCountAllies: document.getElementById('breakdownCountAllies'),
+  breakdownCountEnemies: document.getElementById('breakdownCountEnemies'),
+  breakdownTableBody: document.getElementById('breakdownTableBody'),
 
   // Advantage Timeline Elements
   advantageTimelineSection: document.getElementById('advantageTimelineSection'),
@@ -229,6 +245,8 @@ async function fetchSiteStats() {
 document.addEventListener('DOMContentLoaded', async () => {
   renderSlots();
   renderBans();
+  renderPickScores(null);
+  renderBreakdownTable(null);
   setupEventListeners();
   fetchSiteStats();
   await initAuth();
@@ -466,11 +484,27 @@ function setupEventListeners() {
         elements.enemiesSynergy.className = 'team-synergy-badge neutral';
       }
       if (elements.draftInsight) {
-        elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
+        elements.draftInsight.textContent = 'Выберите героев в слоты команд для расчета персональной силы пика.';
       }
+      renderPickScores(null);
+      renderBreakdownTable(null);
       updateTimelineGraph(null);
       debouncedUpdate();
       showToast('Драфт сброшен');
+    });
+  }
+
+  // Breakdown Filter Tabs (All / Allies / Enemies)
+  if (elements.breakdownFilterTabs) {
+    elements.breakdownFilterTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      const filter = btn.getAttribute('data-filter') || 'all';
+      state.breakdownFilter = filter;
+      elements.breakdownFilterTabs.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+      });
+      renderBreakdownTable(state.lastHeroPickScores);
     });
   }
 
@@ -1775,7 +1809,7 @@ function initTimelineInteractions() {
   });
 }
 
-// Update Draft Win Meter from analytical model
+// Update Draft Win Meter and Hero Pick Scores from analytical model
 function updateDraftMeter(analysis) {
   const alliesFilled = state.allies.filter(s => s.id !== null);
   const enemiesFilled = state.enemies.filter(s => s.id !== null);
@@ -1796,18 +1830,24 @@ function updateDraftMeter(analysis) {
   };
 
   if (enemiesFilled.length === 0 && alliesFilled.length === 0) {
-    elements.alliesWinBar.style.width = '50%';
-    elements.enemiesWinBar.style.width = '50%';
-    elements.alliesAdvScore.textContent = '50.0% Наша';
-    elements.enemiesAdvScore.textContent = '50.0% Враг';
-    elements.draftInsight.textContent = 'Выберите героев врага или союзников для получения умных рекомендаций.';
+    if (elements.alliesWinBar) elements.alliesWinBar.style.width = '50%';
+    if (elements.enemiesWinBar) elements.enemiesWinBar.style.width = '50%';
+    if (elements.alliesAdvScore) elements.alliesAdvScore.textContent = '50.0% Наша';
+    if (elements.enemiesAdvScore) elements.enemiesAdvScore.textContent = '50.0% Враг';
+    if (elements.draftInsight) {
+      elements.draftInsight.textContent = 'Выберите героев в слоты команд для расчета персональной силы пика.';
+    }
     updateSynergyBadges(0, 0);
     updateTimelineGraph(null);
+    renderPickScores(null);
+    renderBreakdownTable(null);
     return;
   }
 
   if (!analysis) {
     updateTimelineGraph(null);
+    renderPickScores(null);
+    renderBreakdownTable(null);
     return;
   }
 
@@ -1816,18 +1856,249 @@ function updateDraftMeter(analysis) {
   const alliesPercent = Math.min(85.0, Math.max(15.0, Number(analysis.alliesWinRate ?? 50.0)));
   const enemiesPercent = 100.0 - alliesPercent;
 
-  elements.alliesWinBar.style.width = `${alliesPercent.toFixed(1)}%`;
-  elements.enemiesWinBar.style.width = `${enemiesPercent.toFixed(1)}%`;
-  elements.alliesAdvScore.textContent = `${alliesPercent.toFixed(1)}% Наша`;
-  elements.enemiesAdvScore.textContent = `${enemiesPercent.toFixed(1)}% Враг`;
+  if (elements.alliesWinBar) elements.alliesWinBar.style.width = `${alliesPercent.toFixed(1)}%`;
+  if (elements.enemiesWinBar) elements.enemiesWinBar.style.width = `${enemiesPercent.toFixed(1)}%`;
+  if (elements.alliesAdvScore) elements.alliesAdvScore.textContent = `${alliesPercent.toFixed(1)}% Наша`;
+  if (elements.enemiesAdvScore) elements.enemiesAdvScore.textContent = `${enemiesPercent.toFixed(1)}% Враг`;
 
-  if (analysis.insight) {
+  if (analysis.insight && elements.draftInsight) {
     elements.draftInsight.textContent = analysis.insight;
   }
 
   if (analysis.timeline) {
     updateTimelineGraph(analysis.timeline);
   }
+
+  // Render 100-point hero pick score cards and detailed breakdown table
+  renderPickScores(analysis.heroPickScores || null);
+  renderBreakdownTable(analysis.heroPickScores || null);
+}
+
+// ==========================================
+// 100-POINT HERO PICK SCORE CARDS (5 POSITIONS)
+// ==========================================
+const POSITION_ROLE_LABELS = {
+  pos1: 'Керри',
+  pos2: 'Мидер',
+  pos3: 'Тройка',
+  pos4: '4 поз',
+  pos5: 'Саппорт'
+};
+
+function renderScoreCard(item, team, posIndex) {
+  const roleKey = `pos${posIndex + 1}`;
+  const defaultRoleLabel = POSITION_ROLE_LABELS[roleKey] || `Поз ${posIndex + 1}`;
+
+  if (!item || !item.heroId) {
+    const roleLabel = item?.roleLabel || defaultRoleLabel;
+    return `
+      <div class="score-card score-card-${team} empty-card" title="Герой еще не выбран">
+        <div class="score-thumb-wrap">
+          <span class="score-thumb-placeholder">—</span>
+        </div>
+        <div class="score-card-info">
+          <span class="score-role-tag">${roleLabel}</span>
+          <div class="score-number-wrap">
+            <span class="score-value">—</span>
+          </div>
+          <span class="score-status-tag" style="color: var(--text-muted);">Ожидание</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const roleLabel = item.roleLabel || defaultRoleLabel;
+  const statusClass = item.statusClass || 'neutral';
+  const score = item.score !== null && item.score !== undefined ? item.score : '—';
+  const statusText = item.status || 'Оценка';
+
+  return `
+    <div class="score-card score-card-${team}" title="${item.displayName} (${roleLabel}): ${score}/100 [${statusText}]">
+      <div class="score-thumb-wrap">
+        <img src="${item.iconUrl}" alt="${item.displayName}" class="score-hero-thumb" loading="lazy">
+      </div>
+      <div class="score-card-info">
+        <span class="score-role-tag">${roleLabel}</span>
+        <div class="score-number-wrap">
+          <span class="score-value score-${statusClass}">${score}</span>
+          <span class="score-max">/100</span>
+        </div>
+        <span class="score-status-tag score-${statusClass}">${statusText}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderPickScores(heroPickScores) {
+  if (!elements.scoresRowsContainer) return;
+
+  const alliesList = heroPickScores?.allies || [];
+  const enemiesList = heroPickScores?.enemies || [];
+
+  let rowsHtml = '';
+  for (let i = 0; i < 5; i++) {
+    const allyItem = alliesList[i] || null;
+    const enemyItem = enemiesList[i] || null;
+    rowsHtml += `
+      <div class="score-position-row" data-index="${i}">
+        ${renderScoreCard(allyItem, 'allies', i)}
+        <span class="score-row-vs">VS</span>
+        ${renderScoreCard(enemyItem, 'enemies', i)}
+      </div>
+    `;
+  }
+  elements.scoresRowsContainer.innerHTML = rowsHtml;
+
+  // Update team average scores
+  if (elements.alliesAvgScore) {
+    elements.alliesAvgScore.textContent = (heroPickScores?.alliesAvgScore !== null && heroPickScores?.alliesAvgScore !== undefined)
+      ? `${heroPickScores.alliesAvgScore}/100`
+      : '—';
+  }
+  if (elements.enemiesAvgScore) {
+    elements.enemiesAvgScore.textContent = (heroPickScores?.enemiesAvgScore !== null && heroPickScores?.enemiesAvgScore !== undefined)
+      ? `${heroPickScores.enemiesAvgScore}/100`
+      : '—';
+  }
+}
+
+// ==========================================================================
+// DETAILED MATCHUPS & SYNERGY BREAKDOWN TABLE
+// ==========================================================================
+function renderBreakdownTable(heroPickScores) {
+  state.lastHeroPickScores = heroPickScores;
+  if (!elements.breakdownTableBody) return;
+
+  // Extract all drafted heroes with valid heroId
+  let allDetailed = [];
+  if (heroPickScores?.detailedBreakdown && Array.isArray(heroPickScores.detailedBreakdown)) {
+    allDetailed = heroPickScores.detailedBreakdown.filter(h => h && h.heroId);
+  } else {
+    const aList = (heroPickScores?.allies || []).filter(h => h && h.heroId);
+    const eList = (heroPickScores?.enemies || []).filter(h => h && h.heroId);
+    allDetailed = [...aList, ...eList];
+  }
+
+  // Update badge count labels
+  const alliesCount = allDetailed.filter(h => h.team === 'allies').length;
+  const enemiesCount = allDetailed.filter(h => h.team === 'enemies').length;
+  const totalCount = allDetailed.length;
+
+  if (elements.breakdownCountAll) elements.breakdownCountAll.textContent = totalCount;
+  if (elements.breakdownCountAllies) elements.breakdownCountAllies.textContent = alliesCount;
+  if (elements.breakdownCountEnemies) elements.breakdownCountEnemies.textContent = enemiesCount;
+
+  // Apply tab filter: 'all', 'allies', or 'enemies'
+  let filtered = allDetailed;
+  if (state.breakdownFilter === 'allies') {
+    filtered = allDetailed.filter(h => h.team === 'allies');
+  } else if (state.breakdownFilter === 'enemies') {
+    filtered = allDetailed.filter(h => h.team === 'enemies');
+  }
+
+  if (filtered.length === 0) {
+    elements.breakdownTableBody.innerHTML = `
+      <tr class="empty-breakdown-row">
+        <td colspan="5">
+          <div class="empty-breakdown-hint">
+            <span>⚔️ Выберите героев в слоты союзников или врагов, чтобы увидеть построчный анализ синергий и контрпиков</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  elements.breakdownTableBody.innerHTML = filtered.map(h => {
+    const isAlly = h.team === 'allies';
+    const teamClass = isAlly ? 'team-allies-row' : 'team-enemies-row';
+    const teamLabel = isAlly ? '🟢 Наша команда' : '🔴 Враги';
+    const statusClass = h.statusClass || 'neutral';
+
+    // Teammate Synergy Pills
+    let synergyHtml = '';
+    if (h.teammateSynergies && h.teammateSynergies.length > 0) {
+      synergyHtml = `
+        <div class="breakdown-pills-row">
+          ${h.teammateSynergies.map(s => {
+            const val = Number(s.synergy ?? 0);
+            const sign = val > 0 ? '+' : '';
+            const pillClass = val > 0.05 ? 'positive' : (val < -0.05 ? 'negative' : 'neutral');
+            return `
+              <span class="matchup-pill ${pillClass}" title="Связка с ${s.displayName}: ${sign}${val.toFixed(1)}%">
+                <img src="${s.iconUrl}" alt="${s.displayName}" class="pill-thumb" loading="lazy">
+                <span>${s.displayName}</span>
+                <strong>${sign}${val.toFixed(1)}%</strong>
+              </span>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } else {
+      synergyHtml = '<span style="font-size: 11px; color: var(--text-muted); font-style: italic;">Напарники еще не выбраны</span>';
+    }
+
+    // Opponent Matchup / Counterpick Pills
+    let counterHtml = '';
+    if (h.opponentMatchups && h.opponentMatchups.length > 0) {
+      counterHtml = `
+        <div class="breakdown-pills-row">
+          ${h.opponentMatchups.map(o => {
+            const val = Number(o.advantage ?? 0);
+            const sign = val > 0 ? '+' : '';
+            const pillClass = val > 0.05 ? 'positive' : (val < -0.05 ? 'negative' : 'neutral');
+            return `
+              <span class="matchup-pill ${pillClass}" title="Матчап против ${o.displayName}: ${sign}${val.toFixed(1)}%">
+                <img src="${o.iconUrl}" alt="${o.displayName}" class="pill-thumb" loading="lazy">
+                <span>vs ${o.displayName}</span>
+                <strong>${sign}${val.toFixed(1)}%</strong>
+              </span>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } else {
+      counterHtml = '<span style="font-size: 11px; color: var(--text-muted); font-style: italic;">Враги еще не выбраны</span>';
+    }
+
+    // Composite Net Advantage / Delta Badge
+    const netAdv = Number(h.netAdvantage ?? 0);
+    const netSign = netAdv > 0 ? '+' : '';
+    const deltaClass = netAdv > 0.05 ? 'positive' : (netAdv < -0.05 ? 'negative' : 'neutral');
+
+    return `
+      <tr class="breakdown-row ${teamClass}">
+        <td>
+          <div class="breakdown-hero-cell">
+            <img src="${h.iconUrl}" alt="${h.displayName}" class="breakdown-hero-img" loading="lazy">
+            <div class="breakdown-hero-info">
+              <span class="breakdown-hero-name">${h.displayName}</span>
+              <span class="breakdown-role-badge">${teamLabel} • ${h.roleLabel}</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="breakdown-score-cell">
+            <div class="score-badge score-${statusClass}">
+              ${h.score}<span style="font-size:11px; font-weight:600; color:var(--text-muted);">/100</span>
+            </div>
+            <span class="score-status-label score-${statusClass}">${h.status}</span>
+          </div>
+        </td>
+        <td>
+          ${synergyHtml}
+        </td>
+        <td>
+          ${counterHtml}
+        </td>
+        <td>
+          <span class="delta-badge ${deltaClass}">
+            ${netSign}${netAdv.toFixed(1)}%
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // Copy Draft Recommendations to Discord / Telegram Format

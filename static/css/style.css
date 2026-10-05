@@ -1112,8 +1112,8 @@ body {
    ========================================================================== */
 .draft-arena {
   display: grid;
-  grid-template-columns: 1fr 280px 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr 340px 1fr;
+  gap: 16px;
   align-items: stretch;
 }
 
@@ -1386,60 +1386,266 @@ body {
   color: #fff;
 }
 
-/* MATCHUP METER CENTER PANEL */
-.matchup-meter-panel {
+/* ==========================================================================
+   PICK SCORES CENTER PANEL (100-POINT HERO STRENGTH SCALE)
+   ========================================================================== */
+.pick-scores-panel {
   background: var(--panel-bg);
   backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  padding: 20px 16px;
+  padding: 14px 12px;
   box-shadow: var(--shadow-main);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.meter-vs-group {
+.scores-panel-header {
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scores-title-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
 }
 
-.meter-winrate-title {
+.scores-panel-title {
   font-family: 'Segoe UI', sans-serif;
-  font-size: 48px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 3.5px;
+  letter-spacing: 1.2px;
   color: #ffffff;
   text-transform: uppercase;
-  text-shadow: none;
-  line-height: 1;
+}
+
+.scores-panel-scale {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* 5 Position Rows: Matching 64px Height of Draft Slots */
+.scores-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.score-position-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 64px;
+}
+
+.score-card {
+  flex: 1;
+  height: 100%;
+  background: rgba(10, 14, 23, 0.65);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+}
+
+.score-card-ally {
+  border-left: 3px solid var(--radiant-green);
+}
+
+.score-card-enemy {
+  border-right: 3px solid var(--dire-red);
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.score-card.empty-card {
+  opacity: 0.4;
+  border-style: dashed;
+  background: rgba(10, 14, 23, 0.25);
+}
+
+.score-thumb-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-hero-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.score-thumb-placeholder {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.score-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.score-role-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.score-number-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.score-card-enemy .score-number-wrap {
+  justify-content: flex-end;
+}
+
+.score-value {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.score-max {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.score-status-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Score Color Categories (No Glow, crisp) */
+.score-super { color: #00e599; }
+.score-high { color: #00d2ff; }
+.score-good { color: #38bdf8; }
+.score-neutral { color: #f6c445; }
+.score-low { color: #fb923c; }
+.score-bad { color: #ff3366; }
+
+.score-row-vs {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   user-select: none;
 }
 
-.vs-badge {
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--gold-accent);
-  text-shadow: none;
-  line-height: 1;
-}
-
-.meter-wrapper {
-  width: 100%;
+/* Scores Summary Footer */
+.scores-summary-footer {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+
+.scores-team-averages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.score-avg-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(10, 14, 23, 0.7);
+  border: 1px solid var(--glass-border);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}
+
+.score-avg-badge.allies-avg-badge {
+  border-color: rgba(0, 229, 153, 0.3);
+}
+
+.score-avg-badge.allies-avg-badge .avg-val {
+  color: var(--radiant-green);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.score-avg-badge.enemies-avg-badge {
+  border-color: rgba(255, 51, 102, 0.3);
+}
+
+.score-avg-badge.enemies-avg-badge .avg-val {
+  color: var(--dire-red);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.score-vs-divider {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gold-accent);
+}
+
+.scores-insight-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  text-align: center;
+  min-height: 26px;
+}
+
+/* Compatibility Meter Bar (Kept hidden/minimal for backward compat) */
+.mini-meter-wrapper {
+  width: 100%;
 }
 
 .meter-bar-container {
-  height: 12px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -1463,7 +1669,7 @@ body {
 .meter-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -1476,11 +1682,256 @@ body {
   color: var(--dire-red);
 }
 
-.meter-summary-text {
-  font-size: 12px;
+/* ==========================================================================
+   DETAILED MATCHUPS & SYNERGY BREAKDOWN TABLE
+   ========================================================================== */
+.breakdown-table-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-main);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.breakdown-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.breakdown-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-accent);
+}
+
+.breakdown-main-title {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.breakdown-sub-title {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.breakdown-filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(10, 14, 23, 0.6);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+}
+
+.breakdown-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.breakdown-table th {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(10, 14, 23, 0.45);
+}
+
+.breakdown-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+.breakdown-row {
+  transition: background 0.15s ease;
+}
+
+.breakdown-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.breakdown-row.team-allies-row td:first-child {
+  border-left: 3px solid var(--radiant-green);
+}
+
+.breakdown-row.team-enemies-row td:first-child {
+  border-left: 3px solid var(--dire-red);
+}
+
+.breakdown-hero-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.breakdown-hero-img {
+  width: 48px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.breakdown-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.breakdown-hero-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.breakdown-role-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.breakdown-score-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.score-status-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.breakdown-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.matchup-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(14, 20, 32, 0.85);
+  border: 1px solid var(--glass-border);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.matchup-pill:hover {
+  transform: translateY(-1px);
+}
+
+.pill-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.matchup-pill.positive {
+  border-color: rgba(0, 229, 153, 0.35);
+  background: rgba(0, 229, 153, 0.08);
+  color: var(--radiant-green);
+}
+
+.matchup-pill.negative {
+  border-color: rgba(255, 51, 102, 0.35);
+  background: rgba(255, 51, 102, 0.08);
+  color: var(--dire-red);
+}
+
+.matchup-pill.neutral {
+  border-color: rgba(255, 255, 255, 0.15);
   color: var(--text-secondary);
-  line-height: 1.4;
-  padding: 0 4px;
+}
+
+.delta-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.delta-badge.positive {
+  background: rgba(0, 229, 153, 0.12);
+  color: var(--radiant-green);
+  border: 1px solid rgba(0, 229, 153, 0.3);
+}
+
+.delta-badge.negative {
+  background: rgba(255, 51, 102, 0.12);
+  color: var(--dire-red);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+}
+
+.delta-badge.neutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--glass-border);
+}
+
+.empty-breakdown-hint {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 

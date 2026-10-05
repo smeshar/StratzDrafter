@@ -1233,6 +1233,265 @@ class StratzClient:
             "timingAdvice": advice
         }
 
+    def _get_empty_hero_pick_scores(self) -> dict:
+        """Returns empty default template for 5 ally slots and 5 enemy slots."""
+        allies_empty = []
+        enemies_empty = []
+        for i in range(5):
+            role_k = f"pos{i+1}"
+            allies_empty.append({
+                "slotIndex": i,
+                "heroId": None,
+                "displayName": None,
+                "role": role_k,
+                "roleLabel": POSITION_LABELS.get(role_k, f"Поз {i+1}"),
+                "team": "allies",
+                "score": None,
+                "status": "Ожидание",
+                "statusClass": "empty",
+                "teammateSynergies": [],
+                "opponentMatchups": []
+            })
+            enemies_empty.append({
+                "slotIndex": i,
+                "heroId": None,
+                "displayName": None,
+                "role": role_k,
+                "roleLabel": POSITION_LABELS.get(role_k, f"Поз {i+1}"),
+                "team": "enemies",
+                "score": None,
+                "status": "Ожидание",
+                "statusClass": "empty",
+                "teammateSynergies": [],
+                "opponentMatchups": []
+            })
+        return {
+            "allies": allies_empty,
+            "enemies": enemies_empty,
+            "alliesAvgScore": None,
+            "enemiesAvgScore": None,
+            "detailedBreakdown": []
+        }
+
+    def calculate_hero_pick_scores(
+        self,
+        allies: list[int],
+        enemies: list[int],
+        allies_roles: list[dict] = None,
+        enemies_roles: list[dict] = None,
+        bracket_key: str = "LOW_RANK"
+    ) -> dict:
+        """
+        Calculates 100-point individual pick strength scores for each hero in the draft,
+        including pairwise teammate synergy and individual enemy counterpick deltas.
+        """
+        allies_clean = [int(x) for x in allies if x is not None]
+        enemies_clean = [int(x) for x in enemies if x is not None]
+
+        needed = set(allies_clean + enemies_clean)
+        if needed:
+            self.ensure_matchups(list(needed), bracket_key=bracket_key)
+
+        # Build role maps
+        ally_roles_map = {}
+        if allies_roles and isinstance(allies_roles, list):
+            for idx, item in enumerate(allies_roles):
+                if isinstance(item, dict):
+                    h_id = item.get("id")
+                    r = item.get("role") or f"pos{idx+1}"
+                    if h_id is not None:
+                        ally_roles_map[int(h_id)] = r
+                elif isinstance(item, str) and idx < len(allies_clean):
+                    ally_roles_map[allies_clean[idx]] = item
+
+        enemy_roles_map = {}
+        if enemies_roles and isinstance(enemies_roles, list):
+            for idx, item in enumerate(enemies_roles):
+                if isinstance(item, dict):
+                    h_id = item.get("id")
+                    r = item.get("role") or f"pos{idx+1}"
+                    if h_id is not None:
+                        enemy_roles_map[int(h_id)] = r
+                elif isinstance(item, str) and idx < len(enemies_clean):
+                    enemy_roles_map[enemies_clean[idx]] = item
+
+        def evaluate_hero(hero_id: int, role: str, team_side: str) -> dict:
+            if not hero_id or hero_id not in self.heroes:
+                return None
+
+            hero_info = self.heroes[hero_id]
+            is_ally = (team_side == "allies")
+            teammates = [a for a in allies_clean if a != hero_id] if is_ally else [e for e in enemies_clean if e != hero_id]
+            opponents = enemies_clean if is_ally else allies_clean
+
+            # Pairwise synergies with teammates
+            teammate_synergies = []
+            for t_id in teammates:
+                t_info = self.heroes.get(t_id, {})
+                s1 = self.matchups.get(hero_id, {}).get("with", {}).get(t_id, {}).get("synergy")
+                s2 = self.matchups.get(t_id, {}).get("with", {}).get(hero_id, {}).get("synergy")
+                syn = ((s1 + s2) / 2.0) if (s1 is not None and s2 is not None) else (s1 if s1 is not None else (s2 if s2 is not None else 0.0))
+                teammate_synergies.append({
+                    "heroId": t_id,
+                    "displayName": t_info.get("displayName", f"Hero {t_id}"),
+                    "shortName": t_info.get("shortName", ""),
+                    "iconUrl": t_info.get("iconUrl", ""),
+                    "synergy": round(syn, 2)
+                })
+            teammate_synergies.sort(key=lambda x: x["synergy"], reverse=True)
+
+            # Pairwise matchups against opponents
+            opponent_matchups = []
+            for o_id in opponents:
+                o_info = self.heroes.get(o_id, {})
+                adv1 = self.matchups.get(hero_id, {}).get("vs", {}).get(o_id, {}).get("synergy")
+                adv2 = self.matchups.get(o_id, {}).get("vs", {}).get(hero_id, {}).get("synergy")
+                if adv1 is not None and adv2 is not None:
+                    adv_eff = (adv1 - adv2) / 2.0
+                elif adv1 is not None:
+                    adv_eff = adv1
+                elif adv2 is not None:
+                    adv_eff = -adv2
+                else:
+                    adv_eff = 0.0
+
+                opponent_matchups.append({
+                    "heroId": o_id,
+                    "displayName": o_info.get("displayName", f"Hero {o_id}"),
+                    "shortName": o_info.get("shortName", ""),
+                    "iconUrl": o_info.get("iconUrl", ""),
+                    "advantage": round(adv_eff, 2)
+                })
+            opponent_matchups.sort(key=lambda x: x["advantage"], reverse=True)
+
+            avg_counter = (sum(m["advantage"] for m in opponent_matchups) / len(opponent_matchups)) if opponent_matchups else 0.0
+            avg_synergy = (sum(s["synergy"] for s in teammate_synergies) / len(teammate_synergies)) if teammate_synergies else 0.0
+
+            # Meta winrate
+            pos_str = POSITION_MAP.get(role) if role else None
+            if pos_str and (hero_id, pos_str) in self.position_stats and self.position_stats[(hero_id, pos_str)].get("matchCount", 0) >= 100:
+                base_wr = self.position_stats[(hero_id, pos_str)]["winRate"]
+            else:
+                base_wr = self.hero_totals.get(hero_id, {}).get("winRate", 50.0)
+            meta_delta = base_wr - 50.0
+
+            # Weighted composite advantage
+            if opponents and teammates:
+                net_adv = 0.55 * avg_counter + 0.25 * avg_synergy + 0.20 * meta_delta
+            elif opponents:
+                net_adv = 0.70 * avg_counter + 0.30 * meta_delta
+            elif teammates:
+                net_adv = 0.60 * avg_synergy + 0.40 * meta_delta
+            else:
+                net_adv = meta_delta
+
+            raw_score = 50.0 + (net_adv * 4.5)
+            final_score = max(10, min(99, int(round(raw_score))))
+
+            if final_score >= 80:
+                status_text = "Имба-пик"
+                status_class = "super"
+            elif final_score >= 68:
+                status_text = "Отличный пик"
+                status_class = "high"
+            elif final_score >= 56:
+                status_text = "Хороший пик"
+                status_class = "good"
+            elif final_score >= 46:
+                status_text = "Нейтрально"
+                status_class = "neutral"
+            elif final_score >= 35:
+                status_text = "Сложный пик"
+                status_class = "low"
+            else:
+                status_text = "Законтрен"
+                status_class = "bad"
+
+            return {
+                "heroId": hero_id,
+                "displayName": hero_info.get("displayName", f"Hero {hero_id}"),
+                "shortName": hero_info.get("shortName", ""),
+                "iconUrl": hero_info.get("iconUrl", ""),
+                "vertUrl": hero_info.get("vertUrl", ""),
+                "role": role,
+                "roleLabel": POSITION_LABELS.get(role, f"Поз {role.replace('pos', '') if role else ''}"),
+                "team": team_side,
+                "score": final_score,
+                "status": status_text,
+                "statusClass": status_class,
+                "netAdvantage": round(net_adv, 2),
+                "counterScore": round(avg_counter, 2),
+                "synergyScore": round(avg_synergy, 2),
+                "metaWinRate": round(base_wr, 1),
+                "teammateSynergies": teammate_synergies,
+                "opponentMatchups": opponent_matchups
+            }
+
+        allies_scored = []
+        for i in range(5):
+            role_key = f"pos{i+1}"
+            h_id = allies[i] if i < len(allies) else None
+            if h_id is not None:
+                h_role = ally_roles_map.get(int(h_id), role_key)
+                scored = evaluate_hero(int(h_id), h_role, "allies")
+                if scored:
+                    scored["slotIndex"] = i
+                    allies_scored.append(scored)
+                    continue
+            allies_scored.append({
+                "slotIndex": i,
+                "heroId": None,
+                "displayName": None,
+                "role": role_key,
+                "roleLabel": POSITION_LABELS.get(role_key, f"Поз {i+1}"),
+                "team": "allies",
+                "score": None,
+                "status": "Ожидание",
+                "statusClass": "empty",
+                "teammateSynergies": [],
+                "opponentMatchups": []
+            })
+
+        enemies_scored = []
+        for i in range(5):
+            role_key = f"pos{i+1}"
+            h_id = enemies[i] if i < len(enemies) else None
+            if h_id is not None:
+                h_role = enemy_roles_map.get(int(h_id), role_key)
+                scored = evaluate_hero(int(h_id), h_role, "enemies")
+                if scored:
+                    scored["slotIndex"] = i
+                    enemies_scored.append(scored)
+                    continue
+            enemies_scored.append({
+                "slotIndex": i,
+                "heroId": None,
+                "displayName": None,
+                "role": role_key,
+                "roleLabel": POSITION_LABELS.get(role_key, f"Поз {i+1}"),
+                "team": "enemies",
+                "score": None,
+                "status": "Ожидание",
+                "statusClass": "empty",
+                "teammateSynergies": [],
+                "opponentMatchups": []
+            })
+
+        valid_ally_scores = [s["score"] for s in allies_scored if s["score"] is not None]
+        valid_enemy_scores = [s["score"] for s in enemies_scored if s["score"] is not None]
+        avg_ally = int(round(sum(valid_ally_scores) / len(valid_ally_scores))) if valid_ally_scores else None
+        avg_enemy = int(round(sum(valid_enemy_scores) / len(valid_enemy_scores))) if valid_enemy_scores else None
+
+        breakdown_list = [s for s in allies_scored if s["heroId"] is not None] + [s for s in enemies_scored if s["heroId"] is not None]
+
+        return {
+            "allies": allies_scored,
+            "enemies": enemies_scored,
+            "alliesAvgScore": avg_ally,
+            "enemiesAvgScore": avg_enemy,
+            "detailedBreakdown": breakdown_list
+        }
+
     def calculate_draft_analysis(
         self,
         allies: list[int],
@@ -1266,7 +1525,8 @@ class StratzClient:
                 "bestCounters": [],
                 "biggestThreats": [],
                 "insight": "Выберите героев врага или союзников для получения умных рекомендаций.",
-                "timeline": self._get_empty_timeline()
+                "timeline": self._get_empty_timeline(),
+                "heroPickScores": self._get_empty_hero_pick_scores()
             }
 
         needed_heroes = set(allies + enemies)
@@ -1446,6 +1706,14 @@ class StratzClient:
             synergy_adv=synergy_adv
         )
 
+        pick_scores = self.calculate_hero_pick_scores(
+            allies=allies,
+            enemies=enemies,
+            allies_roles=allies_roles,
+            enemies_roles=enemies_roles,
+            bracket_key=bracket_key
+        )
+
         return {
             "alliesWinRate": round(allies_wr, 1),
             "enemiesWinRate": round(enemies_wr, 1),
@@ -1457,5 +1725,6 @@ class StratzClient:
             "bestCounters": best_counters[:3],
             "biggestThreats": biggest_threats[:3],
             "insight": insight,
-            "timeline": timeline
+            "timeline": timeline,
+            "heroPickScores": pick_scores
         }
