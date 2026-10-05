@@ -15,8 +15,8 @@ class TestFlaskAPI:
         assert response.status_code == 200
         html = response.get_data(as_text=True)
         assert "logo-title" in html
-        assert "WINRATE" in html
-        assert "matchup-meter-panel" in html
+        assert "pickScoresPanel" in html
+        assert "scoresRowsContainer" in html
         assert "alliesSlots" in html
         assert "enemiesSlots" in html
         assert "teamMatrixContainer" in html

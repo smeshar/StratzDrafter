@@ -31,13 +31,10 @@ class TestDrafterE2E:
         header = page.locator(".logo-title")
         expect(header).to_be_visible()
 
-        # Winrate & VS badges
-        winrate_title = page.locator(".meter-winrate-title")
-        expect(winrate_title).to_be_visible()
-        expect(winrate_title).to_have_text("WINRATE")
-
-        vs_badge = page.locator(".vs-badge:has-text('VS')")
-        expect(vs_badge).to_be_visible()
+        # Pick scores center panel
+        scores_title = page.locator(".scores-panel-title")
+        expect(scores_title).to_be_visible()
+        expect(scores_title).to_have_text("ОЦЕНКА ПИКОВ")
 
         # Slots counts
         ally_slots = page.locator("#alliesSlots .draft-slot")
@@ -262,3 +259,53 @@ class TestDrafterE2E:
         slider.dispatch_event("input")
 
         expect(page.locator("#counterVal")).to_have_text("85%")
+
+    def test_hero_pick_scores_slot_alignment_and_no_status_tags(self, page: Page, live_server_url: str):
+        """Pick hero in ally slot 2 (Offlane) and enemy slot 1 (Mid), verify exact row mapping and no status tags."""
+        self._wait_for_page(page, live_server_url)
+
+        # Pick ally in slot 2 (3rd slot, Offlane)
+        ally_slot_2 = page.locator("#alliesSlots .draft-slot").nth(2)
+        ally_slot_2.locator(".slot-portrait-wrapper").click()
+        page.wait_for_timeout(200)
+        page.locator("#heroSearchInput").fill("axe")
+        page.wait_for_timeout(200)
+        page.locator("#heroesGrid .hero-cell:has-text('Axe')").click()
+
+        # Pick enemy in slot 1 (2nd slot, Mid)
+        enemy_slot_1 = page.locator("#enemiesSlots .draft-slot").nth(1)
+        enemy_slot_1.locator(".slot-portrait-wrapper").click()
+        page.wait_for_timeout(200)
+        page.locator("#heroSearchInput").fill("pudge")
+        page.wait_for_timeout(200)
+        page.locator("#heroesGrid .hero-cell:has-text('Pudge')").click()
+
+        page.wait_for_timeout(500)
+
+        # In pick scores panel:
+        # Row 0 (Carry) should have empty cards for ally and enemy
+        row_0 = page.locator("#scoresRowsContainer .score-position-row").nth(0)
+        expect(row_0.locator(".score-card-ally")).to_have_class(re.compile(r"empty-card"))
+        expect(row_0.locator(".score-card-enemy")).to_have_class(re.compile(r"empty-card"))
+
+        # Row 1 (Mid) should have Pudge on enemy side
+        row_1 = page.locator("#scoresRowsContainer .score-position-row").nth(1)
+        expect(row_1.locator(".score-card-ally")).to_have_class(re.compile(r"empty-card"))
+        expect(row_1.locator(".score-card-enemy .score-hero-name")).to_have_text("Pudge")
+        expect(row_1.locator(".score-card-enemy")).not_to_have_class(re.compile(r"empty-card"))
+
+        # Row 2 (Offlane) should have Axe on ally side
+        row_2 = page.locator("#scoresRowsContainer .score-position-row").nth(2)
+        expect(row_2.locator(".score-card-ally .score-hero-name")).to_have_text("Axe")
+        expect(row_2.locator(".score-card-ally")).not_to_have_class(re.compile(r"empty-card"))
+        expect(row_2.locator(".score-card-enemy")).to_have_class(re.compile(r"empty-card"))
+
+        # Verify no status tags ("Имба-пик", "Отличный пик", "Хороший пик", "Сложный пик", "Законтрен") exist
+        scores_panel_text = page.locator("#pickScoresPanel").inner_text()
+        for banned_word in ["Имба-пик", "Отличный пик", "Хороший пик", "Сложный пик", "Законтрен"]:
+            assert banned_word not in scores_panel_text
+
+        breakdown_text = page.locator("#breakdownSection").inner_text()
+        for banned_word in ["Имба-пик", "Отличный пик", "Хороший пик", "Сложный пик", "Законтрен"]:
+            assert banned_word not in breakdown_text
+

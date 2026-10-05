@@ -1217,6 +1217,8 @@ function debouncedUpdate() {
 async function triggerUpdate() {
   const alliesIds = state.allies.map(s => s.id).filter(Boolean);
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
+  const alliesSlots = state.allies.map(s => s.id);
+  const enemiesSlots = state.enemies.map(s => s.id);
   const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
   const enemyRoleKeys = ['pos1', 'pos2', 'pos3', 'pos4', 'pos5'];
@@ -1227,6 +1229,8 @@ async function triggerUpdate() {
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
+    alliesSlots: alliesSlots,
+    enemiesSlots: enemiesSlots,
     alliesRoles: alliesRoles,
     enemiesRoles: enemiesRoles,
     bans: state.bans,
@@ -1387,6 +1391,8 @@ function renderMatrixHeroCard(h, posKey) {
 async function loadDetailedRecs() {
   const alliesIds = state.allies.map(s => s.id).filter(Boolean);
   const enemiesIds = state.enemies.map(s => s.id).filter(Boolean);
+  const alliesSlots = state.allies.map(s => s.id);
+  const enemiesSlots = state.enemies.map(s => s.id);
   const alliesRoles = state.allies.filter(s => s.id !== null).map(s => ({ id: s.id, role: s.role }));
 
   const enemyRoleKeys = ['pos1', 'pos2', 'pos3', 'pos4', 'pos5'];
@@ -1397,6 +1403,8 @@ async function loadDetailedRecs() {
   const payload = {
     allies: alliesIds,
     enemies: enemiesIds,
+    alliesSlots: alliesSlots,
+    enemiesSlots: enemiesSlots,
     alliesRoles: alliesRoles,
     enemiesRoles: enemiesRoles,
     bans: state.bans,
@@ -1888,11 +1896,12 @@ const POSITION_ROLE_LABELS = {
 function renderScoreCard(item, team, posIndex) {
   const roleKey = `pos${posIndex + 1}`;
   const defaultRoleLabel = POSITION_ROLE_LABELS[roleKey] || `Поз ${posIndex + 1}`;
+  const teamClass = team === 'enemies' ? 'score-card-enemies score-card-enemy' : 'score-card-allies score-card-ally';
 
   if (!item || !item.heroId) {
     const roleLabel = item?.roleLabel || defaultRoleLabel;
     return `
-      <div class="score-card score-card-${team} empty-card" title="Герой еще не выбран">
+      <div class="score-card ${teamClass} empty-card" title="Герой еще не выбран">
         <div class="score-thumb-wrap">
           <span class="score-thumb-placeholder">—</span>
         </div>
@@ -1901,7 +1910,6 @@ function renderScoreCard(item, team, posIndex) {
           <div class="score-number-wrap">
             <span class="score-value">—</span>
           </div>
-          <span class="score-status-tag" style="color: var(--text-muted);">Ожидание</span>
         </div>
       </div>
     `;
@@ -1910,20 +1918,19 @@ function renderScoreCard(item, team, posIndex) {
   const roleLabel = item.roleLabel || defaultRoleLabel;
   const statusClass = item.statusClass || 'neutral';
   const score = item.score !== null && item.score !== undefined ? item.score : '—';
-  const statusText = item.status || 'Оценка';
 
   return `
-    <div class="score-card score-card-${team}" title="${item.displayName} (${roleLabel}): ${score}/100 [${statusText}]">
+    <div class="score-card ${teamClass}" title="${item.displayName} (${roleLabel}): ${score}/100">
       <div class="score-thumb-wrap">
         <img src="${item.iconUrl}" alt="${item.displayName}" class="score-hero-thumb" loading="lazy">
       </div>
       <div class="score-card-info">
         <span class="score-role-tag">${roleLabel}</span>
+        <span class="score-hero-name" title="${item.displayName}">${item.displayName}</span>
         <div class="score-number-wrap">
           <span class="score-value score-${statusClass}">${score}</span>
           <span class="score-max">/100</span>
         </div>
-        <span class="score-status-tag score-${statusClass}">${statusText}</span>
       </div>
     </div>
   `;
@@ -2082,7 +2089,6 @@ function renderBreakdownTable(heroPickScores) {
             <div class="score-badge score-${statusClass}">
               ${h.score}<span style="font-size:11px; font-weight:600; color:var(--text-muted);">/100</span>
             </div>
-            <span class="score-status-label score-${statusClass}">${h.status}</span>
           </div>
         </td>
         <td>

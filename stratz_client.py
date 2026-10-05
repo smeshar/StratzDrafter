@@ -49,11 +49,11 @@ POSITION_MAP = {
 }
 
 POSITION_LABELS = {
-    "pos1": "Позиция 1 (Керри)",
-    "pos2": "Позиция 2 (Мид)",
-    "pos3": "Позиция 3 (Оффлейн / Тройка)",
-    "pos4": "Позиция 4 (Семи-саппорт)",
-    "pos5": "Позиция 5 (Фулл-саппорт)"
+    "pos1": "Керри",
+    "pos2": "Мидер",
+    "pos3": "Тройка",
+    "pos4": "4 поз",
+    "pos5": "Саппорт"
 }
 
 # Strategic matchup weights based on lane alignment and Core vs Support priority (Variant 3)
@@ -1279,11 +1279,13 @@ class StratzClient:
         enemies: list[int],
         allies_roles: list[dict] = None,
         enemies_roles: list[dict] = None,
-        bracket_key: str = "LOW_RANK"
+        bracket_key: str = "LOW_RANK",
+        allies_slots: list = None,
+        enemies_slots: list = None
     ) -> dict:
         """
         Calculates 100-point individual pick strength scores for each hero in the draft,
-        including pairwise teammate synergy and individual enemy counterpick deltas.
+        accurately mapping to the 5 draft slot positions and removing text status labels.
         """
         allies_clean = [int(x) for x in allies if x is not None]
         enemies_clean = [int(x) for x in enemies if x is not None]
@@ -1388,23 +1390,16 @@ class StratzClient:
             raw_score = 50.0 + (net_adv * 4.5)
             final_score = max(10, min(99, int(round(raw_score))))
 
-            if final_score >= 80:
-                status_text = "Имба-пик"
+            # Color status class for UI border and color styling (without text tags)
+            if final_score >= 75:
                 status_class = "super"
-            elif final_score >= 68:
-                status_text = "Отличный пик"
+            elif final_score >= 60:
                 status_class = "high"
-            elif final_score >= 56:
-                status_text = "Хороший пик"
-                status_class = "good"
-            elif final_score >= 46:
-                status_text = "Нейтрально"
+            elif final_score >= 50:
                 status_class = "neutral"
-            elif final_score >= 35:
-                status_text = "Сложный пик"
+            elif final_score >= 40:
                 status_class = "low"
             else:
-                status_text = "Законтрен"
                 status_class = "bad"
 
             return {
@@ -1417,7 +1412,6 @@ class StratzClient:
                 "roleLabel": POSITION_LABELS.get(role, f"Поз {role.replace('pos', '') if role else ''}"),
                 "team": team_side,
                 "score": final_score,
-                "status": status_text,
                 "statusClass": status_class,
                 "netAdvantage": round(net_adv, 2),
                 "counterScore": round(avg_counter, 2),
@@ -1430,7 +1424,12 @@ class StratzClient:
         allies_scored = []
         for i in range(5):
             role_key = f"pos{i+1}"
-            h_id = allies[i] if i < len(allies) else None
+            h_id = None
+            if allies_slots and i < len(allies_slots) and allies_slots[i] is not None:
+                h_id = allies_slots[i]
+            elif allies and i < len(allies) and not allies_slots:
+                h_id = allies[i]
+
             if h_id is not None:
                 h_role = ally_roles_map.get(int(h_id), role_key)
                 scored = evaluate_hero(int(h_id), h_role, "allies")
@@ -1438,6 +1437,7 @@ class StratzClient:
                     scored["slotIndex"] = i
                     allies_scored.append(scored)
                     continue
+
             allies_scored.append({
                 "slotIndex": i,
                 "heroId": None,
@@ -1446,7 +1446,6 @@ class StratzClient:
                 "roleLabel": POSITION_LABELS.get(role_key, f"Поз {i+1}"),
                 "team": "allies",
                 "score": None,
-                "status": "Ожидание",
                 "statusClass": "empty",
                 "teammateSynergies": [],
                 "opponentMatchups": []
@@ -1455,7 +1454,12 @@ class StratzClient:
         enemies_scored = []
         for i in range(5):
             role_key = f"pos{i+1}"
-            h_id = enemies[i] if i < len(enemies) else None
+            h_id = None
+            if enemies_slots and i < len(enemies_slots) and enemies_slots[i] is not None:
+                h_id = enemies_slots[i]
+            elif enemies and i < len(enemies) and not enemies_slots:
+                h_id = enemies[i]
+
             if h_id is not None:
                 h_role = enemy_roles_map.get(int(h_id), role_key)
                 scored = evaluate_hero(int(h_id), h_role, "enemies")
@@ -1463,6 +1467,7 @@ class StratzClient:
                     scored["slotIndex"] = i
                     enemies_scored.append(scored)
                     continue
+
             enemies_scored.append({
                 "slotIndex": i,
                 "heroId": None,
@@ -1471,7 +1476,6 @@ class StratzClient:
                 "roleLabel": POSITION_LABELS.get(role_key, f"Поз {i+1}"),
                 "team": "enemies",
                 "score": None,
-                "status": "Ожидание",
                 "statusClass": "empty",
                 "teammateSynergies": [],
                 "opponentMatchups": []
@@ -1499,7 +1503,9 @@ class StratzClient:
         weights: dict = None,
         bracket_key: str = "LOW_RANK",
         allies_roles: list[dict] = None,
-        enemies_roles: list[dict] = None
+        enemies_roles: list[dict] = None,
+        allies_slots: list = None,
+        enemies_slots: list = None
     ) -> dict:
         """
         Calculates realistic draft win rate prediction, analytical breakdown,
@@ -1711,7 +1717,9 @@ class StratzClient:
             enemies=enemies,
             allies_roles=allies_roles,
             enemies_roles=enemies_roles,
-            bracket_key=bracket_key
+            bracket_key=bracket_key,
+            allies_slots=allies_slots,
+            enemies_slots=enemies_slots
         )
 
         return {

@@ -1463,11 +1463,13 @@ body {
   position: relative;
 }
 
-.score-card-ally {
+.score-card-ally,
+.score-card-allies {
   border-left: 3px solid var(--radiant-green);
 }
 
-.score-card-enemy {
+.score-card-enemy,
+.score-card-enemies {
   border-right: 3px solid var(--dire-red);
   flex-direction: row-reverse;
   text-align: right;
@@ -1526,7 +1528,8 @@ body {
   gap: 2px;
 }
 
-.score-card-enemy .score-number-wrap {
+.score-card-enemy .score-number-wrap,
+.score-card-enemies .score-number-wrap {
   justify-content: flex-end;
 }
 
@@ -1544,14 +1547,19 @@ body {
   color: var(--text-muted);
 }
 
-.score-status-tag {
-  font-size: 10px;
+.score-hero-name {
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.2;
+  line-height: 1.15;
+}
+
+.score-card-enemy .score-hero-name,
+.score-card-enemies .score-hero-name {
+  text-align: right;
 }
 
 /* Score Color Categories (No Glow, crisp) */

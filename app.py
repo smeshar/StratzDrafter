@@ -306,13 +306,18 @@ def recommend():
         allies_roles=data.get("alliesRoles")
     )
 
+    allies_slots = data.get("alliesSlots")
+    enemies_slots = data.get("enemiesSlots")
+
     analysis = client.calculate_draft_analysis(
         allies=allies,
         enemies=enemies,
         weights=weights,
         bracket_key=bracket,
         allies_roles=data.get("alliesRoles"),
-        enemies_roles=enemies_roles
+        enemies_roles=enemies_roles,
+        allies_slots=allies_slots,
+        enemies_slots=enemies_slots
     )
 
     total_drafts = increment_stat("total_drafts", 1)
@@ -341,6 +346,8 @@ def team_matrix():
     use_role_weights = bool(data.get("useRoleWeights", True))
     enemies_roles = data.get("enemiesRoles", [])
     bracket = data.get("bracket", "LOW_RANK")
+    allies_slots = data.get("alliesSlots")
+    enemies_slots = data.get("enemiesSlots")
 
     user_token = get_active_stratz_token()
     if user_token:
@@ -364,7 +371,9 @@ def team_matrix():
         weights=weights,
         bracket_key=bracket,
         allies_roles=data.get("alliesRoles"),
-        enemies_roles=enemies_roles
+        enemies_roles=enemies_roles,
+        allies_slots=allies_slots,
+        enemies_slots=enemies_slots
     )
 
     total_drafts = increment_stat("total_drafts", 1)
@@ -386,6 +395,8 @@ def draft_analysis():
     enemies = [int(x) for x in data.get("enemies", []) if x is not None]
     weights = data.get("weights", {"counter": 70, "synergy": 20, "meta": 10})
     bracket = data.get("bracket", "LOW_RANK")
+    allies_slots = data.get("alliesSlots")
+    enemies_slots = data.get("enemiesSlots")
 
     analysis = client.calculate_draft_analysis(
         allies=allies,
@@ -393,7 +404,9 @@ def draft_analysis():
         weights=weights,
         bracket_key=bracket,
         allies_roles=data.get("alliesRoles"),
-        enemies_roles=data.get("enemiesRoles")
+        enemies_roles=data.get("enemiesRoles"),
+        allies_slots=allies_slots,
+        enemies_slots=enemies_slots
     )
 
     return jsonify({
