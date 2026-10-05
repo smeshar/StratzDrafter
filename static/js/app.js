@@ -84,9 +84,7 @@ const elements = {
   timelineHoverLine: document.getElementById('timelineHoverLine'),
   timelineHoverDot: document.getElementById('timelineHoverDot'),
   timelineDotsGroup: document.getElementById('timelineDotsGroup'),
-  timelinePeakGroup: document.getElementById('timelinePeakGroup'),
-  timelinePeakDot: document.getElementById('timelinePeakDot'),
-  timelinePeakLabel: document.getElementById('timelinePeakLabel'),
+  timelinePeakMarker: document.getElementById('timelinePeakMarker'),
   timelineTooltip: document.getElementById('timelineTooltip'),
   tooltipTimeBadge: document.getElementById('tooltipTimeBadge'),
   tooltipAdvRow: document.getElementById('tooltipAdvRow'),
@@ -1392,7 +1390,7 @@ function updateTimelineGraph(timeline) {
     if (elements.radiantAreaPath) elements.radiantAreaPath.setAttribute('d', '');
     if (elements.direAreaPath) elements.direAreaPath.setAttribute('d', '');
     if (elements.timelineDotsGroup) elements.timelineDotsGroup.innerHTML = '';
-    if (elements.timelinePeakGroup) elements.timelinePeakGroup.style.display = 'none';
+    if (elements.timelinePeakMarker) elements.timelinePeakMarker.style.display = 'none';
 
     if (elements.timelinePeakVal) elements.timelinePeakVal.textContent = '—';
     if (elements.timelineLaningVal) {
@@ -1485,26 +1483,23 @@ function updateTimelineGraph(timeline) {
     const milestonePts = pts.filter(p => milestoneMinutes.includes(p.minute));
     elements.timelineDotsGroup.innerHTML = milestonePts.map(p => {
       const dotClass = p.alliesAdvantage > 0.3 ? '' : (p.alliesAdvantage < -0.3 ? 'dot-dire' : 'dot-neutral');
-      return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" class="${dotClass}" data-minute="${p.minute}"></circle>`;
+      const pctX = (p.x / 1000) * 100;
+      const pctY = (p.y / 220) * 100;
+      return `<span class="timeline-milestone-dot ${dotClass}" style="left: ${pctX.toFixed(1)}%; top: ${pctY.toFixed(1)}%;"></span>`;
     }).join('');
   }
 
   // 7. Peak Marker
-  if (elements.timelinePeakGroup) {
+  if (elements.timelinePeakMarker) {
     const peakPt = pts.reduce((max, p) => (p.alliesAdvantage > max.alliesAdvantage ? p : max), pts[0]);
     if (peakPt && peakPt.alliesAdvantage > 1.5) {
-      elements.timelinePeakGroup.style.display = 'block';
-      if (elements.timelinePeakDot) {
-        elements.timelinePeakDot.setAttribute('cx', peakPt.x.toFixed(1));
-        elements.timelinePeakDot.setAttribute('cy', peakPt.y.toFixed(1));
-      }
-      if (elements.timelinePeakLabel) {
-        elements.timelinePeakLabel.setAttribute('x', peakPt.x.toFixed(1));
-        const labelY = peakPt.y < 45 ? (peakPt.y + 16) : (peakPt.y - 8);
-        elements.timelinePeakLabel.setAttribute('y', labelY.toFixed(1));
-      }
+      elements.timelinePeakMarker.style.display = 'flex';
+      const pctX = (peakPt.x / 1000) * 100;
+      const pctY = (peakPt.y / 220) * 100;
+      elements.timelinePeakMarker.style.left = `${pctX.toFixed(1)}%`;
+      elements.timelinePeakMarker.style.top = `${pctY.toFixed(1)}%`;
     } else {
-      elements.timelinePeakGroup.style.display = 'none';
+      elements.timelinePeakMarker.style.display = 'none';
     }
   }
 }
@@ -1549,10 +1544,14 @@ function initTimelineInteractions() {
         elements.timelineHoverLine.setAttribute('x1', targetX.toFixed(1));
         elements.timelineHoverLine.setAttribute('x2', targetX.toFixed(1));
       }
-      if (elements.timelineHoverDot) {
-        elements.timelineHoverDot.setAttribute('cx', targetX.toFixed(1));
-        elements.timelineHoverDot.setAttribute('cy', targetY.toFixed(1));
-      }
+    }
+
+    if (elements.timelineHoverDot) {
+      elements.timelineHoverDot.style.display = 'block';
+      const pctX = (targetX / 1000) * 100;
+      const pctY = (targetY / 220) * 100;
+      elements.timelineHoverDot.style.left = `${pctX.toFixed(1)}%`;
+      elements.timelineHoverDot.style.top = `${pctY.toFixed(1)}%`;
     }
 
     if (elements.timelineTooltip) {
@@ -1596,6 +1595,7 @@ function initTimelineInteractions() {
 
   const handlePointerLeave = () => {
     if (elements.timelineHoverGroup) elements.timelineHoverGroup.style.display = 'none';
+    if (elements.timelineHoverDot) elements.timelineHoverDot.style.display = 'none';
     if (elements.timelineTooltip) elements.timelineTooltip.style.display = 'none';
   };
 

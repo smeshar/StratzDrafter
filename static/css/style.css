@@ -601,7 +601,7 @@ body {
   background: rgba(8, 12, 20, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-sm);
-  padding: 4px 0 0;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -641,29 +641,60 @@ body {
   stroke-dasharray: 4 3;
 }
 
-.grid-label {
-  fill: var(--text-muted);
+/* HTML Y-Axis Labels (Natural, non-distorted typography) */
+.timeline-y-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.timeline-y-labels .grid-label {
+  position: absolute;
+  right: calc(95% + 7px);
+  transform: translateY(-50%);
   font-family: 'Segoe UI', sans-serif;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  text-anchor: end;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.grid-label-center {
-  fill: rgba(255, 255, 255, 0.7);
+.timeline-y-labels .grid-label-center {
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.grid-label-right {
-  fill: var(--text-muted);
-  text-anchor: start;
+.timeline-y-labels .grid-label-right {
+  left: calc(95% + 7px);
+  right: auto;
+  text-align: left;
 }
 
-/* Axis Labels */
-.axis-time-label {
-  fill: var(--text-muted);
+/* HTML X-Axis Minute Labels (Natural, non-distorted typography) */
+.timeline-x-labels {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 2;
+  height: 14px;
+}
+
+.timeline-x-labels .axis-time-label {
+  position: absolute;
+  transform: translateX(-50%);
   font-family: 'Segoe UI', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  line-height: 1;
 }
 
 /* Curves & Area Fills */
@@ -698,42 +729,73 @@ body {
   stroke: rgba(255, 255, 255, 0.35);
 }
 
-/* Milestone Dots */
-.timeline-dots-group circle {
-  fill: #0b101a;
-  stroke: var(--radiant-green);
-  stroke-width: 2;
-  r: 3.5;
-  transition: all 0.2s ease;
-  cursor: pointer;
+/* HTML Milestone Dots (Perfect non-deformed circles) */
+.timeline-dots-group {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
 }
 
-.timeline-dots-group circle.dot-dire {
-  stroke: var(--dire-red);
+.timeline-milestone-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--radiant-green);
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  transition: transform 0.15s ease;
 }
 
-.timeline-dots-group circle.dot-neutral {
-  stroke: rgba(255, 255, 255, 0.4);
+.timeline-milestone-dot.dot-dire {
+  background: var(--dire-red);
 }
 
-.timeline-dots-group circle:hover {
-  r: 5.5;
-  fill: #ffffff;
+.timeline-milestone-dot.dot-neutral {
+  background: #8fa0c0;
 }
 
-/* Peak Marker */
-.peak-dot {
-  fill: var(--gold-accent);
-  stroke: #ffffff;
-  stroke-width: 1.5;
+/* HTML Peak Marker (Badge & circular dot) */
+.timeline-peak-marker {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% + 4.5px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  transition: left 0.25s ease, top 0.25s ease;
 }
 
-.peak-label {
-  fill: var(--gold-accent);
+.peak-badge-tag {
   font-family: 'Segoe UI', sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  text-anchor: middle;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--gold-accent);
+  background: rgba(14, 18, 28, 0.95);
+  border: 1px solid rgba(246, 196, 69, 0.4);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-bottom: 3px;
+  line-height: 1.2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.peak-badge-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold-accent);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
 /* Hover Elements */
@@ -744,11 +806,18 @@ body {
   pointer-events: none;
 }
 
-.hover-cursor-dot {
-  fill: #ffffff;
-  stroke: var(--gold-accent);
-  stroke-width: 2.2;
+/* HTML Hover Cursor Dot */
+.timeline-hover-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--gold-accent);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: 6;
 }
 
 /* Tooltip */

@@ -167,6 +167,16 @@
 
       <!-- Graph Canvas / SVG Container -->
       <div class="timeline-chart-wrapper" id="timelineChartWrapper">
+        <!-- HTML Y-Axis Labels (Natural, non-distorted typography) -->
+        <div class="timeline-y-labels">
+          <span class="grid-label" style="top: 9.09%;">+10%</span>
+          <span class="grid-label" style="top: 27.27%;">+5%</span>
+          <span class="grid-label grid-label-center" style="top: 45.45%;">0%</span>
+          <span class="grid-label" style="top: 63.64%;">-5%</span>
+          <span class="grid-label" style="top: 81.82%;">-10%</span>
+          <span class="grid-label grid-label-right" style="top: 45.45%;">50%</span>
+        </div>
+
         <svg id="timelineSvg" class="timeline-svg" viewBox="0 0 1000 220" preserveAspectRatio="none">
           <defs>
             <!-- Radiant Area Gradient -->
@@ -207,20 +217,14 @@
           <g class="timeline-grid-horizontal">
             <!-- +10% -->
             <line x1="50" y1="20" x2="950" y2="20" class="grid-line grid-subtle" />
-            <text x="44" y="24" class="grid-label">+10%</text>
             <!-- +5% -->
             <line x1="50" y1="60" x2="950" y2="60" class="grid-line grid-subtle" />
-            <text x="44" y="64" class="grid-label">+5%</text>
             <!-- 0% Baseline (Center = 50% Winrate) -->
             <line x1="50" y1="100" x2="950" y2="100" class="grid-line grid-center" />
-            <text x="44" y="104" class="grid-label grid-label-center">0%</text>
-            <text x="956" y="104" class="grid-label grid-label-right">50%</text>
             <!-- -5% -->
             <line x1="50" y1="140" x2="950" y2="140" class="grid-line grid-subtle" />
-            <text x="44" y="144" class="grid-label">-5%</text>
             <!-- -10% -->
             <line x1="50" y1="180" x2="950" y2="180" class="grid-line grid-subtle" />
-            <text x="44" y="184" class="grid-label">-10%</text>
           </g>
 
           <!-- Area Fills -->
@@ -230,32 +234,34 @@
           <!-- Main Advantage Curve Line -->
           <path id="timelineCurvePath" class="timeline-curve-line" d="M 50 100 L 950 100" />
 
-          <!-- Interactive Hover Line and Point -->
+          <!-- Interactive Hover Line -->
           <g id="timelineHoverGroup" class="timeline-hover-group" style="display: none;">
             <line id="timelineHoverLine" x1="0" y1="10" x2="0" y2="190" class="hover-cursor-line" />
-            <circle id="timelineHoverDot" cx="0" cy="0" r="5.5" class="hover-cursor-dot" />
-          </g>
-
-          <!-- Milestone Data Dots -->
-          <g id="timelineDotsGroup" class="timeline-dots-group"></g>
-
-          <!-- Peak Marker -->
-          <g id="timelinePeakGroup" class="timeline-peak-group" style="display: none;">
-            <circle id="timelinePeakDot" cx="0" cy="0" r="6.5" class="peak-dot" />
-            <text id="timelinePeakLabel" x="0" y="0" class="peak-label">ПИК</text>
-          </g>
-
-          <!-- X-Axis Minute Labels -->
-          <g class="timeline-axis-labels">
-            <text x="50" y="206" text-anchor="middle" class="axis-time-label">0'</text>
-            <text x="200" y="206" text-anchor="middle" class="axis-time-label">10'</text>
-            <text x="350" y="206" text-anchor="middle" class="axis-time-label">20'</text>
-            <text x="500" y="206" text-anchor="middle" class="axis-time-label">30'</text>
-            <text x="650" y="206" text-anchor="middle" class="axis-time-label">40'</text>
-            <text x="800" y="206" text-anchor="middle" class="axis-time-label">50'</text>
-            <text x="950" y="206" text-anchor="middle" class="axis-time-label">60' мин</text>
           </g>
         </svg>
+
+        <!-- HTML Milestone Data Dots (Perfect non-deformed circles) -->
+        <div id="timelineDotsGroup" class="timeline-dots-group"></div>
+
+        <!-- HTML Hover Cursor Dot -->
+        <span id="timelineHoverDot" class="timeline-hover-dot" style="display: none;"></span>
+
+        <!-- HTML Peak Marker (Badge & circular dot) -->
+        <div id="timelinePeakMarker" class="timeline-peak-marker" style="display: none;">
+          <span class="peak-badge-tag">ПИК</span>
+          <span class="peak-badge-dot"></span>
+        </div>
+
+        <!-- HTML X-Axis Minute Labels (Natural, non-distorted typography) -->
+        <div class="timeline-x-labels">
+          <span class="axis-time-label" style="left: 5%;">0'</span>
+          <span class="axis-time-label" style="left: 20%;">10'</span>
+          <span class="axis-time-label" style="left: 35%;">20'</span>
+          <span class="axis-time-label" style="left: 50%;">30'</span>
+          <span class="axis-time-label" style="left: 65%;">40'</span>
+          <span class="axis-time-label" style="left: 80%;">50'</span>
+          <span class="axis-time-label" style="left: 95%;">60' мин</span>
+        </div>
 
         <!-- Floating Interactive Tooltip -->
         <div id="timelineTooltip" class="timeline-tooltip" style="display: none;">
