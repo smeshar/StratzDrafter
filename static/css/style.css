@@ -75,6 +75,81 @@ body {
 }
 
 /* ==========================================================================
+   TOP FEEDBACK & DISCUSSIONS BANNER
+   ========================================================================== */
+.top-feedback-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: -6px;
+}
+
+.top-feedback-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(14, 20, 32, 0.85);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  padding: 6px 18px 6px 14px;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.top-feedback-pill:hover {
+  background: rgba(22, 32, 50, 0.95);
+  border-color: rgba(246, 196, 69, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.feedback-icon-bulb {
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.feedback-tag {
+  background: rgba(246, 196, 69, 0.12);
+  color: var(--gold-accent);
+  border: 1px solid rgba(246, 196, 69, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.feedback-message {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+}
+
+.top-feedback-pill:hover .feedback-message {
+  color: #ffffff;
+}
+
+.feedback-external-icon {
+  color: var(--text-muted);
+  transition: transform 0.18s ease, color 0.18s ease;
+  flex-shrink: 0;
+}
+
+.top-feedback-pill:hover .feedback-external-icon {
+  color: var(--gold-accent);
+  transform: translate(1px, -1px);
+}
+
+/* ==========================================================================
    HEADER
    ========================================================================== */
 .app-header {
@@ -3646,6 +3721,22 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 @media (max-width: 520px) {
+  .top-feedback-pill {
+    padding: 6px 12px;
+    gap: 8px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .feedback-tag {
+    display: none;
+  }
+
+  .feedback-message {
+    font-size: 12px;
+  }
+
   .rank-icons-strip {
     overflow-x: auto;
     max-width: 100%;

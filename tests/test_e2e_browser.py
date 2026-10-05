@@ -27,9 +27,14 @@ class TestDrafterE2E:
         """Verify initial page load, branding elements, slots count, synergy badges, and footer."""
         self._wait_for_page(page, live_server_url)
 
-        # Header branding
+        # Header branding & top feedback banner
         header = page.locator(".logo-title")
         expect(header).to_be_visible()
+
+        feedback_pill = page.locator(".top-feedback-pill")
+        expect(feedback_pill).to_be_visible()
+        expect(feedback_pill).to_contain_text("Оставьте свои идеи и пожелания")
+        expect(feedback_pill).to_have_attribute("href", re.compile(r"github\.com/smeshar/StratzDrafter/discussions/categories/"))
 
         # Pick scores center panel
         scores_title = page.locator(".scores-panel-title")

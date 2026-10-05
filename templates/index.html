@@ -12,11 +12,28 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=2.4">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.5">
 </head>
 
 <body>
   <div class="app-container">
+    <!-- TOP FEEDBACK & DISCUSSIONS BANNER -->
+    <aside class="top-feedback-bar" aria-label="Обратная связь">
+      <a href="https://github.com/smeshar/StratzDrafter/discussions/categories/%D0%B8%D0%B4%D0%B5%D0%B8-%D0%B8-%D0%BF%D0%BE%D0%B6%D0%B5%D0%BB%D0%B0%D0%BD%D0%B8%D1%8F"
+        target="_blank" rel="noopener noreferrer" class="top-feedback-pill"
+        title="Перейти в обсуждения на GitHub (категория «Идеи и пожелания»)">
+        <span class="feedback-icon-bulb">💡</span>
+        <span class="feedback-tag">GitHub Discussions</span>
+        <span class="feedback-message">Оставьте свои идеи и пожелания</span>
+        <svg class="feedback-external-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </aside>
+
     <!-- TOP HEADER -->
     <header class="app-header">
       <div class="logo-group">
@@ -835,7 +852,7 @@
     <div class="toast" id="toast"></div>
   </div>
 
-  <script src="/static/js/app.js?v=2.4"></script>
+  <script src="/static/js/app.js?v=2.5"></script>
 </body>
 
 </html>

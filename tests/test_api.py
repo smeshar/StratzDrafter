@@ -20,6 +20,7 @@ class TestFlaskAPI:
         assert "alliesSlots" in html
         assert "enemiesSlots" in html
         assert "teamMatrixContainer" in html
+        assert "top-feedback-bar" in html
         assert "@noootle" in html
 
     def test_get_heroes_all(self, client):
