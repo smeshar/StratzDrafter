@@ -22,12 +22,22 @@ STRATZ_GRAPHQL_URL = "https://api.stratz.com/graphql"
 
 # Available rank bracket configurations
 BRACKET_CONFIGS = {
+    # Individual Dota 2 ranks
+    "HERALD": ["HERALD_GUARDIAN"],
+    "GUARDIAN": ["HERALD_GUARDIAN"],
+    "CRUSADER": ["CRUSADER_ARCHON"],
+    "ARCHON": ["CRUSADER_ARCHON"],
+    "LEGEND": ["LEGEND_ANCIENT"],
+    "ANCIENT": ["LEGEND_ANCIENT"],
+    "DIVINE": ["DIVINE_IMMORTAL"],
+    "IMMORTAL": ["DIVINE_IMMORTAL"],
+    "ALL": ["ALL"],
+    # Legacy paired & aggregate keys for full backwards compatibility
     "HERALD_GUARDIAN": ["HERALD_GUARDIAN"],
     "CRUSADER_ARCHON": ["CRUSADER_ARCHON"],
-    "LOW_RANK": ["HERALD_GUARDIAN", "CRUSADER_ARCHON"],  # Default for low MMR
+    "LOW_RANK": ["HERALD_GUARDIAN", "CRUSADER_ARCHON"],
     "LEGEND_ANCIENT": ["LEGEND_ANCIENT"],
     "DIVINE_IMMORTAL": ["DIVINE_IMMORTAL"],
-    "ALL": ["ALL"]
 }
 
 POSITION_MAP = {

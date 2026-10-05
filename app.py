@@ -14,6 +14,7 @@ from users_db import (
     get_user_by_id,
     update_user_stratz_token,
     update_user_custom_weights,
+    update_user_bracket,
     get_raw_stratz_token_for_user,
     increment_stat,
     get_stat,
@@ -218,6 +219,25 @@ def auth_save_weights():
     return jsonify({
         "success": True,
         "message": "Настройки весов успешно сохранены в профиле!",
+        "user": updated_user
+    })
+
+
+@app.route("/api/auth/bracket", methods=["POST"])
+def auth_save_bracket():
+    """Saves personalized default rank bracket for logged-in user."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"success": False, "message": "Необходима авторизация"}), 401
+
+    data = request.get_json() or {}
+    bracket = data.get("bracket", "ARCHON").strip().upper()
+
+    update_user_bracket(user["id"], bracket)
+    updated_user = get_user_by_id(user["id"])
+    return jsonify({
+        "success": True,
+        "message": "Выбранный ранг успешно сохранен в аккаунте!",
         "user": updated_user
     })
 

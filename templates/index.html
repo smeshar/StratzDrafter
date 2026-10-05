@@ -28,14 +28,55 @@
 
       <div class="header-controls">
 
-        <!-- Rank Bracket Selector -->
-        <div class="control-field">
-          <label for="bracketSelect">Ранг матча</label>
-          <select id="bracketSelect" class="styled-select">
-            <option value="LOW_RANK" selected>Рекрут - Герой (Herald-Archon)</option>
+        <!-- Rank Bracket Selector by Icons -->
+        <div class="control-field rank-selector-control">
+          <div class="rank-control-header">
+            <span class="control-label">Ранг матча:</span>
+            <span class="rank-current-name" id="currentRankName">Герой</span>
+          </div>
+          <div class="rank-icons-strip" id="rankIconsStrip" role="radiogroup" aria-label="Ранг матча">
+            <button type="button" class="rank-icon-btn" data-rank="HERALD" data-name="Рекрут" title="Рекрут (Herald)">
+              <img src="/static/img/ranks/rank_icon_1.png" alt="Рекрут" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="GUARDIAN" data-name="Страж" title="Страж (Guardian)">
+              <img src="/static/img/ranks/rank_icon_2.png" alt="Страж" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="CRUSADER" data-name="Рыцарь" title="Рыцарь (Crusader)">
+              <img src="/static/img/ranks/rank_icon_3.png" alt="Рыцарь" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn active" data-rank="ARCHON" data-name="Герой" title="Герой (Archon)">
+              <img src="/static/img/ranks/rank_icon_4.png" alt="Герой" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="LEGEND" data-name="Легенда" title="Легенда (Legend)">
+              <img src="/static/img/ranks/rank_icon_5.png" alt="Легенда" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="ANCIENT" data-name="Властелин" title="Властелин (Ancient)">
+              <img src="/static/img/ranks/rank_icon_6.png" alt="Властелин" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="DIVINE" data-name="Божество" title="Божество (Divine)">
+              <img src="/static/img/ranks/rank_icon_7.png" alt="Божество" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn" data-rank="IMMORTAL" data-name="Титан" title="Титан (Immortal)">
+              <img src="/static/img/ranks/rank_icon_8.png" alt="Титан" width="28" height="28" loading="lazy" />
+            </button>
+            <button type="button" class="rank-icon-btn rank-icon-all" data-rank="ALL" data-name="Все ранги" title="Все ранги (All)">
+              <img src="/static/img/ranks/rank_icon_0.png" alt="Все ранги" width="28" height="28" loading="lazy" />
+            </button>
+          </div>
+          <!-- Hidden select for script & test backwards compatibility -->
+          <select id="bracketSelect" class="styled-select" style="display: none;" aria-hidden="true" tabindex="-1">
+            <option value="HERALD">Рекрут (Herald)</option>
+            <option value="GUARDIAN">Страж (Guardian)</option>
+            <option value="CRUSADER">Рыцарь (Crusader)</option>
+            <option value="ARCHON" selected>Герой (Archon)</option>
+            <option value="LEGEND">Легенда (Legend)</option>
+            <option value="ANCIENT">Властелин (Ancient)</option>
+            <option value="DIVINE">Божество (Divine)</option>
+            <option value="IMMORTAL">Титан (Immortal)</option>
+            <option value="ALL">Все ранги (All)</option>
+            <option value="LOW_RANK">Рекрут - Герой (Herald-Archon)</option>
             <option value="HERALD_GUARDIAN">Рекрут / Страж (Herald-Guardian)</option>
             <option value="CRUSADER_ARCHON">Рыцарь / Герой (Crusader-Archon)</option>
-            <option value="ALL">Все ранги (All)</option>
             <option value="LEGEND_ANCIENT">Легенда / Властелин (Legend-Ancient)</option>
             <option value="DIVINE_IMMORTAL">Божество / Титан (Divine-Immortal)</option>
           </select>
@@ -590,6 +631,10 @@
               <div class="cabinet-status-pill">
                 <span class="cabinet-status-dot" id="cabinetStatusDot"></span>
                 <span id="cabinetStatusLabel">Режим: Оффлайн-кэш</span>
+              </div>
+              <div class="cabinet-rank-pill" id="cabinetRankPill" title="Ваш сохраненный ранг в профиле">
+                <img id="cabinetRankImg" src="/static/img/ranks/rank_icon_4.png" width="16" height="16" alt="Rank" />
+                <span id="cabinetRankLabel">Ранг: Герой</span>
               </div>
             </div>
           </div>

@@ -41,12 +41,14 @@ def init_db():
                 value INTEGER NOT NULL DEFAULT 0
             )
         """)
-        # Ensure custom_weights column exists for existing DBs
+        # Ensure custom_weights and selected_bracket columns exist for existing DBs
         cursor = conn.cursor()
         cursor.execute("PRAGMA table_info(users)")
         columns = [row["name"] for row in cursor.fetchall()]
         if "custom_weights" not in columns:
             cursor.execute("ALTER TABLE users ADD COLUMN custom_weights TEXT")
+        if "selected_bracket" not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN selected_bracket TEXT")
         conn.commit()
 
 
@@ -97,7 +99,7 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, email, name, avatar_url, stratz_token, custom_weights, created_at 
+            SELECT id, email, name, avatar_url, stratz_token, custom_weights, selected_bracket, created_at 
             FROM users WHERE id = ?
         """, (user_id,))
         row = cursor.fetchone()
@@ -117,6 +119,7 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
                 res["customWeights"] = {"counter": 100, "synergy": 50, "meta": 25}
         else:
             res["customWeights"] = {"counter": 100, "synergy": 50, "meta": 25}
+        res["selectedBracket"] = res.get("selected_bracket") or "ARCHON"
         return res
 
 
@@ -129,6 +132,15 @@ def update_user_custom_weights(user_id: int, weights: Dict[str, Any]) -> bool:
     }
     with get_db_connection() as conn:
         conn.execute("UPDATE users SET custom_weights = ? WHERE id = ?", (json.dumps(clean_weights), user_id))
+        conn.commit()
+        return True
+
+
+def update_user_bracket(user_id: int, bracket: str) -> bool:
+    """Updates user's preferred rank bracket (HERALD, GUARDIAN, ARCHON, etc.)."""
+    clean_bracket = bracket.strip().upper() if bracket else "ARCHON"
+    with get_db_connection() as conn:
+        conn.execute("UPDATE users SET selected_bracket = ? WHERE id = ?", (clean_bracket, user_id))
         conn.commit()
         return True
 

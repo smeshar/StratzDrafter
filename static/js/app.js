@@ -55,6 +55,11 @@ const elements = {
   offMetaToggle: document.getElementById('offMetaToggle'),
   roleWeightsToggle: document.getElementById('roleWeightsToggle'),
   bracketSelect: document.getElementById('bracketSelect'),
+  rankIconsStrip: document.getElementById('rankIconsStrip'),
+  currentRankName: document.getElementById('currentRankName'),
+  cabinetRankPill: document.getElementById('cabinetRankPill'),
+  cabinetRankImg: document.getElementById('cabinetRankImg'),
+  cabinetRankLabel: document.getElementById('cabinetRankLabel'),
   statusBadge: document.getElementById('statusBadge'),
   statusText: document.getElementById('statusText'),
   alliesSlots: document.getElementById('alliesSlots'),
@@ -233,6 +238,164 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(fetchSiteStats, 10000);
 });
 
+// ==========================================
+// DOTA 2 RANK BRACKET SELECTOR BY ICONS
+// ==========================================
+const RANK_NAMES = {
+  'HERALD': 'Рекрут',
+  'GUARDIAN': 'Страж',
+  'CRUSADER': 'Рыцарь',
+  'ARCHON': 'Герой',
+  'LEGEND': 'Легенда',
+  'ANCIENT': 'Властелин',
+  'DIVINE': 'Божество',
+  'IMMORTAL': 'Титан',
+  'ALL': 'Все ранги',
+  'LOW_RANK': 'Герой',
+  'HERALD_GUARDIAN': 'Страж',
+  'CRUSADER_ARCHON': 'Герой',
+  'LEGEND_ANCIENT': 'Легенда',
+  'DIVINE_IMMORTAL': 'Божество'
+};
+
+const RANK_ICONS = {
+  'HERALD': '/static/img/ranks/rank_icon_1.png',
+  'GUARDIAN': '/static/img/ranks/rank_icon_2.png',
+  'CRUSADER': '/static/img/ranks/rank_icon_3.png',
+  'ARCHON': '/static/img/ranks/rank_icon_4.png',
+  'LEGEND': '/static/img/ranks/rank_icon_5.png',
+  'ANCIENT': '/static/img/ranks/rank_icon_6.png',
+  'DIVINE': '/static/img/ranks/rank_icon_7.png',
+  'IMMORTAL': '/static/img/ranks/rank_icon_8.png',
+  'ALL': '/static/img/ranks/rank_icon_0.png',
+  'LOW_RANK': '/static/img/ranks/rank_icon_4.png'
+};
+
+function initRankSelector() {
+  if (elements.rankIconsStrip) {
+    const buttons = elements.rankIconsStrip.querySelectorAll('.rank-icon-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rank = btn.getAttribute('data-rank');
+        setRankBracket(rank, true, true);
+      });
+
+      btn.addEventListener('mouseenter', () => {
+        const rank = btn.getAttribute('data-rank');
+        const name = btn.getAttribute('data-name') || RANK_NAMES[rank] || rank;
+        if (elements.currentRankName) {
+          elements.currentRankName.textContent = name;
+        }
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        if (elements.currentRankName) {
+          const currentName = RANK_NAMES[state.bracket] || state.bracket;
+          elements.currentRankName.textContent = currentName;
+        }
+      });
+    });
+  }
+
+  // Bracket select backwards compatibility
+  if (elements.bracketSelect) {
+    elements.bracketSelect.addEventListener('change', (e) => {
+      setRankBracket(e.target.value, true, false);
+    });
+  }
+
+  // Restore saved rank from localStorage on early init
+  const savedRank = localStorage.getItem('stratz_selected_bracket');
+  if (savedRank) {
+    setRankBracket(savedRank, false, false);
+  } else {
+    setRankBracket(state.bracket || 'ARCHON', false, false);
+  }
+}
+
+function setRankBracket(rankKey, triggerUpdate = true, showToastMsg = false) {
+  if (!rankKey) return;
+
+  let normalized = rankKey.toUpperCase();
+  if (normalized === 'LOW_RANK') normalized = 'ARCHON';
+
+  state.bracket = normalized;
+
+  // Update button active state in icon strip
+  if (elements.rankIconsStrip) {
+    const buttons = elements.rankIconsStrip.querySelectorAll('.rank-icon-btn');
+    buttons.forEach(btn => {
+      const bRank = btn.getAttribute('data-rank');
+      if (bRank === normalized) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+  }
+
+  // Update text label
+  const displayName = RANK_NAMES[normalized] || normalized;
+  if (elements.currentRankName) {
+    elements.currentRankName.textContent = displayName;
+  }
+
+  // Sync underlying select element
+  if (elements.bracketSelect) {
+    elements.bracketSelect.value = normalized;
+  }
+
+  // Update cabinet modal rank pill
+  updateCabinetRankView(normalized);
+
+  // Persist locally
+  localStorage.setItem('stratz_selected_bracket', normalized);
+
+  // If user is logged in, persist to backend DB
+  if (state.user && state.user.id) {
+    saveUserBracketToBackend(normalized);
+  }
+
+  if (showToastMsg) {
+    showToast(`Выбран ранг: ${displayName}`);
+  }
+
+  if (triggerUpdate) {
+    debouncedUpdate();
+  }
+}
+
+function updateCabinetRankView(bracketKey) {
+  const norm = (bracketKey || state.bracket || 'ARCHON').toUpperCase();
+  const name = RANK_NAMES[norm] || norm;
+  const icon = RANK_ICONS[norm] || RANK_ICONS['ARCHON'];
+  if (elements.cabinetRankLabel) {
+    elements.cabinetRankLabel.textContent = `Ранг: ${name}`;
+  }
+  if (elements.cabinetRankImg) {
+    elements.cabinetRankImg.src = icon;
+    elements.cabinetRankImg.alt = name;
+  }
+}
+
+async function saveUserBracketToBackend(bracket) {
+  try {
+    const res = await fetch('/api/auth/bracket', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bracket })
+    });
+    const data = await res.json();
+    if (data.success && data.user) {
+      state.user = data.user;
+    }
+  } catch (err) {
+    console.warn('Failed to save bracket to user profile:', err);
+  }
+}
+
 // Setup Events
 function setupEventListeners() {
   // Sliders
@@ -278,14 +441,8 @@ function setupEventListeners() {
     });
   }
 
-  // Bracket select
-  if (elements.bracketSelect) {
-    elements.bracketSelect.addEventListener('change', (e) => {
-      state.bracket = e.target.value;
-      showToast(`Выбран ранг: ${elements.bracketSelect.options[elements.bracketSelect.selectedIndex].text}`);
-      debouncedUpdate();
-    });
-  }
+  // Rank Selector by Icons
+  initRankSelector();
 
   // Reset Draft
   if (elements.resetDraftBtn) {
@@ -1799,6 +1956,9 @@ async function initAuth() {
         applyWeights(data.user.customWeights, true);
         debouncedUpdate();
       }
+      if (data.user.selectedBracket) {
+        setRankBracket(data.user.selectedBracket, false, false);
+      }
     } else {
       state.user = null;
     }
@@ -1894,8 +2054,11 @@ async function handleLogin(e) {
       state.user = data.user;
       if (data.user.customWeights) {
         applyWeights(data.user.customWeights, true);
-        debouncedUpdate();
       }
+      if (data.user.selectedBracket) {
+        setRankBracket(data.user.selectedBracket, false, false);
+      }
+      debouncedUpdate();
       updateUserUI();
       closeAuthModal();
       showToast(`Добро пожаловать, ${data.user.name || 'друг'}!`);
@@ -1969,6 +2132,7 @@ function openProfileModal() {
 
   updateProfileTokenView();
   updateProfileWeightsView();
+  updateCabinetRankView(state.bracket);
   if (elements.profileModal) elements.profileModal.style.display = 'flex';
 }
 
