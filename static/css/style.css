@@ -345,6 +345,13 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: var(--radiant-green);
+  transition: all 0.25s ease;
+}
+
+.status-indicator.status-error {
+  background: rgba(255, 51, 102, 0.08);
+  border-color: rgba(255, 51, 102, 0.3);
+  color: var(--dire-red);
 }
 
 .status-dot {
@@ -354,6 +361,11 @@ body {
   border-radius: 50%;
   box-shadow: none;
   animation: pulse 2s infinite;
+}
+
+.status-indicator.status-error .status-dot {
+  background: var(--dire-red);
+  animation: none;
 }
 
 @keyframes pulse {

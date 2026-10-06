@@ -2155,7 +2155,14 @@ async function pollStatus() {
     const res = await fetch('/api/status', {
       headers: { 'X-Visitor-Id': getVisitorId() }
     });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
     const data = await res.json();
+
+    if (elements.statusBadge) {
+      elements.statusBadge.classList.remove('status-error');
+    }
 
     if (data.onlineViewers !== undefined || data.totalDrafts !== undefined) {
       updateStatsUI(data.onlineViewers, data.totalDrafts);
@@ -2186,8 +2193,14 @@ async function pollStatus() {
       setTimeout(pollStatus, 10000);
     }
   } catch (err) {
-    elements.statusText.textContent = 'Stratz API: Готово';
-    setTimeout(pollStatus, 10000);
+    if (elements.statusText) {
+      elements.statusText.textContent = 'Сервер недоступен';
+    }
+    if (elements.statusBadge) {
+      elements.statusBadge.classList.add('status-error');
+      elements.statusBadge.title = `Ошибка связи с сервером: ${err.message || err}`;
+    }
+    setTimeout(pollStatus, 5000);
   }
 }
 

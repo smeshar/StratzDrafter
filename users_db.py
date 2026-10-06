@@ -16,40 +16,47 @@ def get_db_connection() -> sqlite3.Connection:
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH, timeout=10.0)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+    except Exception:
+        pass
     return conn
 
 
 def init_db():
     """Initializes the database schema if not already present."""
-    with get_db_connection() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE,
-                name TEXT NOT NULL,
-                password_hash TEXT,
-                google_id TEXT UNIQUE,
-                avatar_url TEXT,
-                stratz_token TEXT,
-                custom_weights TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS site_stats (
-                key TEXT PRIMARY KEY,
-                value INTEGER NOT NULL DEFAULT 0
-            )
-        """)
-        # Ensure custom_weights and selected_bracket columns exist for existing DBs
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [row["name"] for row in cursor.fetchall()]
-        if "custom_weights" not in columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN custom_weights TEXT")
-        if "selected_bracket" not in columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN selected_bracket TEXT")
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE,
+                    name TEXT NOT NULL,
+                    password_hash TEXT,
+                    google_id TEXT UNIQUE,
+                    avatar_url TEXT,
+                    stratz_token TEXT,
+                    custom_weights TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS site_stats (
+                    key TEXT PRIMARY KEY,
+                    value INTEGER NOT NULL DEFAULT 0
+                )
+            """)
+            # Ensure custom_weights and selected_bracket columns exist for existing DBs
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(users)")
+            columns = [row["name"] for row in cursor.fetchall()]
+            if "custom_weights" not in columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN custom_weights TEXT")
+            if "selected_bracket" not in columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN selected_bracket TEXT")
+            conn.commit()
+    except Exception as e:
+        print(f"[Database Warning] Unable to initialize database: {e}")
 
 
 def register_user(email: str, password: str, name: Optional[str] = None) -> Dict[str, Any]:
@@ -165,40 +172,51 @@ def get_raw_stratz_token_for_user(user_id: int) -> Optional[str]:
 
 def increment_stat(key: str, amount: int = 1) -> int:
     """Increments integer statistic key atomically and returns new value."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
-        row = cursor.fetchone()
-        if row is None:
-            new_val = amount
-            cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, new_val))
-        else:
-            new_val = row["value"] + amount
-            cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (new_val, key))
-        conn.commit()
-        return new_val
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            if row is None:
+                new_val = amount
+                cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, new_val))
+            else:
+                new_val = row["value"] + amount
+                cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (new_val, key))
+            conn.commit()
+            return new_val
+    except Exception as e:
+        print(f"[Database Error] increment_stat failed for {key}: {e}")
+        return 0
 
 
 def get_stat(key: str, default: int = 0) -> int:
     """Retrieves integer statistic key."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
-        row = cursor.fetchone()
-        return row["value"] if row else default
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            return row["value"] if row else default
+    except Exception as e:
+        print(f"[Database Error] get_stat failed for {key}: {e}")
+        return default
 
 
 def set_stat(key: str, value: int):
     """Sets integer statistic key to a specific value."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
-        row = cursor.fetchone()
-        if row is None:
-            cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, value))
-        else:
-            cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (value, key))
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            if row is None:
+                cursor.execute("INSERT INTO site_stats (key, value) VALUES (?, ?)", (key, value))
+            else:
+                cursor.execute("UPDATE site_stats SET value = ? WHERE key = ?", (value, key))
+            conn.commit()
+    except Exception as e:
+        print(f"[Database Error] set_stat failed for {key}: {e}")
 
 
 import time
