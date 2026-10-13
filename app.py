@@ -1,8 +1,5 @@
 import os
-import json
 import webbrowser
-import requests
-from threading import Timer
 from flask import Flask, render_template, request, jsonify, session
 from dotenv import load_dotenv
 
