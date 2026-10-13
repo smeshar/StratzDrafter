@@ -258,7 +258,7 @@ class StratzClient:
             except Exception as e:
                 print(f"Failed to read durations cache: {e}")
 
-    def _atomic_json_dump(self, file_path: Path, data: Any, indent: int = None):
+    def _atomic_json_dump(self, file_path: Path, data: any, indent: int = None):
         """Atomically writes JSON to a file using a temp file and atomic rename."""
         tmp_file = file_path.with_suffix(".tmp")
         try:
