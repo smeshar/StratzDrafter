@@ -45,18 +45,26 @@ client.fetch_stats(bracket_key="LOW_RANK")
 
 def get_current_user():
     """Retrieves safe profile for currently logged in session user."""
-    user_id = session.get("user_id")
-    if not user_id:
+    try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return None
+        return get_user_by_id(user_id)
+    except Exception as e:
+        print(f"[Auth Error] get_current_user: {e}")
         return None
-    return get_user_by_id(user_id)
 
 
 def get_active_stratz_token():
     """Returns user's custom STRATZ token if logged in and configured, else None."""
-    user_id = session.get("user_id")
-    if not user_id:
+    try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return None
+        return get_raw_stratz_token_for_user(user_id)
+    except Exception as e:
+        print(f"[Auth Error] get_active_stratz_token: {e}")
         return None
-    return get_raw_stratz_token_for_user(user_id)
 
 
 # ==============================================================================
@@ -418,42 +426,65 @@ def draft_analysis():
 @app.route("/api/status", methods=["GET"])
 def status():
     """Returns status of preloader, cache, authentication, and token mode."""
-    user = get_current_user()
-    user_token = get_active_stratz_token()
-    env_token = os.getenv("STRATZ_API", "").strip() or client.api_token
-    has_user_token = bool(user_token)
-    has_env_token = bool(env_token)
-    has_token = has_user_token or has_env_token
+    try:
+        user = get_current_user()
+        user_token = get_active_stratz_token()
+        env_token = os.getenv("STRATZ_API", "").strip() or client.api_token
+        has_user_token = bool(user_token)
+        has_env_token = bool(env_token)
+        has_token = has_user_token or has_env_token
 
-    if has_user_token:
-        auth_mode = "personal_token"
-    elif has_env_token:
-        auth_mode = "server_token"
-    elif user:
-        auth_mode = "authenticated_no_token"
-    else:
-        auth_mode = "anonymous"
+        if has_user_token:
+            auth_mode = "personal_token"
+        elif has_env_token:
+            auth_mode = "server_token"
+        elif user:
+            auth_mode = "authenticated_no_token"
+        else:
+            auth_mode = "anonymous"
 
-    return jsonify({
-        "status": "ready" if client.heroes and client.matchups else "initializing",
-        "isAuthenticated": bool(user),
-        "authMode": auth_mode,
-        "user": user,
-        "hasUserToken": has_user_token,
-        "hasServerToken": has_env_token,
-        "hasToken": has_token,
-        "isAnonymous": not bool(user),
-        "mode": "live_user_token" if has_user_token else ("live_server_token" if has_env_token else "offline_cache"),
-        "heroesCount": len(client.heroes),
-        "cachedMatchupsCount": len(client.matchups),
-        "cachedDurationsCount": len(client.hero_durations),
-        "isPreloading": client.is_preloading,
-        "preloadProgress": client.preload_progress,
-        "currentBracket": client.current_bracket,
-        "availableBrackets": list(BRACKET_CONFIGS.keys()),
-        "onlineViewers": viewer_tracker.get_online_count(),
-        "totalDrafts": get_stat("total_drafts", 0)
-    })
+        return jsonify({
+            "status": "ready" if client.heroes and client.matchups else "initializing",
+            "isAuthenticated": bool(user),
+            "authMode": auth_mode,
+            "user": user,
+            "hasUserToken": has_user_token,
+            "hasServerToken": has_env_token,
+            "hasToken": has_token,
+            "isAnonymous": not bool(user),
+            "mode": "live_user_token" if has_user_token else ("live_server_token" if has_env_token else "offline_cache"),
+            "heroesCount": len(client.heroes),
+            "cachedMatchupsCount": len(client.matchups),
+            "cachedDurationsCount": len(client.hero_durations),
+            "isPreloading": client.is_preloading,
+            "preloadProgress": client.preload_progress,
+            "currentBracket": client.current_bracket,
+            "availableBrackets": list(BRACKET_CONFIGS.keys()),
+            "onlineViewers": viewer_tracker.get_online_count(),
+            "totalDrafts": get_stat("total_drafts", 0)
+        })
+    except Exception as e:
+        print(f"[API Error] status failed: {e}")
+        return jsonify({
+            "status": "ready",
+            "isAuthenticated": False,
+            "authMode": "anonymous",
+            "user": None,
+            "hasUserToken": False,
+            "hasServerToken": False,
+            "hasToken": False,
+            "isAnonymous": True,
+            "mode": "offline_cache",
+            "heroesCount": len(client.heroes) if client.heroes else 0,
+            "cachedMatchupsCount": len(client.matchups) if client.matchups else 0,
+            "cachedDurationsCount": len(client.hero_durations) if client.hero_durations else 0,
+            "isPreloading": False,
+            "preloadProgress": 0,
+            "currentBracket": "LOW_RANK",
+            "availableBrackets": list(BRACKET_CONFIGS.keys()),
+            "onlineViewers": 1,
+            "totalDrafts": 0
+        })
 
 
 @app.route("/api/preload", methods=["POST"])

@@ -6,6 +6,7 @@ Uses SQLite (embedded, zero-configuration) stored in data/users.db.
 import os
 import json
 import sqlite3
+from contextlib import contextmanager
 from typing import Optional, Dict, Any
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -13,20 +14,48 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "data", "users.db")
 
 
 def get_db_connection() -> sqlite3.Connection:
+    """Creates a raw sqlite3 connection with a 20s busy timeout."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH, timeout=10.0)
+    conn = sqlite3.connect(DB_PATH, timeout=20.0)
     conn.row_factory = sqlite3.Row
-    try:
-        conn.execute("PRAGMA journal_mode=WAL;")
-    except Exception:
-        pass
     return conn
 
 
-def init_db():
-    """Initializes the database schema if not already present."""
+@contextmanager
+def db_session():
+    """
+    Context manager that yields a database connection and GUARANTEES
+    it is closed after use. Commits on clean exit, rolls back on exception.
+    Prevents file descriptor exhaustion and database lockups.
+    """
+    conn = get_db_connection()
     try:
-        with get_db_connection() as conn:
+        yield conn
+        conn.commit()
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+def init_db():
+    """Initializes the database schema and enables WAL mode."""
+    try:
+        with db_session() as conn:
+            # Enable WAL mode and 10s busy timeout once on startup
+            try:
+                conn.execute("PRAGMA journal_mode=WAL;")
+                conn.execute("PRAGMA busy_timeout=10000;")
+            except Exception:
+                pass
+
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,6 +66,7 @@ def init_db():
                     avatar_url TEXT,
                     stratz_token TEXT,
                     custom_weights TEXT,
+                    selected_bracket TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -70,7 +100,7 @@ def register_user(email: str, password: str, name: Optional[str] = None) -> Dict
     display_name = name.strip() if name and name.strip() else email.split("@")[0]
     p_hash = generate_password_hash(password)
 
-    with get_db_connection() as conn:
+    with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
         if cursor.fetchone():
@@ -89,7 +119,7 @@ def register_user(email: str, password: str, name: Optional[str] = None) -> Dict
 def authenticate_user(login_or_email: str, password: str) -> Optional[Dict[str, Any]]:
     """Verifies email or username and password; returns user dict or None."""
     identifier = login_or_email.strip().lower()
-    with get_db_connection() as conn:
+    with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE LOWER(email) = ? OR LOWER(name) = ?", (identifier, identifier))
         row = cursor.fetchone()
@@ -103,7 +133,7 @@ def authenticate_user(login_or_email: str, password: str) -> Optional[Dict[str, 
 
 def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     """Retrieves safe user profile dictionary (excluding password hash)."""
-    with get_db_connection() as conn:
+    with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, email, name, avatar_url, stratz_token, custom_weights, selected_bracket, created_at 
@@ -137,7 +167,7 @@ def update_user_custom_weights(user_id: int, weights: Dict[str, Any]) -> bool:
         "synergy": max(0, min(100, int(weights.get("synergy", 50)))),
         "meta": max(0, min(100, int(weights.get("meta", 25)))),
     }
-    with get_db_connection() as conn:
+    with db_session() as conn:
         conn.execute("UPDATE users SET custom_weights = ? WHERE id = ?", (json.dumps(clean_weights), user_id))
         conn.commit()
         return True
@@ -146,7 +176,7 @@ def update_user_custom_weights(user_id: int, weights: Dict[str, Any]) -> bool:
 def update_user_bracket(user_id: int, bracket: str) -> bool:
     """Updates user's preferred rank bracket (HERALD, GUARDIAN, ARCHON, etc.)."""
     clean_bracket = bracket.strip().upper() if bracket else "ARCHON"
-    with get_db_connection() as conn:
+    with db_session() as conn:
         conn.execute("UPDATE users SET selected_bracket = ? WHERE id = ?", (clean_bracket, user_id))
         conn.commit()
         return True
@@ -155,7 +185,7 @@ def update_user_bracket(user_id: int, bracket: str) -> bool:
 def update_user_stratz_token(user_id: int, token: Optional[str]) -> bool:
     """Updates user's personalized STRATZ API Bearer token."""
     clean_token = token.strip() if token else None
-    with get_db_connection() as conn:
+    with db_session() as conn:
         conn.execute("UPDATE users SET stratz_token = ? WHERE id = ?", (clean_token, user_id))
         conn.commit()
         return True
@@ -163,7 +193,7 @@ def update_user_stratz_token(user_id: int, token: Optional[str]) -> bool:
 
 def get_raw_stratz_token_for_user(user_id: int) -> Optional[str]:
     """Returns actual unmasked STRATZ API token for backend request forwarding."""
-    with get_db_connection() as conn:
+    with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT stratz_token FROM users WHERE id = ?", (user_id,))
         row = cursor.fetchone()
@@ -173,7 +203,7 @@ def get_raw_stratz_token_for_user(user_id: int) -> Optional[str]:
 def increment_stat(key: str, amount: int = 1) -> int:
     """Increments integer statistic key atomically and returns new value."""
     try:
-        with get_db_connection() as conn:
+        with db_session() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
             row = cursor.fetchone()
@@ -193,7 +223,7 @@ def increment_stat(key: str, amount: int = 1) -> int:
 def get_stat(key: str, default: int = 0) -> int:
     """Retrieves integer statistic key."""
     try:
-        with get_db_connection() as conn:
+        with db_session() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
             row = cursor.fetchone()
@@ -206,7 +236,7 @@ def get_stat(key: str, default: int = 0) -> int:
 def set_stat(key: str, value: int):
     """Sets integer statistic key to a specific value."""
     try:
-        with get_db_connection() as conn:
+        with db_session() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT value FROM site_stats WHERE key = ?", (key,))
             row = cursor.fetchone()
