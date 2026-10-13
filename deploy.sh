@@ -47,17 +47,24 @@ CURRENT_USER=$(whoami)
 
 # Используем 1 worker с 4 потоками (threads) для экономии RAM:
 # матрица героев загружается в память всего 1 раз вместо 3.
+# --timeout 120: защита от падения воркера при долгой обработке API/инсайтов
+# --max-requests 1000: периодический мягкий перезапуск воркера от фрагментации памяти
+# StartLimitBurst=10: предотвращение перехода службы в статус 'failed' при сбоях
 sudo tee "$SERVICE_FILE" > /dev/null <<EOT
 [Unit]
 Description=StratzDrafter Web Service
 After=network.target
+StartLimitIntervalSec=60s
+StartLimitBurst=10
 
 [Service]
 User=$CURRENT_USER
 WorkingDirectory=$PROJECT_DIR
-ExecStart=$PROJECT_DIR/venv/bin/gunicorn --workers 1 --threads 4 --bind 127.0.0.1:5000 app:app
+ExecStart=$PROJECT_DIR/venv/bin/gunicorn --workers 1 --threads 4 --worker-class gthread --timeout 120 --graceful-timeout 30 --keep-alive 5 --max-requests 1000 --max-requests-jitter 100 --bind 127.0.0.1:5000 app:app
 Restart=always
-RestartSec=5
+RestartSec=3s
+TimeoutStopSec=15s
+KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
@@ -84,6 +91,8 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 120s;
         proxy_read_timeout 120s;
     }
 

@@ -163,6 +163,7 @@ class StratzClient:
         self.is_preloading = False
         self.preload_progress = 0
         self.current_bracket = "LOW_RANK"
+        self._cache_lock = threading.Lock()
 
         # Load from disk cache first
         self._load_disk_cache()
@@ -257,37 +258,51 @@ class StratzClient:
             except Exception as e:
                 print(f"Failed to read durations cache: {e}")
 
-    def _save_disk_cache(self):
-        """Saves current state to local JSON cache files safely."""
+    def _atomic_json_dump(self, file_path: Path, data: any, indent: int = None):
+        """Atomically writes JSON to a file using a temp file and atomic rename."""
+        tmp_file = file_path.with_suffix(".tmp")
         try:
-            if self.heroes:
-                with open(HEROES_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(self.heroes, f, ensure_ascii=False, indent=2)
-
-            if self.position_stats or self.hero_totals:
-                pos_formatted = {f"{k[0]}:{k[1]}": v for k, v in self.position_stats.items()}
-                with open(STATS_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump({"totals": self.hero_totals, "positions": pos_formatted}, f, ensure_ascii=False, indent=2)
-
-            # Safeguard: never overwrite a full 127-hero matchup cache with an empty or partial dictionary
-            if self.matchups and len(self.matchups) >= 50:
-                matchups_serializable = {}
-                for h_id, data in self.matchups.items():
-                    matchups_serializable[str(h_id)] = {
-                        "vs": {str(k): v for k, v in data["vs"].items()},
-                        "with": {str(k): v for k, v in data["with"].items()}
-                    }
-                with open(MATCHUPS_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(matchups_serializable, f, ensure_ascii=False)
-
-            if self.hero_durations:
-                durations_serializable = {str(k): v for k, v in self.hero_durations.items()}
-                with open(DURATIONS_CACHE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(durations_serializable, f, ensure_ascii=False, indent=2)
-
-            print("Disk cache successfully saved.")
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=indent)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_file, file_path)
         except Exception as e:
-            print(f"Failed to save disk cache: {e}")
+            if tmp_file.exists():
+                try:
+                    tmp_file.unlink()
+                except Exception:
+                    pass
+            raise e
+
+    def _save_disk_cache(self):
+        """Saves current state to local JSON cache files safely and atomically."""
+        with self._cache_lock:
+            try:
+                if self.heroes:
+                    self._atomic_json_dump(HEROES_CACHE_FILE, self.heroes, indent=2)
+
+                if self.position_stats or self.hero_totals:
+                    pos_formatted = {f"{k[0]}:{k[1]}": v for k, v in self.position_stats.items()}
+                    self._atomic_json_dump(STATS_CACHE_FILE, {"totals": self.hero_totals, "positions": pos_formatted}, indent=2)
+
+                # Safeguard: never overwrite a full 127-hero matchup cache with an empty or partial dictionary
+                if self.matchups and len(self.matchups) >= 50:
+                    matchups_serializable = {}
+                    for h_id, data in self.matchups.items():
+                        matchups_serializable[str(h_id)] = {
+                            "vs": {str(k): v for k, v in data["vs"].items()},
+                            "with": {str(k): v for k, v in data["with"].items()}
+                        }
+                    self._atomic_json_dump(MATCHUPS_CACHE_FILE, matchups_serializable)
+
+                if self.hero_durations:
+                    durations_serializable = {str(k): v for k, v in self.hero_durations.items()}
+                    self._atomic_json_dump(DURATIONS_CACHE_FILE, durations_serializable, indent=2)
+
+                print("Disk cache successfully saved.")
+            except Exception as e:
+                print(f"Failed to save disk cache: {e}")
 
     def fetch_heroes(self, force_refresh: bool = False) -> dict:
         """Fetches all hero constants from Stratz."""
@@ -405,7 +420,7 @@ class StratzClient:
 
         self._save_disk_cache()
 
-    def fetch_matchups_batch(self, hero_ids: list, bracket_key: str = "LOW_RANK", custom_token: str = None):
+    def fetch_matchups_batch(self, hero_ids: list, bracket_key: str = "LOW_RANK", custom_token: str = None, save_cache: bool = True):
         """Fetches matchup matrix for a list of heroes in a single GraphQL query."""
         if not hero_ids:
             return
@@ -460,7 +475,8 @@ class StratzClient:
                 "with": with_dict
             }
 
-        self._save_disk_cache()
+        if save_cache:
+            self._save_disk_cache()
 
     def ensure_matchups(self, hero_ids: list, bracket_key: str = "LOW_RANK", custom_token: str = None):
         """Ensures that the given hero IDs have their matchup data cached."""
@@ -608,10 +624,12 @@ class StratzClient:
                 batch = all_hero_ids[i:i + batch_size]
                 needed = batch if force_refresh else [h_id for h_id in batch if h_id not in self.matchups]
                 if needed:
-                    self.fetch_matchups_batch(needed, bracket_key=bracket_key, custom_token=custom_token)
+                    self.fetch_matchups_batch(needed, bracket_key=bracket_key, custom_token=custom_token, save_cache=False)
                 self.preload_progress = min(100, int((i + len(batch)) / total * 100))
                 time.sleep(0.5)
 
+            # Persist all newly fetched matchups once at the end
+            self._save_disk_cache()
             self.is_preloading = False
             self.preload_progress = 100
             print("[Preloader] Preloading complete! 100% of heroes are cached.")
