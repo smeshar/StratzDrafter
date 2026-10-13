@@ -691,9 +691,9 @@ class StratzClient:
         if weights is None:
             weights = {"counter": 100, "synergy": 50, "meta": 25}
 
-        w_c = max(0.0, float(weights.get("counter", 100)))
-        w_s = max(0.0, float(weights.get("synergy", 50)))
-        w_m = max(0.0, float(weights.get("meta", 25)))
+        w_c = max(0.0, float(weights.get("counter")))
+        w_s = max(0.0, float(weights.get("synergy")))
+        w_m = max(0.0, float(weights.get("meta")))
 
         # Ensure matchups for all drafted heroes are in cache
         needed_heroes = set(allies + enemies)
