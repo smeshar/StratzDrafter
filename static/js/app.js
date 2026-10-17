@@ -1508,7 +1508,7 @@ function renderDetailedRecs(recs) {
             ${(h.worstAdvantage !== undefined && h.worstAdvantage <= -2.0) ? `<span class="score-item" style="color: #ff99b0;" title="Опасный контрпик врага (учитывается формулой)">Худший: <strong>${h.worstAdvantage}%</strong></span>` : ''}
             <span class="score-item">Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
             <span class="score-item" title="${laneTooltip}">Линия: <strong style="color: ${laneColor};">${laneDisplay}</strong></span>
-            <span class="score-item" title="Винрейт: ${h.baseWinRate}%, Сглаженный винрейт: ${h.adjustedWinRate || h.baseWinRate}%, Доля пиков: ${h.pickRate !== undefined ? h.pickRate + '%' : '—'}">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей${h.pickRate ? `, пик: ${h.pickRate}%` : ''})</span>
+            <span class="score-item" title="Винрейт: ${h.baseWinRate}%, Сглаженный винрейт: ${h.adjustedWinRate || h.baseWinRate}%, Сыграно: ${(h.posMatches || 0).toLocaleString()} матчей, Доля пиков: ${h.pickRate !== undefined ? h.pickRate + '%' : '—'}">Винрейт: <strong>${h.baseWinRate}%</strong> (${(h.posMatches || 0) >= 1000 ? ((h.posMatches || 0) / 1000).toFixed(1) + 'k' : (h.posMatches || 0)}${h.pickRate !== undefined ? `, пик ${h.pickRate}%` : ''})</span>
           </div>
         </div>
 

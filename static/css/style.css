@@ -2464,7 +2464,7 @@ input[type="search"]::-webkit-search-results-decoration {
   border-radius: var(--radius-md);
   padding: 14px 18px;
   display: grid;
-  grid-template-columns: 80px 1.5fr 2fr 100px;
+  grid-template-columns: 80px auto 1fr 100px;
   align-items: center;
   gap: 20px;
   transition: all 0.2s ease;
@@ -2504,7 +2504,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .card-scores-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   align-items: center;
   gap: 12px;
   font-size: 12px;
