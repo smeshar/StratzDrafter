@@ -662,7 +662,7 @@ class StratzClient:
         share_pct = round(share * 100, 1)
 
         # Standard role: at least 15% of hero's games or 2000+ games in this position
-        is_standard = (share >= 0.15 or pos_matches >= 1500)
+        is_standard = (share >= 0.15 and pos_matches >= 300)
 
         # Viable off-meta: at least 4% of hero's games and 150+ games (e.g. carry Furion, mid Rubick)
         is_viable_off_meta = (share >= 0.04 and pos_matches >= 150)
