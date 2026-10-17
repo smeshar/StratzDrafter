@@ -293,9 +293,10 @@ def recommend():
     enemies_roles = data.get("enemiesRoles", [])
     bracket = data.get("bracket", "LOW_RANK")
 
-    # If user has personalized token, ensure any missing matchups can be fetched
+    # If user has personalized token, ensure bracket group stats and missing matchups are fetched dynamically
     user_token = get_active_stratz_token()
     if user_token:
+        client.ensure_bracket_stats(bracket, custom_token=user_token)
         client.ensure_matchups(allies + enemies, bracket_key=bracket, custom_token=user_token)
 
     recommendations = client.calculate_recommendations(
@@ -356,6 +357,7 @@ def team_matrix():
 
     user_token = get_active_stratz_token()
     if user_token:
+        client.ensure_bracket_stats(bracket, custom_token=user_token)
         client.ensure_matchups(allies + enemies, bracket_key=bracket, custom_token=user_token)
 
     matrix = client.get_team_recommendations_matrix(
@@ -402,6 +404,11 @@ def draft_analysis():
     bracket = data.get("bracket", "LOW_RANK")
     allies_slots = data.get("alliesSlots")
     enemies_slots = data.get("enemiesSlots")
+
+    user_token = get_active_stratz_token()
+    if user_token:
+        client.ensure_bracket_stats(bracket, custom_token=user_token)
+        client.ensure_matchups(allies + enemies, bracket_key=bracket, custom_token=user_token)
 
     analysis = client.calculate_draft_analysis(
         allies=allies,

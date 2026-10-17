@@ -41,6 +41,24 @@ BRACKET_CONFIGS = {
     "DIVINE_IMMORTAL": ["DIVINE_IMMORTAL"],
 }
 
+# Mapping of individual UI ranks to Stratz bracket basic groups
+BRACKET_GROUP_MAP = {
+    "HERALD": "HERALD_GUARDIAN",
+    "GUARDIAN": "HERALD_GUARDIAN",
+    "HERALD_GUARDIAN": "HERALD_GUARDIAN",
+    "CRUSADER": "CRUSADER_ARCHON",
+    "ARCHON": "CRUSADER_ARCHON",
+    "CRUSADER_ARCHON": "CRUSADER_ARCHON",
+    "LOW_RANK": "CRUSADER_ARCHON",
+    "LEGEND": "LEGEND_ANCIENT",
+    "ANCIENT": "LEGEND_ANCIENT",
+    "LEGEND_ANCIENT": "LEGEND_ANCIENT",
+    "DIVINE": "DIVINE_IMMORTAL",
+    "IMMORTAL": "DIVINE_IMMORTAL",
+    "DIVINE_IMMORTAL": "DIVINE_IMMORTAL",
+    "ALL": "ALL"
+}
+
 POSITION_MAP = {
     "pos1": "POSITION_1",
     "pos2": "POSITION_2",
@@ -157,8 +175,10 @@ class StratzClient:
 
         # Memory caches
         self.heroes = {}          # id -> hero dict
-        self.position_stats = {}  # (heroId, pos) -> { matchCount, winCount, winRate }
-        self.hero_totals = {}     # heroId -> { matchCount, winCount, winRate }
+        self.position_stats = {}  # (heroId, pos) -> { matchCount, winCount, winRate } (Base all-rank cache)
+        self.hero_totals = {}     # heroId -> { matchCount, winCount, winRate } (Base all-rank totals)
+        self.bracket_position_stats = {}  # (bracket_group, heroId, pos) -> { matchCount, winCount, winRate }
+        self.bracket_hero_totals = {}     # (bracket_group, heroId) -> { matchCount, winCount, winRate }
         self.matchups = {}        # heroId -> { 'vs': {heroId2: {synergy, winCount, matchCount}}, 'with': {...} }
         self.hero_durations = {}   # heroId -> { baseWinRate, totalMatches, peakMinute, peakDelta, points: [...] }
         self.is_preloading = False
@@ -259,6 +279,22 @@ class StratzClient:
             except Exception as e:
                 print(f"Failed to read durations cache: {e}")
 
+        # Load any cached bracket groups (e.g. DIVINE_IMMORTAL, CRUSADER_ARCHON)
+        for p in DATA_DIR.glob("stats_bracket_*.json"):
+            try:
+                b_group = p.stem.replace("stats_bracket_", "")
+                with open(p, "r", encoding="utf-8") as f:
+                    b_data = json.load(f)
+                    for k, v in b_data.get("positions", {}).items():
+                        parts = k.split(":")
+                        if len(parts) == 2:
+                            self.bracket_position_stats[(b_group, int(parts[0]), parts[1])] = v
+                    for k, v in b_data.get("totals", {}).items():
+                        self.bracket_hero_totals[(b_group, int(k))] = v
+                print(f"Loaded {b_group} bracket stats from {p.name}.")
+            except Exception as e:
+                print(f"Failed to load bracket stats from {p}: {e}")
+
     def _atomic_json_dump(self, file_path: Path, data: any, indent: int = None):
         """Atomically writes JSON to a file using a temp file and atomic rename."""
         tmp_file = file_path.with_suffix(".tmp")
@@ -304,6 +340,125 @@ class StratzClient:
                 print("Disk cache successfully saved.")
             except Exception as e:
                 print(f"Failed to save disk cache: {e}")
+
+    def _save_bracket_disk_cache(self, bracket_group: str):
+        """Saves cached stats for a specific bracket group to disk."""
+        with self._cache_lock:
+            try:
+                file_path = DATA_DIR / f"stats_bracket_{bracket_group}.json"
+                pos_formatted = {
+                    f"{k[1]}:{k[2]}": v
+                    for k, v in self.bracket_position_stats.items()
+                    if k[0] == bracket_group
+                }
+                totals_formatted = {
+                    str(k[1]): v
+                    for k, v in self.bracket_hero_totals.items()
+                    if k[0] == bracket_group
+                }
+                self._atomic_json_dump(file_path, {"totals": totals_formatted, "positions": pos_formatted}, indent=2)
+                print(f"Saved disk cache for bracket group {bracket_group}.")
+            except Exception as e:
+                print(f"Failed to save bracket disk cache for {bracket_group}: {e}")
+
+    def fetch_bracket_stats(self, bracket_group: str, custom_token: str = None) -> bool:
+        """Fetches position stats and calculates totals for a specific bracket group from Stratz API."""
+        token = (custom_token or "").strip() or self.api_token
+        if not token:
+            return False
+
+        bracket_arg = f"[{bracket_group}]"
+        query = f"""
+        query {{
+          heroStats {{
+            stats(bracketBasicIds: {bracket_arg}, groupByPosition: true) {{
+              heroId
+              position
+              matchCount
+              winCount
+            }}
+          }}
+        }}
+        """
+        res = self._execute_query(query, custom_token=token)
+        stats_list = res.get("data", {}).get("heroStats", {}).get("stats", [])
+        if not stats_list:
+            return False
+
+        hero_pos_sums = {}
+
+        for s in stats_list:
+            h_id = s["heroId"]
+            pos = s["position"]
+            mc = s["matchCount"]
+            wc = s["winCount"]
+            wr = round((wc / mc * 100), 2) if mc > 0 else 50.0
+
+            self.bracket_position_stats[(bracket_group, h_id, pos)] = {
+                "matchCount": mc,
+                "winCount": wc,
+                "winRate": wr
+            }
+
+            if h_id not in hero_pos_sums:
+                hero_pos_sums[h_id] = {"matchCount": 0, "winCount": 0}
+            hero_pos_sums[h_id]["matchCount"] += mc
+            hero_pos_sums[h_id]["winCount"] += wc
+
+        for h_id, counts in hero_pos_sums.items():
+            mc = counts["matchCount"]
+            wc = counts["winCount"]
+            wr = round((wc / mc * 100), 2) if mc > 0 else 50.0
+            self.bracket_hero_totals[(bracket_group, h_id)] = {
+                "matchCount": mc,
+                "winCount": wc,
+                "winRate": wr
+            }
+
+        self._save_bracket_disk_cache(bracket_group)
+        print(f"[StratzClient] Cached {len(stats_list)} position records for bracket {bracket_group}.")
+        return True
+
+    def ensure_bracket_stats(self, bracket_key: str, custom_token: str = None) -> str:
+        """
+        Ensures stats for the requested rank bracket group are ready.
+        Only fetches live from Stratz API if a token is provided (custom_token or api_token).
+        Falls back to base cached all-rank data if no token is available or group is ALL.
+        """
+        b_group = BRACKET_GROUP_MAP.get((bracket_key or "").upper(), "ALL")
+        if b_group == "ALL":
+            return "ALL"
+
+        has_in_memory = any(k[0] == b_group for k in self.bracket_position_stats.keys())
+        if has_in_memory:
+            return b_group
+
+        disk_file = DATA_DIR / f"stats_bracket_{b_group}.json"
+        if disk_file.exists():
+            try:
+                with open(disk_file, "r", encoding="utf-8") as f:
+                    b_data = json.load(f)
+                    for k, v in b_data.get("positions", {}).items():
+                        parts = k.split(":")
+                        if len(parts) == 2:
+                            self.bracket_position_stats[(b_group, int(parts[0]), parts[1])] = v
+                    for k, v in b_data.get("totals", {}).items():
+                        self.bracket_hero_totals[(b_group, int(k))] = v
+                return b_group
+            except Exception as e:
+                print(f"Failed to load {disk_file}: {e}")
+
+        # Live fetch only if user connected their token or server has token
+        token = (custom_token or "").strip() or self.api_token
+        if token:
+            try:
+                success = self.fetch_bracket_stats(b_group, custom_token=token)
+                if success:
+                    return b_group
+            except Exception as ex:
+                print(f"[StratzClient] Failed to fetch bracket stats for {b_group}: {ex}")
+
+        return "ALL"
 
     def fetch_heroes(self, force_refresh: bool = False) -> dict:
         """Fetches all hero constants from Stratz."""
@@ -638,7 +793,7 @@ class StratzClient:
         thread = threading.Thread(target=_worker, daemon=True)
         thread.start()
 
-    def is_hero_viable_for_position(self, hero_id: int, pos_key: str, allow_off_meta: bool = True) -> tuple[bool, bool, float]:
+    def is_hero_viable_for_position(self, hero_id: int, pos_key: str, allow_off_meta: bool = True, bracket_group: str = None) -> tuple[bool, bool, float]:
         """
         Determines if a hero fits a role.
         Returns: (is_allowed, is_off_meta, role_share_pct)
@@ -650,23 +805,32 @@ class StratzClient:
         if not pos_str:
             return True, False, 100.0
 
-        stat = self.position_stats.get((hero_id, pos_str))
-        pos_matches = stat["matchCount"] if stat else 0
+        has_group = bool(bracket_group and any(k[0] == bracket_group for k in self.bracket_position_stats.keys()))
 
-        # Total matches for hero across all roles
-        total_matches = sum(
-            self.position_stats.get((hero_id, p), {}).get("matchCount", 0)
-            for p in POSITION_MAP.values()
-        )
+        if has_group:
+            stat = self.bracket_position_stats.get((bracket_group, hero_id, pos_str))
+            pos_matches = stat["matchCount"] if stat else 0
+            total_matches = sum(
+                self.bracket_position_stats.get((bracket_group, hero_id, p), {}).get("matchCount", 0)
+                for p in POSITION_MAP.values()
+            )
+        else:
+            stat = self.position_stats.get((hero_id, pos_str))
+            pos_matches = stat["matchCount"] if stat else 0
+            total_matches = sum(
+                self.position_stats.get((hero_id, p), {}).get("matchCount", 0)
+                for p in POSITION_MAP.values()
+            )
 
         share = (pos_matches / total_matches) if total_matches > 0 else 0.0
         share_pct = round(share * 100, 1)
 
-        # Standard role: at least 15% of hero's games and 300+ games in this position
-        is_standard = (share >= 0.15 and pos_matches >= 300)
+        # Standard role: at least 15% of hero's games and minimum threshold
+        min_matches = 150 if has_group else 300
+        min_offmeta = 60 if has_group else 150
 
-        # Viable off-meta: at least 4% of hero's games and 150+ games (e.g. carry Furion, mid Rubick)
-        is_viable_off_meta = (share >= 0.04 and pos_matches >= 150)
+        is_standard = (share >= 0.15 and pos_matches >= min_matches)
+        is_viable_off_meta = (share >= 0.04 and pos_matches >= min_offmeta)
 
         if is_standard:
             return True, False, share_pct
@@ -675,12 +839,16 @@ class StratzClient:
         else:
             return False, True, share_pct
 
-    def get_hero_primary_position(self, hero_id: int) -> str:
+    def get_hero_primary_position(self, hero_id: int, bracket_group: str = None) -> str:
         """Returns the most played position key ('pos1'..'pos5') for a hero based on cached stats."""
         best_pos = "pos1"
         max_matches = -1
+        has_group = bool(bracket_group and any(k[0] == bracket_group for k in self.bracket_position_stats.keys()))
         for pos_key, pos_str in POSITION_MAP.items():
-            stat = self.position_stats.get((hero_id, pos_str))
+            if has_group:
+                stat = self.bracket_position_stats.get((bracket_group, hero_id, pos_str))
+            else:
+                stat = self.position_stats.get((hero_id, pos_str))
             if stat and stat.get("matchCount", 0) > max_matches:
                 max_matches = stat["matchCount"]
                 best_pos = pos_key
@@ -754,16 +922,27 @@ class StratzClient:
             if a_id not in ally_roles_dict:
                 ally_roles_dict[a_id] = self.get_hero_primary_position(a_id)
 
+        # Determine active bracket group (or fallback to ALL / base cached stats)
+        b_group = BRACKET_GROUP_MAP.get((bracket_key or "").upper(), "ALL")
+        has_bracket_stats = any(k[0] == b_group for k in self.bracket_position_stats.keys()) if b_group != "ALL" else False
+        active_group = b_group if has_bracket_stats else None
+
         weights_table = ROLE_MATCHUP_WEIGHTS.get(role, ROLE_MATCHUP_WEIGHTS["all"])
 
         # Precompute total match count for position to accurately calculate pick rate (%)
         pos_str = POSITION_MAP.get(role) if role != "all" else None
         if pos_str:
-            tot_pos_picks = sum(self.position_stats.get((hid, pos_str), {}).get("matchCount", 0) for hid in self.heroes)
+            if active_group:
+                tot_pos_picks = sum(self.bracket_position_stats.get((active_group, hid, pos_str), {}).get("matchCount", 0) for hid in self.heroes)
+            else:
+                tot_pos_picks = sum(self.position_stats.get((hid, pos_str), {}).get("matchCount", 0) for hid in self.heroes)
             # In a Dota match there are 2 heroes in each position (1 Radiant, 1 Dire)
             num_role_matches = (tot_pos_picks / 2.0) if tot_pos_picks > 0 else 1.0
         else:
-            tot_all_picks = sum(self.hero_totals.get(hid, {}).get("matchCount", 0) for hid in self.heroes)
+            if active_group:
+                tot_all_picks = sum(self.bracket_hero_totals.get((active_group, hid), {}).get("matchCount", 0) for hid in self.heroes)
+            else:
+                tot_all_picks = sum(self.hero_totals.get(hid, {}).get("matchCount", 0) for hid in self.heroes)
             # In a Dota match there are 10 heroes total
             num_role_matches = (tot_all_picks / 10.0) if tot_all_picks > 0 else 1.0
 
@@ -774,7 +953,9 @@ class StratzClient:
                 continue
 
             # Role filter check
-            allowed, is_off_meta, role_share = self.is_hero_viable_for_position(h_id, role, allow_off_meta=allow_off_meta)
+            allowed, is_off_meta, role_share = self.is_hero_viable_for_position(
+                h_id, role, allow_off_meta=allow_off_meta, bracket_group=active_group
+            )
             if not allowed:
                 continue
 
@@ -860,13 +1041,19 @@ class StratzClient:
             synergy_score = (sum(synergy_values) / len(synergy_values)) if synergy_values else 0.0
 
             # 3. Meta Score Calculation (Bayesian Shrinkage + Popularity Presence Index)
-            if pos_str and (h_id, pos_str) in self.position_stats:
-                p_stat = self.position_stats[(h_id, pos_str)]
+            if pos_str:
+                if active_group and (active_group, h_id, pos_str) in self.bracket_position_stats:
+                    p_stat = self.bracket_position_stats[(active_group, h_id, pos_str)]
+                else:
+                    p_stat = self.position_stats.get((h_id, pos_str), {})
                 pos_matches = p_stat.get("matchCount", 0)
                 pos_wins = p_stat.get("winCount", 0)
                 base_wr = p_stat.get("winRate", 50.0)
             else:
-                t_stat = self.hero_totals.get(h_id, {})
+                if active_group and (active_group, h_id) in self.bracket_hero_totals:
+                    t_stat = self.bracket_hero_totals[(active_group, h_id)]
+                else:
+                    t_stat = self.hero_totals.get(h_id, {})
                 pos_matches = t_stat.get("matchCount", 0)
                 pos_wins = t_stat.get("winCount", 0)
                 base_wr = t_stat.get("winRate", 50.0)
@@ -987,6 +1174,7 @@ class StratzClient:
                 "roles": hero["roles"],
                 "isOffMeta": is_off_meta,
                 "roleShare": role_share,
+                "bracketGroup": active_group or "ALL",
                 "baseWinRate": base_wr,
                 "adjustedWinRate": round(adj_wr, 2),
                 "pickRate": round(pick_rate, 2),
@@ -1422,13 +1610,19 @@ class StratzClient:
 
             # Meta winrate with Bayesian smoothing
             pos_str = POSITION_MAP.get(role) if role else None
-            if pos_str and (hero_id, pos_str) in self.position_stats:
-                p_stat = self.position_stats[(hero_id, pos_str)]
+            if pos_str:
+                if active_group and (active_group, hero_id, pos_str) in self.bracket_position_stats:
+                    p_stat = self.bracket_position_stats[(active_group, hero_id, pos_str)]
+                else:
+                    p_stat = self.position_stats.get((hero_id, pos_str), {})
                 m_cnt = p_stat.get("matchCount", 0)
                 w_cnt = p_stat.get("winCount", 0)
                 base_wr = p_stat.get("winRate", 50.0)
             else:
-                t_stat = self.hero_totals.get(hero_id, {})
+                if active_group and (active_group, hero_id) in self.bracket_hero_totals:
+                    t_stat = self.bracket_hero_totals[(active_group, hero_id)]
+                else:
+                    t_stat = self.hero_totals.get(hero_id, {})
                 m_cnt = t_stat.get("matchCount", 0)
                 w_cnt = t_stat.get("winCount", 0)
                 base_wr = t_stat.get("winRate", 50.0)
@@ -1698,10 +1892,16 @@ class StratzClient:
         for a in allies:
             r = roles_dict.get(a)
             pos_str = POSITION_MAP.get(r) if r else None
-            if pos_str and (a, pos_str) in self.position_stats:
-                stat = self.position_stats[(a, pos_str)]
+            if pos_str:
+                if active_group and (active_group, a, pos_str) in self.bracket_position_stats:
+                    stat = self.bracket_position_stats[(active_group, a, pos_str)]
+                else:
+                    stat = self.position_stats.get((a, pos_str), {})
             else:
-                stat = self.hero_totals.get(a, {})
+                if active_group and (active_group, a) in self.bracket_hero_totals:
+                    stat = self.bracket_hero_totals[(active_group, a)]
+                else:
+                    stat = self.hero_totals.get(a, {})
             mc = stat.get("matchCount", 0)
             wc = stat.get("winCount", 0)
             C = 1000
@@ -1710,7 +1910,10 @@ class StratzClient:
 
         enemy_wrs = []
         for e in enemies:
-            stat = self.hero_totals.get(e, {})
+            if active_group and (active_group, e) in self.bracket_hero_totals:
+                stat = self.bracket_hero_totals[(active_group, e)]
+            else:
+                stat = self.hero_totals.get(e, {})
             mc = stat.get("matchCount", 0)
             wc = stat.get("winCount", 0)
             C = 1000
