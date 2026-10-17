@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import math
 import threading
 import requests
 from pathlib import Path
@@ -661,7 +662,7 @@ class StratzClient:
         share = (pos_matches / total_matches) if total_matches > 0 else 0.0
         share_pct = round(share * 100, 1)
 
-        # Standard role: at least 15% of hero's games or 2000+ games in this position
+        # Standard role: at least 15% of hero's games and 300+ games in this position
         is_standard = (share >= 0.15 and pos_matches >= 300)
 
         # Viable off-meta: at least 4% of hero's games and 150+ games (e.g. carry Furion, mid Rubick)
@@ -755,6 +756,17 @@ class StratzClient:
 
         weights_table = ROLE_MATCHUP_WEIGHTS.get(role, ROLE_MATCHUP_WEIGHTS["all"])
 
+        # Precompute total match count for position to accurately calculate pick rate (%)
+        pos_str = POSITION_MAP.get(role) if role != "all" else None
+        if pos_str:
+            tot_pos_picks = sum(self.position_stats.get((hid, pos_str), {}).get("matchCount", 0) for hid in self.heroes)
+            # In a Dota match there are 2 heroes in each position (1 Radiant, 1 Dire)
+            num_role_matches = (tot_pos_picks / 2.0) if tot_pos_picks > 0 else 1.0
+        else:
+            tot_all_picks = sum(self.hero_totals.get(hid, {}).get("matchCount", 0) for hid in self.heroes)
+            # In a Dota match there are 10 heroes total
+            num_role_matches = (tot_all_picks / 10.0) if tot_all_picks > 0 else 1.0
+
         candidates = []
 
         for h_id, hero in self.heroes.items():
@@ -847,18 +859,37 @@ class StratzClient:
 
             synergy_score = (sum(synergy_values) / len(synergy_values)) if synergy_values else 0.0
 
-            # 3. Meta Score Calculation
-            # Position-specific winrate if role chosen, else overall winrate
-            pos_str = POSITION_MAP.get(role) if role != "all" else None
+            # 3. Meta Score Calculation (Bayesian Shrinkage + Popularity Presence Index)
             if pos_str and (h_id, pos_str) in self.position_stats:
-                base_wr = self.position_stats[(h_id, pos_str)]["winRate"]
-                pos_matches = self.position_stats[(h_id, pos_str)]["matchCount"]
+                p_stat = self.position_stats[(h_id, pos_str)]
+                pos_matches = p_stat.get("matchCount", 0)
+                pos_wins = p_stat.get("winCount", 0)
+                base_wr = p_stat.get("winRate", 50.0)
             else:
-                base_wr = self.hero_totals.get(h_id, {}).get("winRate", 50.0)
-                pos_matches = self.hero_totals.get(h_id, {}).get("matchCount", 0)
+                t_stat = self.hero_totals.get(h_id, {})
+                pos_matches = t_stat.get("matchCount", 0)
+                pos_wins = t_stat.get("winCount", 0)
+                base_wr = t_stat.get("winRate", 50.0)
 
-            # Meta score is winrate relative to 50%
-            meta_score = (base_wr - 50.0)
+            # Pick rate (% of matches in which this hero is drafted on this position)
+            pick_rate = (pos_matches / num_role_matches * 100.0) if num_role_matches > 0 else 0.0
+
+            # Bayesian shrinkage towards 50.0% prior with pseudo-count C = 1000
+            # Neutralizes small sample variance (e.g. 5 games / 100% WR becomes 50.2%)
+            C = 1000
+            adj_wr = ((pos_wins + C * 0.50) / (pos_matches + C) * 100.0) if (pos_matches + C) > 0 else 50.0
+            wr_delta = adj_wr - 50.0
+
+            # Meta Score combines verified winrate performance with log-scaled presence
+            if wr_delta >= 0:
+                meta_score = wr_delta * (1.0 + 0.20 * math.log2(1.0 + pick_rate)) + 0.30 * math.log2(1.0 + pick_rate)
+            else:
+                meta_score = wr_delta + 0.20 * math.log2(1.0 + pick_rate)
+
+            # Off-meta picks have unproven/niche role viability; scale meta_score down
+            # so they only rise when justified by strong counter or synergy scores
+            if is_off_meta:
+                meta_score *= 0.35
 
             # 4. Lane Advantage Calculation (Линия)
             effective_lane_role = role if role != "all" else self.get_hero_primary_position(h_id)
@@ -957,6 +988,8 @@ class StratzClient:
                 "isOffMeta": is_off_meta,
                 "roleShare": role_share,
                 "baseWinRate": base_wr,
+                "adjustedWinRate": round(adj_wr, 2),
+                "pickRate": round(pick_rate, 2),
                 "posMatches": pos_matches,
                 "counterScore": round(counter_score, 2),
                 "worstAdvantage": round(min_advantage, 2) if counter_advantages else 0.0,
@@ -1387,13 +1420,22 @@ class StratzClient:
             avg_counter = (sum(m["advantage"] for m in opponent_matchups) / len(opponent_matchups)) if opponent_matchups else 0.0
             avg_synergy = (sum(s["synergy"] for s in teammate_synergies) / len(teammate_synergies)) if teammate_synergies else 0.0
 
-            # Meta winrate
+            # Meta winrate with Bayesian smoothing
             pos_str = POSITION_MAP.get(role) if role else None
-            if pos_str and (hero_id, pos_str) in self.position_stats and self.position_stats[(hero_id, pos_str)].get("matchCount", 0) >= 100:
-                base_wr = self.position_stats[(hero_id, pos_str)]["winRate"]
+            if pos_str and (hero_id, pos_str) in self.position_stats:
+                p_stat = self.position_stats[(hero_id, pos_str)]
+                m_cnt = p_stat.get("matchCount", 0)
+                w_cnt = p_stat.get("winCount", 0)
+                base_wr = p_stat.get("winRate", 50.0)
             else:
-                base_wr = self.hero_totals.get(hero_id, {}).get("winRate", 50.0)
-            meta_delta = base_wr - 50.0
+                t_stat = self.hero_totals.get(hero_id, {})
+                m_cnt = t_stat.get("matchCount", 0)
+                w_cnt = t_stat.get("winCount", 0)
+                base_wr = t_stat.get("winRate", 50.0)
+
+            C = 1000
+            adj_wr = ((w_cnt + C * 0.50) / (m_cnt + C) * 100.0) if (m_cnt + C) > 0 else base_wr
+            meta_delta = adj_wr - 50.0
 
             # Weighted composite advantage
             if opponents and teammates:
@@ -1656,12 +1698,25 @@ class StratzClient:
         for a in allies:
             r = roles_dict.get(a)
             pos_str = POSITION_MAP.get(r) if r else None
-            if pos_str and (a, pos_str) in self.position_stats and self.position_stats[(a, pos_str)].get("matchCount", 0) >= 100:
-                ally_wrs.append(self.position_stats[(a, pos_str)]["winRate"])
+            if pos_str and (a, pos_str) in self.position_stats:
+                stat = self.position_stats[(a, pos_str)]
             else:
-                ally_wrs.append(self.hero_totals.get(a, {}).get("winRate", 50.0))
+                stat = self.hero_totals.get(a, {})
+            mc = stat.get("matchCount", 0)
+            wc = stat.get("winCount", 0)
+            C = 1000
+            adj = ((wc + C * 0.50) / (mc + C) * 100.0) if (mc + C) > 0 else 50.0
+            ally_wrs.append(adj)
 
-        enemy_wrs = [self.hero_totals.get(e, {}).get("winRate", 50.0) for e in enemies]
+        enemy_wrs = []
+        for e in enemies:
+            stat = self.hero_totals.get(e, {})
+            mc = stat.get("matchCount", 0)
+            wc = stat.get("winCount", 0)
+            C = 1000
+            adj = ((wc + C * 0.50) / (mc + C) * 100.0) if (mc + C) > 0 else 50.0
+            enemy_wrs.append(adj)
+
         avg_ally_wr = (sum(ally_wrs) / len(ally_wrs)) if ally_wrs else 50.0
         avg_enemy_wr = (sum(enemy_wrs) / len(enemy_wrs)) if enemy_wrs else 50.0
         meta_adv = avg_ally_wr - avg_enemy_wr

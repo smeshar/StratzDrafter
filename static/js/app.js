@@ -1373,8 +1373,8 @@ function renderMatrixHeroCard(h, posKey) {
             <strong style="color: ${c.advantage >= 0 ? '#6ee7b7' : '#ff99b0'}">${c.advantage >= 0 ? '+' : ''}${c.advantage}%</strong>
           </div>
         `).join('') : `
-          <div class="mini-chip">
-            <span class="mini-chip-wr">Винрейт в патче</span>
+          <div class="mini-chip" title="Винрейт: ${h.baseWinRate}%, Пикрейт на роли: ${h.pickRate !== undefined ? h.pickRate + '%' : '—'}">
+            <span class="mini-chip-wr">Винрейт ${h.pickRate ? `(пик ${h.pickRate}%)` : ''}</span>
             <strong>${h.baseWinRate}%</strong>
           </div>
         `}
@@ -1508,7 +1508,7 @@ function renderDetailedRecs(recs) {
             ${(h.worstAdvantage !== undefined && h.worstAdvantage <= -2.0) ? `<span class="score-item" style="color: #ff99b0;" title="Опасный контрпик врага (учитывается формулой)">Худший: <strong>${h.worstAdvantage}%</strong></span>` : ''}
             <span class="score-item">Синергия: <strong>${h.synergyScore > 0 ? '+' : ''}${h.synergyScore}%</strong></span>
             <span class="score-item" title="${laneTooltip}">Линия: <strong style="color: ${laneColor};">${laneDisplay}</strong></span>
-            <span class="score-item">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей)</span>
+            <span class="score-item" title="Винрейт: ${h.baseWinRate}%, Сглаженный винрейт: ${h.adjustedWinRate || h.baseWinRate}%, Доля пиков: ${h.pickRate !== undefined ? h.pickRate + '%' : '—'}">Винрейт: <strong>${h.baseWinRate}%</strong> (${h.posMatches?.toLocaleString() || 0} матчей${h.pickRate ? `, пик: ${h.pickRate}%` : ''})</span>
           </div>
         </div>
 
