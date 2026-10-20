@@ -1892,6 +1892,10 @@ class StratzClient:
                 if isinstance(ar, dict) and "id" in ar and "role" in ar:
                     roles_dict[ar["id"]] = ar["role"]
 
+        b_group = BRACKET_GROUP_MAP.get((bracket_key or "").upper(), "ALL")
+        has_bracket_stats = any(k[0] == b_group for k in self.bracket_position_stats.keys()) if b_group != "ALL" else False
+        active_group = b_group if has_bracket_stats else None
+
         ally_wrs = []
         for a in allies:
             r = roles_dict.get(a)
