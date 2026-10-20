@@ -1608,6 +1608,10 @@ class StratzClient:
             avg_counter = (sum(m["advantage"] for m in opponent_matchups) / len(opponent_matchups)) if opponent_matchups else 0.0
             avg_synergy = (sum(s["synergy"] for s in teammate_synergies) / len(teammate_synergies)) if teammate_synergies else 0.0
 
+            b_group = BRACKET_GROUP_MAP.get((bracket_key or "").upper(), "ALL")
+            has_bracket_stats = any(k[0] == b_group for k in self.bracket_position_stats.keys()) if b_group != "ALL" else False
+            active_group = b_group if has_bracket_stats else None
+
             # Meta winrate with Bayesian smoothing
             pos_str = POSITION_MAP.get(role) if role else None
             if pos_str:
